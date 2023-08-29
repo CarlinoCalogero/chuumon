@@ -1,17 +1,27 @@
-import { miao } from '@/api/api'
+import { useEffect, useState } from 'react';
 import styles from './page.module.css'
 
-export default function Home() {
+export default async function Home() {
 
-  (async () => {
-    var bu = JSON.stringify(await miao());
-    var magico = JSON.parse(bu);
-    console.log(magico);
-  })()
+  async function getApiData() {
+    const res = await (await fetch('http://localhost:3000/api')).json();
+    return res.data;
+  }
+
+  type Miao = {
+    id: number,
+    nome: string
+  }
+
+  const miagolo = await getApiData();
 
   return (
     <div>
-      uff
+      {
+        miagolo.map((uff: Miao, i: number) => <span key={"uff" + i}>
+          {uff.nome}
+        </span>)
+      }
     </div>
   )
 }
