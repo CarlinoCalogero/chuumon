@@ -9,15 +9,21 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@types/node": "20.5.7",
+    "@types/bcrypt": "^5.0.0",
     "@types/react": "18.2.21",
     "@types/react-dom": "18.2.7",
+    "bcrypt": "^5.1.1",
     "mysql2": "^3.6.0",
     "net": "^1.0.2",
     "next": "13.4.19",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "sqlite": "^5.0.1",
+    "sqlite3": "^5.1.6",
     "tls": "^0.0.1",
     "typescript": "5.2.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.5.7"
   }
 }
