@@ -56,7 +56,8 @@ export default function Home() {
     dummySala.tables = newTableArray;
 
     //find new max
-    dummySala.currentMaxTableNumber = Math.max(...dummySala.tableNumbersArray);
+    if (dummySala.tableNumbersArray.length != 0)
+      dummySala.currentMaxTableNumber = Math.max(...dummySala.tableNumbersArray);
 
     addTable(dummySala, (table.numberOfMergedTables + draggedTable.numberOfMergedTables));
 
