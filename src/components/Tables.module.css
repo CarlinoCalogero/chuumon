@@ -1,13 +1,14 @@
 .outerDiv {
-    width: 10rem;
-    height: 10rem;
+    width: 200px;
+    height: 200px;
     background-color: lightgray;
     border-radius: 1rem;
     display: flex;
     justify-content: center;
     align-items: center;
     position: absolute;
-    cursor: move
+    cursor: move;
+    z-index: 9;
 }
 
 .toBeDeletedDiv {

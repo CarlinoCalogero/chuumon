@@ -1,0 +1,13 @@
+.outerDiv {
+    width: 100vw;
+    height: 100vh;
+    background: red;
+}
+
+.appearingButton {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    border: 1px solid red;
+}

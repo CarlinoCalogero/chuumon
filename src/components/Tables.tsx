@@ -1,25 +1,45 @@
+import { SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS } from '@/lib/utils';
 import styles from './Tables.module.css'
-import { DragEvent } from 'react'
+import { DragEvent, MouseEvent } from 'react'
 
 interface TableProps {
     tableNumber: number,
     numberOfMergedTables: number,
+    top: number,
+    left: number,
     functionOnDrag: any,
-    functionOnDrop: any
+    functionOnDragEnd: any,
+    functionOnDrop: any,
+    functionOnClick: any
 }
 
-export function Tables({ tableNumber, numberOfMergedTables, functionOnDrag, functionOnDrop }: TableProps) {
+export function Tables({ tableNumber, numberOfMergedTables, top, left, functionOnDrag, functionOnDragEnd, functionOnDrop, functionOnClick }: TableProps) {
+
+    function computeNewTopAndLeft(event: DragEvent<HTMLDivElement> | MouseEvent<HTMLDivElement>) {
+        top = (event.clientY - (event.currentTarget.clientHeight / 2));
+        left = (event.clientX - (event.currentTarget.clientWidth / 2));
+    }
 
     function handleOnDrag(onDragEvent: DragEvent<HTMLDivElement>) {
+        computeNewTopAndLeft(onDragEvent);
         functionOnDrag({
             tableNumber: tableNumber,
             numberOfMergedTables: numberOfMergedTables,
+            top: top,
+            left: left
         });
     }
 
     function handleOnDragEnd(onDragEvent: DragEvent<HTMLDivElement>) {
-        onDragEvent.currentTarget.style.top = (onDragEvent.clientY - (onDragEvent.currentTarget.clientHeight / 2)) + "px";
-        onDragEvent.currentTarget.style.left = (onDragEvent.clientX - (onDragEvent.currentTarget.clientWidth / 2)) + "px";
+        computeNewTopAndLeft(onDragEvent);
+        onDragEvent.currentTarget.style.top = top + "px";
+        onDragEvent.currentTarget.style.left = left + "px";
+        functionOnDragEnd({
+            tableNumber: tableNumber,
+            numberOfMergedTables: numberOfMergedTables,
+            top: top,
+            left: left
+        });
     }
 
     function handleOnDragOver(onDragEvent: DragEvent<HTMLDivElement>) {
@@ -30,21 +50,41 @@ export function Tables({ tableNumber, numberOfMergedTables, functionOnDrag, func
     function handleOnDrop(onDragEvent: DragEvent<HTMLDivElement>) {
         // prevent default action (open as link for some elements)
         onDragEvent.preventDefault();
+        computeNewTopAndLeft(onDragEvent);
         functionOnDrop({
             tableNumber: tableNumber,
             numberOfMergedTables: numberOfMergedTables,
+            top: top,
+            left: left
+        });
+    }
+
+    function handleOnClick(onClickEvent: MouseEvent<HTMLDivElement>) {
+        computeNewTopAndLeft(onClickEvent);
+        functionOnClick({
+            tableNumber: tableNumber,
+            numberOfMergedTables: numberOfMergedTables,
+            top: top,
+            left: left
         });
     }
 
     return (
         <div
             className={styles.outerDiv}
-            style={{ width: 10 * numberOfMergedTables + 'rem' }}
+            style={
+                {
+                    width: SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS * numberOfMergedTables + 'px',
+                    top: top + "px",
+                    left: left + "px"
+                }
+            }
             draggable="true"
             onDrag={e => handleOnDrag(e)}
             onDragEnd={e => handleOnDragEnd(e)}
             onDragOver={(e) => handleOnDragOver(e)}
             onDrop={(e) => handleOnDrop(e)}
+            onClick={(e) => handleOnClick(e)}
         >
             <span>Tavolo {tableNumber}</span>
         </div>
