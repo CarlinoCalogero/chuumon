@@ -295,6 +295,7 @@ export default function Home() {
   }
 
   function onSaveRotation(table: Table) {
+    console.log("tableNumber", table.tableNumber)
     var tableIndex = getTableIndex(table);
 
     var dummySala = getSalaObjectCopy();
@@ -343,7 +344,7 @@ export default function Home() {
           functionOnDrag={onDrag}
           functionOnDragEnd={onDragEnd}
           functionOnDrop={onDrop}
-          functionOnClick={isResetTableRotationModeOn ? resetTableRotation : (isDeleteTableModeOn ? onClickWhileInDeleteTableMode : onClick)}
+          functionOnClick={isResetTableRotationModeOn ? resetTableRotation : (isDeleteTableModeOn ? onClickWhileInDeleteTableMode : isRotateTableModeOn ? () => console.log("rotating table") : onClick)}
           functionOnSaveRotation={onSaveRotation}
         />)
       }
