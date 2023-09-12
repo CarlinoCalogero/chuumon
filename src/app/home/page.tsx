@@ -24,6 +24,8 @@ export default function Home() {
   var draggedTable: Table | null = null;
 
   const [isDeleteTableModeOn, setIsDeleteTableModeOn] = useState(false);
+  const [isRotateTableModeOn, setIsRotateTableModeOn] = useState(false);
+
   const [salaAfterTableDrop, setSalaAfterTableDrop] = useState<Sala | null>(null)
 
   function getSalaObjectCopy(salaObject: Sala = sala) {
@@ -298,78 +300,6 @@ export default function Home() {
     console.log("AfterTableDropSala", salaAfterTableDrop)
   }, [salaAfterTableDrop])
 
-  const [rotateInfo, setRotateInfo] = useState<RotateInfo>(
-    {
-      active: false,
-      angle: 0,
-      rotation: 0,
-      startAngle: 0,
-      center: {
-        x: 0,
-        y: 0
-      },
-      R2D: 180 / Math.PI
-    });
-
-  function getRotateInfoCopy() {
-    return JSON.parse(JSON.stringify(rotateInfo)) as RotateInfo;
-  }
-
-  function handleOnMouseDown(onMouseDownEvent: MouseEvent<HTMLDivElement, globalThis.MouseEvent>) {
-    console.log("mouseDown")
-    onMouseDownEvent.preventDefault();
-    var bb = onMouseDownEvent.currentTarget.getBoundingClientRect(),
-      t = bb.top,
-      l = bb.left,
-      h = bb.height,
-      w = bb.width,
-      x,
-      y;
-
-    var rotateInfoCopy = getRotateInfoCopy();
-
-    rotateInfoCopy.center = {
-      x: l + w / 2,
-      y: t + h / 2
-    };
-
-    x = onMouseDownEvent.clientX - rotateInfoCopy.center.x;
-    y = onMouseDownEvent.clientY - rotateInfoCopy.center.y;
-    rotateInfoCopy.startAngle = rotateInfoCopy.R2D * Math.atan2(y, x);
-    rotateInfoCopy.active = true;
-    setRotateInfo(rotateInfoCopy);
-  }
-
-  function handleOnMouseMove(onMouseMoveEvent: MouseEvent<HTMLDivElement, globalThis.MouseEvent>) {
-    console.log("mouseMove")
-    if (rotateInfo.active == true) {
-      onMouseMoveEvent.preventDefault();
-
-      //rotate function part
-
-      var x = onMouseMoveEvent.clientX - rotateInfo.center.x,
-        y = onMouseMoveEvent.clientY - rotateInfo.center.y,
-        d = rotateInfo.R2D * Math.atan2(y, x);
-
-      rotateInfo.rotation = d - rotateInfo.startAngle;
-
-      onMouseMoveEvent.currentTarget.style.transform = "rotate(" + (rotateInfo.angle + rotateInfo.rotation) + "deg)";
-
-    }
-  }
-
-  function handleOnMouseUp(onMouseUpEvent: MouseEvent<HTMLDivElement, globalThis.MouseEvent>) {
-    console.log("mouseUp")
-
-    onMouseUpEvent.preventDefault();
-
-    //stop rotation
-    var rotateInfoCopy = getRotateInfoCopy();
-    rotateInfoCopy.angle += rotateInfoCopy.rotation;
-    rotateInfoCopy.active = false;
-    setRotateInfo(rotateInfoCopy)
-  }
-
   return (
 
     <AppearingButton
@@ -386,6 +316,7 @@ export default function Home() {
           numberOfMergedTables={table.numberOfMergedTables}
           top={table.top}
           left={table.left}
+          isCanBeRotated={isRotateTableModeOn}
           functionOnDrag={onDrag}
           functionOnDragEnd={onDragEnd}
           functionOnDrop={onDrop}
@@ -393,17 +324,15 @@ export default function Home() {
         />)
       }
 
-      <div
-        onMouseDown={e => handleOnMouseDown(e)}
-        onMouseMove={e => handleOnMouseMove(e)}
-        onMouseUp={e => handleOnMouseUp(e)}
-        className={styles.rotate}
-      >Rotate</div>
-
       <button
         className={isDeleteTableModeOn ? styles.deleteTableModeOn : styles.deleteTableModeOff}
         onClick={() => setIsDeleteTableModeOn(!isDeleteTableModeOn)}
       >Delete table {isDeleteTableModeOn ? "on" : "off"}</button>
+
+      <button
+        className={isRotateTableModeOn ? styles.deleteTableModeOn : styles.deleteTableModeOff}
+        onClick={() => setIsRotateTableModeOn(!isRotateTableModeOn)}
+      >Rotate table {isRotateTableModeOn ? "on" : "off"}</button>
       <button onClick={() => router.push("/")}>Back</button>
 
     </AppearingButton>

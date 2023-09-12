@@ -1,5 +1,6 @@
 .singleTable,
-.mergedTable {
+.mergedTable,
+.rotate {
     width: 200px;
     height: 200px;
     background-color: lightgray;
@@ -18,4 +19,8 @@
 
 .mergedTable:hover {
     border: 0.3rem solid #e35042b5;
+}
+
+.rotate:hover {
+    border: 0.3rem solid #691a5fb5;
 }
