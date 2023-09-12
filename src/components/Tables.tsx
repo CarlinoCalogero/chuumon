@@ -36,7 +36,8 @@ export function Tables({ tableNumber, numberOfMergedTables, top, left, functionO
         onDragEvent.currentTarget.style.top = currentTable.top + "px";
         onDragEvent.currentTarget.style.left = currentTable.left + "px";
 
-        console.log("dragEnd", currentTable.tableNumber, currentTable.top, currentTable.left, onDragEvent.dataTransfer)
+        var target = onDragEvent.target as EventTarget & HTMLDivElement
+        console.log(tableNumber, "phase", target.textContent == onDragEvent.currentTarget.textContent)
 
         functionOnDragEnd(currentTable);
     }
@@ -44,13 +45,11 @@ export function Tables({ tableNumber, numberOfMergedTables, top, left, functionO
     function handleOnDragOver(onDragEvent: DragEvent<HTMLDivElement>) {
         // prevent default to allow drop
         onDragEvent.preventDefault();
-        console.log(tableNumber)
     }
 
     function handleOnDrop(onDragEvent: DragEvent<HTMLDivElement>) {
         // prevent default action (open as link for some elements)
         onDragEvent.preventDefault();
-        console.log("drop", tableNumber, onDragEvent.dataTransfer)
         functionOnDrop(getCurrentTable(onDragEvent));
     }
 

@@ -23,6 +23,7 @@ export default function Home() {
   var draggedTable: Table | null = null;
 
   const [isDeleteTableModeOn, setIsDeleteTableModeOn] = useState(false);
+  const [salaAfterTableDrop, setSalaAfterTableDrop] = useState<Sala | null>(null)
 
   function getSalaObjectCopy(salaObject: Sala = sala) {
     return JSON.parse(JSON.stringify(salaObject)) as Sala;
@@ -97,6 +98,20 @@ export default function Home() {
 
   function onDragEnd(table: Table) {
 
+    console.log("drag", table.tableNumber)
+
+    // when a table is dropped onto another, the dropped table fires the onDragEnd event.
+    // Because we have previously stored the updated sala object thanks to the
+    // onDrop function (Check the setSalaAfterTableDrop inside the onDrop function),
+    // we now update the true sala object.
+    // Otherwise a table, that is neither the dropped table or the target 
+    // table upon which the table was dropped, will move.
+    if (salaAfterTableDrop != null) {
+      setSala(salaAfterTableDrop)
+      setSalaAfterTableDrop(null)
+      return;
+    }
+
     if (table == null)
       return;
 
@@ -127,19 +142,17 @@ export default function Home() {
 
   function onDrop(table: Table) {
 
-    if (draggedTable == null || table.tableNumber == draggedTable.tableNumber)
+    console.log("drop", table.tableNumber)
+
+    if (draggedTable == null || table.tableNumber == draggedTable.tableNumber) {
+      draggedTable = null;
       return;
-
-    var tableIndex = getTableIndex(table)
-
-    if (tableIndex == -1) {
-      return; //error, table not found
     }
 
     var dummySala = getSalaObjectCopy();
 
     // merge tables
-    var newMergedTable = getTableObjectCopy(dummySala.tables[tableIndex]);
+    var newMergedTable = getTableObjectCopy(table);
     newMergedTable.numberOfMergedTables = table.numberOfMergedTables + draggedTable.numberOfMergedTables;
 
     removeTables([draggedTable.tableNumber, table.tableNumber], dummySala);
@@ -150,7 +163,12 @@ export default function Home() {
       return;
     }
 
-    setSala(dummySala);
+    // when a table is dropped onto another, the dropped table fires the onDragEnd event, 
+    // so we temporarily need to save the updated sala inside another object. 
+    // Otherwise a table, that is neither the dropped table or the target 
+    // table upon which the table was dropped, will move.
+    // (Check the if inside the onDragEnd function for the 2nd part)
+    setSalaAfterTableDrop(dummySala);
 
     //reset dragged table
     draggedTable = null;
@@ -275,6 +293,10 @@ export default function Home() {
   useEffect(() => {
     console.log(sala)
   }, [sala])
+
+  useEffect(() => {
+    console.log("AfterTableDropSala", salaAfterTableDrop)
+  }, [salaAfterTableDrop])
 
   return (
 
