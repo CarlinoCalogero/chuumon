@@ -1,6 +1,7 @@
 .singleTable,
 .mergedTable,
-.rotate {
+.rotate,
+.resetRotate {
     width: 200px;
     height: 200px;
     background-color: lightgray;
@@ -23,4 +24,8 @@
 
 .rotate:hover {
     border: 0.3rem solid #691a5fb5;
+}
+
+.resetRotate:hover {
+    border: 0.3rem solid #2216d1b5;
 }

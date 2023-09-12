@@ -9,22 +9,29 @@ interface TableProps {
     numberOfMergedTables: number,
     top: number,
     left: number,
+    rotate: number,
     isCanBeRotated: boolean,
+    isResetTableRotation: boolean,
     functionOnDrag: any,
     functionOnDragEnd: any,
     functionOnDrop: any,
-    functionOnClick: any
+    functionOnClick: any,
+    functionOnSaveRotation: any
 }
 
-export function Tables({ tableNumber, numberOfMergedTables, top, left, isCanBeRotated, functionOnDrag, functionOnDragEnd, functionOnDrop, functionOnClick }: TableProps) {
+export function Tables({ tableNumber, numberOfMergedTables, top, left, rotate, isCanBeRotated, isResetTableRotation, functionOnDrag, functionOnDragEnd, functionOnDrop, functionOnClick, functionOnSaveRotation }: TableProps) {
 
-    function getCurrentTable(event: DragEvent<HTMLDivElement> | MouseEvent<HTMLDivElement>) {
-        return {
+    function getCurrentTable(event: DragEvent<HTMLDivElement> | MouseEvent<HTMLDivElement> | MouseEvent<HTMLDivElement, globalThis.MouseEvent>) {
+
+        var currentTable: Table = {
             tableNumber: tableNumber,
             numberOfMergedTables: numberOfMergedTables,
             top: event.clientY - (event.currentTarget.clientHeight / 2),
-            left: event.clientX - (event.currentTarget.clientWidth / 2)
-        } as Table;
+            left: event.clientX - (event.currentTarget.clientWidth / 2),
+            rotate: Number(event.currentTarget.style.rotate.replace("deg", ""))
+        }
+
+        return currentTable;
     }
 
     function handleOnDrag(onDragEvent: DragEvent<HTMLDivElement>) {
@@ -37,9 +44,6 @@ export function Tables({ tableNumber, numberOfMergedTables, top, left, isCanBeRo
 
         onDragEvent.currentTarget.style.top = currentTable.top + "px";
         onDragEvent.currentTarget.style.left = currentTable.left + "px";
-
-        var target = onDragEvent.target as EventTarget & HTMLDivElement
-        console.log(tableNumber, "phase", target.textContent == onDragEvent.currentTarget.textContent)
 
         functionOnDragEnd(currentTable);
     }
@@ -116,7 +120,7 @@ export function Tables({ tableNumber, numberOfMergedTables, top, left, isCanBeRo
 
             rotateInfo.rotation = d - rotateInfo.startAngle;
 
-            onMouseMoveEvent.currentTarget.style.transform = "rotate(" + (rotateInfo.angle + rotateInfo.rotation) + "deg)";
+            onMouseMoveEvent.currentTarget.style.rotate = (rotateInfo.angle + rotateInfo.rotation) + "deg";
 
         }
     }
@@ -130,17 +134,20 @@ export function Tables({ tableNumber, numberOfMergedTables, top, left, isCanBeRo
         var rotateInfoCopy = getRotateInfoCopy();
         rotateInfoCopy.angle += rotateInfoCopy.rotation;
         rotateInfoCopy.active = false;
-        setRotateInfo(rotateInfoCopy)
+        setRotateInfo(rotateInfoCopy);
+
+        functionOnSaveRotation(getCurrentTable(onMouseUpEvent))
     }
 
     return (
         <div
-            className={isCanBeRotated ? styles.rotate : (numberOfMergedTables == 1 ? styles.singleTable : styles.mergedTable)}
+            className={isResetTableRotation ? styles.resetRotate : (isCanBeRotated ? styles.rotate : (numberOfMergedTables == 1 ? styles.singleTable : styles.mergedTable))}
             style={
                 {
                     width: SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS * numberOfMergedTables + 'px',
                     top: top + "px",
-                    left: left + "px"
+                    left: left + "px",
+                    rotate: rotate + "deg"
                 }
             }
             draggable="true"

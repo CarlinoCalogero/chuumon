@@ -25,6 +25,7 @@ export default function Home() {
 
   const [isDeleteTableModeOn, setIsDeleteTableModeOn] = useState(false);
   const [isRotateTableModeOn, setIsRotateTableModeOn] = useState(false);
+  const [isResetTableRotationModeOn, setIsResetTableRotationModeOn] = useState(false);
 
   const [salaAfterTableDrop, setSalaAfterTableDrop] = useState<Sala | null>(null)
 
@@ -70,7 +71,8 @@ export default function Home() {
       tableNumber: -1,
       numberOfMergedTables: 1,
       top: table.top,
-      left: table.left + ((table.numberOfMergedTables - 1) * SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS) + 50
+      left: table.left + ((table.numberOfMergedTables - 1) * SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS) + 50,
+      rotate: 0
     }
 
     // add table
@@ -285,11 +287,30 @@ export default function Home() {
       tableNumber: -1,
       numberOfMergedTables: 1,
       top: onClickEvent.clientY - (SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS / 2),
-      left: onClickEvent.clientX - (SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS / 2)
-
+      left: onClickEvent.clientX - (SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS / 2),
+      rotate: 0
     }
 
     setSala(addTables([newTable]));
+  }
+
+  function onSaveRotation(table: Table) {
+    var tableIndex = getTableIndex(table);
+
+    var dummySala = getSalaObjectCopy();
+
+    dummySala.tables[tableIndex].rotate = table.rotate;
+
+    if (!salaConformityCheck(dummySala)) {
+      return;
+    }
+
+    setSala(dummySala);
+  }
+
+  function resetTableRotation(table: Table) {
+    table.rotate = 0;
+    onSaveRotation(table);
   }
 
   useEffect(() => {
@@ -316,11 +337,14 @@ export default function Home() {
           numberOfMergedTables={table.numberOfMergedTables}
           top={table.top}
           left={table.left}
+          rotate={table.rotate}
           isCanBeRotated={isRotateTableModeOn}
+          isResetTableRotation={isResetTableRotationModeOn}
           functionOnDrag={onDrag}
           functionOnDragEnd={onDragEnd}
           functionOnDrop={onDrop}
-          functionOnClick={isDeleteTableModeOn ? onClickWhileInDeleteTableMode : onClick}
+          functionOnClick={isResetTableRotationModeOn ? resetTableRotation : (isDeleteTableModeOn ? onClickWhileInDeleteTableMode : onClick)}
+          functionOnSaveRotation={onSaveRotation}
         />)
       }
 
@@ -333,6 +357,12 @@ export default function Home() {
         className={isRotateTableModeOn ? styles.deleteTableModeOn : styles.deleteTableModeOff}
         onClick={() => setIsRotateTableModeOn(!isRotateTableModeOn)}
       >Rotate table {isRotateTableModeOn ? "on" : "off"}</button>
+
+      <button
+        className={isResetTableRotationModeOn ? styles.deleteTableModeOn : styles.deleteTableModeOff}
+        onClick={() => setIsResetTableRotationModeOn(!isResetTableRotationModeOn)}
+      >Reset table rotation {isResetTableRotationModeOn ? "on" : "off"}</button>
+
       <button onClick={() => router.push("/")}>Back</button>
 
     </AppearingButton>
