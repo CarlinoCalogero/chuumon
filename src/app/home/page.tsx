@@ -13,16 +13,27 @@ export default function Home() {
 
   const router = useRouter();
 
-  const [tablesArray, setTablesArray] = useState<Table[]>([]);
-  const [currentMaxTableNumber, setCurrentMaxTableNumber] = useState<number>(0);
-  const [tableNumbersArray, setTableNumbersArray] = useState<number[]>([]);
+  const [sala, setSala] = useState<Sala>(
+    {
+      currentMaxTableNumber: 0,
+      tableNumbersArray: [],
+      tables: []
+    });
 
   var draggedTable: Table | null = null;
 
+  function getSalaObjectCopy(salaObject: Sala = sala) {
+    return JSON.parse(JSON.stringify(salaObject)) as Sala;
+  }
+
+  function getTableObjectCopy(tableObject: Table) {
+    return JSON.parse(JSON.stringify(tableObject)) as Table;
+  }
+
   function getTableIndex(table: Table) {
 
-    for (var count = 0; count < tablesArray.length; count++) {
-      if (table.tableNumber == tablesArray[count].tableNumber)
+    for (var count = 0; count < sala.tables.length; count++) {
+      if (table.tableNumber == sala.tables[count].tableNumber)
         return count;
     }
 
@@ -42,15 +53,11 @@ export default function Home() {
       return; //error, table not found
     }
 
-    // get tableArray copy
-    var dummyTablesArray = getTablesArrayObjectCopy();
+    // get sala object copy
+    var dummySala = getSalaObjectCopy();
 
-    // get table copy
-    var dummyTable = getTableObjectCopy(dummyTablesArray[tableIndex]);
     // split one table from the clicked table
-    dummyTable.numberOfMergedTables = table.numberOfMergedTables - 1;
-    // update object
-    dummyTablesArray[tableIndex] = dummyTable;
+    dummySala.tables[tableIndex].numberOfMergedTables = table.numberOfMergedTables - 1;
 
     // create a to-be-added table
     var newTable: Table = {
@@ -61,7 +68,13 @@ export default function Home() {
     }
 
     // add table
-    addTable(newTable, dummyTablesArray);
+    addTables([newTable], dummySala);
+
+    if (!salaConformityCheck(dummySala)) {
+      return;
+    }
+
+    setSala(dummySala);
 
   }
 
@@ -80,21 +93,19 @@ export default function Home() {
       return; //error, table not found
     }
 
-    // get tablesArray copy
-    var dummyTablesArray = getTablesArrayObjectCopy();
+    // get salta object copy
+    var dummySala = getSalaObjectCopy();
 
-    // get table copy
-    var dummyTable = getTableObjectCopy(dummyTablesArray[tableIndex]);
     // update table top and left values
-    dummyTable.top = table.top;
-    dummyTable.left = table.left;
-    // update object
-    dummyTablesArray[tableIndex] = dummyTable;
+    dummySala.tables[tableIndex].top = table.top;
+    dummySala.tables[tableIndex].left = table.left;
 
-    console.log("table", dummyTable)
+    if (!salaConformityCheck(dummySala)) {
+      return;
+    }
 
-    // update tablesArray
-    setTablesArray(dummyTablesArray);
+    // update sala
+    setSala(dummySala)
 
     //reset dragged table
     draggedTable = null;
@@ -112,179 +123,125 @@ export default function Home() {
       return; //error, table not found
     }
 
-    var dummyTablesArray = getTablesArrayObjectCopy();
+    var dummySala = getSalaObjectCopy();
 
-    // get table copy
-    var dummyTable = getTableObjectCopy(dummyTablesArray[tableIndex]);
     // merge tables
-    dummyTable.numberOfMergedTables = table.numberOfMergedTables + draggedTable.numberOfMergedTables;
-    // update object
-    dummyTablesArray[tableIndex] = dummyTable;
+    var newMergedTable = getTableObjectCopy(dummySala.tables[tableIndex]);
+    newMergedTable.numberOfMergedTables = table.numberOfMergedTables + draggedTable.numberOfMergedTables;
 
-    removeTablesAndAdd([draggedTable.tableNumber, table.tableNumber], dummyTable, dummyTablesArray);
+    removeTables([draggedTable.tableNumber, table.tableNumber], dummySala);
+
+    addTables([newMergedTable], dummySala)
+
+    if (!salaConformityCheck(dummySala)) {
+      return;
+    }
+
+    setSala(dummySala);
 
     //reset dragged table
     draggedTable = null;
   }
 
-  function getTablesArrayObjectCopy() {
-    return JSON.parse(JSON.stringify(tablesArray)) as Table[];
-  }
-
-  function getTableObjectCopy(table: Table) {
-    return JSON.parse(JSON.stringify(table)) as Table;
-  }
-
-  function addTable(table: Table, dummyTablesArray: Table[] = getTablesArrayObjectCopy()) {
+  function salaConformityCheck(salaObject: Sala) {
 
     // if lengths don't match there was an error
-    if (tableNumbersArray.length != tablesArray.length) {
-      console.log("Errore")
-      return
+    if (salaObject.tableNumbersArray.length != salaObject.tables.length) {
+      console.log("Errore! Nonconforming sala object")
+      return false;
     }
 
-    // table numeration starts at 1
-    var newTableNumber = 1;
-    // check if there are already tables
-    if (dummyTablesArray.length != 0) {
-      // there is at least one table
-      var tableAdded = false;
-      // check which table number is missing
-      while (!tableAdded && newTableNumber <= tableNumbersArray.length + 1) {
-        if (tableNumbersArray.indexOf(newTableNumber) == -1) {
-          // a table with this number does not exist
-          tableAdded = true;
-        } else {
-          // a table with this number already exists
-          newTableNumber++;
+    return true;
+
+  }
+
+  function addTables(tables: Table[], dummySala: Sala | null = null) {
+
+    // make a copy of the sala object if needed
+    if (dummySala != null && !salaConformityCheck(dummySala)) {
+      return dummySala;
+    } else if (dummySala == null) {
+      dummySala = getSalaObjectCopy();
+    }
+
+    tables.forEach(table => {
+
+      // table numeration starts at 1
+      var newTableNumber = 1;
+      // check if there are already tables
+      if (dummySala!.tableNumbersArray.length != 0) {
+        // there is at least one table
+        var tableAdded = false;
+        // check which table number is missing
+        while (!tableAdded && newTableNumber <= dummySala!.tableNumbersArray.length + 1) {
+          if (dummySala!.tableNumbersArray.indexOf(newTableNumber) == -1) {
+            // a table with this number does not exist
+            tableAdded = true;
+          } else {
+            // a table with this number already exists
+            newTableNumber++;
+          }
+        }
+        // if there were all the numbers there is an error
+        if (!tableAdded) {
+          console.log("Errore");
+          return dummySala;
         }
       }
-      // if there were all the numbers there is an error
-      if (!tableAdded) {
-        console.log("Errore");
-        return;
-      }
-    }
 
-    // set the new table number
-    table.tableNumber = newTableNumber;
+      // set the new table number
+      table.tableNumber = newTableNumber;
 
-    // add the new table to the array
-    dummyTablesArray.push(table);
+      // add the new tableNumber to the arrayTableNumbers
+      dummySala!.tableNumbersArray.push(newTableNumber);
 
-    // update the current max table number
-    if (currentMaxTableNumber < newTableNumber)
-      setCurrentMaxTableNumber(newTableNumber)
+      // add the new table to the array
+      dummySala!.tables.push(table);
 
-    // update the tableNumber array
-    setTableNumbersArray([...tableNumbersArray, newTableNumber])
+      // update the current max table number
+      if (dummySala!.currentMaxTableNumber < newTableNumber)
+        dummySala!.currentMaxTableNumber = newTableNumber;
 
-    // update the table array
-    setTablesArray(dummyTablesArray);
+    });
+
+    return dummySala;
 
   }
 
-  function removeTables(tableNumbers: number[], dummyTablesArray: Table[] = getTablesArrayObjectCopy()) {
+  function removeTables(tableNumbers: number[], dummySala: Sala | null = null) {
 
-    // if lengths don't match there was an error
-    if (tableNumbersArray.length != tablesArray.length) {
-      console.log("Errore")
-      return
+    // make a copy of the sala object if needed
+    if (dummySala != null && !salaConformityCheck(dummySala)) {
+      return dummySala;
+    } else if (dummySala == null) {
+      dummySala = getSalaObjectCopy();
     }
 
     // remove table number
-    var newTableNumbersArray = removeNumbersFromArray(tableNumbersArray, tableNumbers);
+    dummySala.tableNumbersArray = removeNumbersFromArray(dummySala.tableNumbersArray, tableNumbers);
 
     // create a new tableArray
     var newTableArray: Table[] = [];
 
     // insert in the new tableArray only the tables with a different table number than the one that will be removed
-    for (var count = 0; count < dummyTablesArray.length; count++) {
-      var currentTable = dummyTablesArray[count];
+    for (var count = 0; count < dummySala.tables.length; count++) {
+      var currentTable = dummySala.tables[count];
       if (tableNumbers.indexOf(currentTable.tableNumber) == -1)
         newTableArray.push(currentTable);
 
     }
 
     //find new max
-    if (newTableNumbersArray.length == 0) {
-      setCurrentMaxTableNumber(0);
+    if (dummySala.tableNumbersArray.length == 0) {
+      dummySala.currentMaxTableNumber = 0;
     } else {
-      setCurrentMaxTableNumber(Math.max(...newTableNumbersArray))
+      dummySala.currentMaxTableNumber = Math.max(...dummySala.tableNumbersArray)
     }
-
-    // update the new tableNumbersArray
-    setTableNumbersArray(newTableNumbersArray)
 
     // update the new tableArray
-    setTablesArray(newTableArray);
+    dummySala.tables = newTableArray;
 
-  }
-
-  function removeTablesAndAdd(tableNumbers: number[], table: Table, dummyTablesArray: Table[] = getTablesArrayObjectCopy()) {
-
-    // if lengths don't match there was an error
-    if (tableNumbersArray.length != tablesArray.length) {
-      console.log("Errore")
-      return
-    }
-
-    // remove table number
-    var newTableNumbersArray = removeNumbersFromArray(tableNumbersArray, tableNumbers);
-
-    // create a new tableArray
-    var newTableArray: Table[] = [];
-
-    // insert in the new tableArray only the tables with a different table number than the one that will be removed
-    for (var count = 0; count < dummyTablesArray.length; count++) {
-      var currentTable = dummyTablesArray[count];
-      if (tableNumbers.indexOf(currentTable.tableNumber) == -1)
-        newTableArray.push(currentTable);
-
-    }
-
-    // table numeration starts at 1
-    var newTableNumber = 1;
-    // check if there are already tables
-    if (newTableArray.length != 0) {
-      // there is at least one table
-      var tableAdded = false;
-      // check which table number is missing
-      while (!tableAdded && newTableNumber <= newTableNumbersArray.length + 1) {
-        if (newTableNumbersArray.indexOf(newTableNumber) == -1) {
-          // a table with this number does not exist
-          tableAdded = true;
-        } else {
-          // a table with this number already exists
-          newTableNumber++;
-        }
-      }
-      // if there were all the numbers there is an error
-      if (!tableAdded) {
-        console.log("Errore");
-        return;
-      }
-    }
-
-    // set the new table number
-    table.tableNumber = newTableNumber;
-
-    // add the new table to the array
-    newTableArray.push(table);
-
-    // update the current max table number
-    //find new max
-    if (newTableNumbersArray.length == 0) {
-      setCurrentMaxTableNumber(0);
-    } else {
-      setCurrentMaxTableNumber(Math.max(...newTableNumbersArray, newTableNumber))
-    }
-
-    // update the tableNumber array
-    setTableNumbersArray([...newTableNumbersArray, newTableNumber])
-
-    // update the table array
-    setTablesArray(newTableArray);
+    return dummySala;
 
   }
 
@@ -299,12 +256,12 @@ export default function Home() {
       left: 0
     }
 
-    addTable(newTable);
+    setSala(addTables([newTable]));
   }
 
   useEffect(() => {
-    console.log(currentMaxTableNumber, tableNumbersArray, tablesArray)
-  }, [currentMaxTableNumber, tableNumbersArray, tablesArray])
+    console.log(sala)
+  }, [sala])
 
   return (
 
@@ -316,7 +273,7 @@ export default function Home() {
     >
 
       {
-        tablesArray.map((table, i) => <Tables
+        sala.tables.map((table, i) => <Tables
           key={"table" + i}
           tableNumber={table.tableNumber}
           numberOfMergedTables={table.numberOfMergedTables}
