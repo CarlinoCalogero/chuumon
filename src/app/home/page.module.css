@@ -5,3 +5,23 @@
 .deleteTableModeOff {
     background-color: green;
 }
+
+.rotate {
+    left: 50px;
+    top: 50px;
+    width: 200px;
+    height: 200px;
+    position: relative;
+    border: 1px solid #000;
+    background-color: red;
+}
+
+.rotate:before {
+    content: "";
+    position: absolute;
+    bottom: -5px;
+    right: -5px;
+    width: 10px;
+    height: 10px;
+    background: #f00;
+}
