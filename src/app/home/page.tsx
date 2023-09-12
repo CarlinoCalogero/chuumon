@@ -22,6 +22,8 @@ export default function Home() {
 
   var draggedTable: Table | null = null;
 
+  const [isDeleteTableModeOn, setIsDeleteTableModeOn] = useState(false);
+
   function getSalaObjectCopy(salaObject: Sala = sala) {
     return JSON.parse(JSON.stringify(salaObject)) as Sala;
   }
@@ -76,6 +78,17 @@ export default function Home() {
 
     setSala(dummySala);
 
+  }
+
+  function onClickWhileInDeleteTableMode(table: Table) {
+
+    var dummySala = removeTables([table.tableNumber]);
+
+    if (!salaConformityCheck(dummySala)) {
+      return;
+    }
+
+    setSala(dummySala)
   }
 
   function onDrag(table: Table) {
@@ -282,10 +295,14 @@ export default function Home() {
           functionOnDrag={onDrag}
           functionOnDragEnd={onDragEnd}
           functionOnDrop={onDrop}
-          functionOnClick={onClick}
+          functionOnClick={isDeleteTableModeOn ? onClickWhileInDeleteTableMode : onClick}
         />)
       }
 
+      <button
+        className={isDeleteTableModeOn ? styles.deleteTableModeOn : styles.deleteTableModeOff}
+        onClick={() => setIsDeleteTableModeOn(!isDeleteTableModeOn)}
+      >Delete table {isDeleteTableModeOn ? "on" : "off"}</button>
       <button onClick={() => router.push("/")}>Back</button>
 
     </AppearingButton>
