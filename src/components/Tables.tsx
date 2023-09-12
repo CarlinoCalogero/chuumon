@@ -1,6 +1,7 @@
 import { SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS } from '@/lib/utils';
 import styles from './Tables.module.css'
-import { DragEvent, MouseEvent } from 'react'
+import { DragEvent, MouseEvent, useEffect, useState } from 'react'
+import { Table } from '@/types/Table';
 
 interface TableProps {
     tableNumber: number,
@@ -15,58 +16,46 @@ interface TableProps {
 
 export function Tables({ tableNumber, numberOfMergedTables, top, left, functionOnDrag, functionOnDragEnd, functionOnDrop, functionOnClick }: TableProps) {
 
-    function computeNewTopAndLeft(event: DragEvent<HTMLDivElement> | MouseEvent<HTMLDivElement>) {
-        top = (event.clientY - (event.currentTarget.clientHeight / 2));
-        left = (event.clientX - (event.currentTarget.clientWidth / 2));
+    function getCurrentTable(event: DragEvent<HTMLDivElement> | MouseEvent<HTMLDivElement>) {
+        return {
+            tableNumber: tableNumber,
+            numberOfMergedTables: numberOfMergedTables,
+            top: event.clientY - (event.currentTarget.clientHeight / 2),
+            left: event.clientX - (event.currentTarget.clientWidth / 2)
+        } as Table;
     }
 
     function handleOnDrag(onDragEvent: DragEvent<HTMLDivElement>) {
-        computeNewTopAndLeft(onDragEvent);
-        functionOnDrag({
-            tableNumber: tableNumber,
-            numberOfMergedTables: numberOfMergedTables,
-            top: top,
-            left: left
-        });
+        functionOnDrag(getCurrentTable(onDragEvent));
     }
 
     function handleOnDragEnd(onDragEvent: DragEvent<HTMLDivElement>) {
-        computeNewTopAndLeft(onDragEvent);
-        onDragEvent.currentTarget.style.top = top + "px";
-        onDragEvent.currentTarget.style.left = left + "px";
-        functionOnDragEnd({
-            tableNumber: tableNumber,
-            numberOfMergedTables: numberOfMergedTables,
-            top: top,
-            left: left
-        });
+
+        var currentTable = getCurrentTable(onDragEvent);
+
+        onDragEvent.currentTarget.style.top = currentTable.top + "px";
+        onDragEvent.currentTarget.style.left = currentTable.left + "px";
+
+        console.log("dragEnd", currentTable.tableNumber, currentTable.top, currentTable.left, onDragEvent.dataTransfer)
+
+        functionOnDragEnd(currentTable);
     }
 
     function handleOnDragOver(onDragEvent: DragEvent<HTMLDivElement>) {
         // prevent default to allow drop
         onDragEvent.preventDefault();
+        console.log(tableNumber)
     }
 
     function handleOnDrop(onDragEvent: DragEvent<HTMLDivElement>) {
         // prevent default action (open as link for some elements)
         onDragEvent.preventDefault();
-        computeNewTopAndLeft(onDragEvent);
-        functionOnDrop({
-            tableNumber: tableNumber,
-            numberOfMergedTables: numberOfMergedTables,
-            top: top,
-            left: left
-        });
+        console.log("drop", tableNumber, onDragEvent.dataTransfer)
+        functionOnDrop(getCurrentTable(onDragEvent));
     }
 
     function handleOnClick(onClickEvent: MouseEvent<HTMLDivElement>) {
-        computeNewTopAndLeft(onClickEvent);
-        functionOnClick({
-            tableNumber: tableNumber,
-            numberOfMergedTables: numberOfMergedTables,
-            top: top,
-            left: left
-        });
+        functionOnClick(getCurrentTable(onClickEvent));
     }
 
     return (
