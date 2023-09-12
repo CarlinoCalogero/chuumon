@@ -60,7 +60,7 @@ export function Tables({ tableNumber, numberOfMergedTables, top, left, functionO
 
     return (
         <div
-            className={styles.outerDiv}
+            className={numberOfMergedTables == 1 ? styles.singleTable : styles.mergedTable}
             style={
                 {
                     width: SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS * numberOfMergedTables + 'px',

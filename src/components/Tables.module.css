@@ -1,4 +1,5 @@
-.outerDiv {
+.singleTable,
+.mergedTable {
     width: 200px;
     height: 200px;
     background-color: lightgray;
@@ -11,6 +12,10 @@
     z-index: 9;
 }
 
-.toBeDeletedDiv {
-    background-color: red;
+.singleTable:hover {
+    border: 0.3rem solid #8f8f8fb5;
+}
+
+.mergedTable:hover {
+    border: 0.3rem solid #e35042b5;
 }

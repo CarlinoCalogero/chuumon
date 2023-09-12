@@ -1,7 +1,6 @@
 .outerDiv {
     width: 100vw;
     height: 100vh;
-    background: red;
 }
 
 .appearingButton {
@@ -9,5 +8,5 @@
     justify-content: center;
     align-items: center;
     border-radius: 50%;
-    border: 1px solid red;
+    border: 1px solid #a7a7a762;
 }
