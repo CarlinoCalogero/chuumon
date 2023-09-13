@@ -102,8 +102,6 @@ export default function EditTables() {
 
   function onDragEnd(table: Table) {
 
-    console.log("drag", table.tableNumber)
-
     // when a table is dropped onto another, the dropped table fires the onDragEnd event.
     // Because we have previously stored the updated sala object thanks to the
     // onDrop function (Check the setSalaAfterTableDrop inside the onDrop function),
@@ -145,8 +143,6 @@ export default function EditTables() {
   }
 
   function onDrop(table: Table) {
-
-    console.log("drop", table.tableNumber)
 
     if (draggedTable == null || table.tableNumber == draggedTable.tableNumber) {
       draggedTable = null;
@@ -294,7 +290,7 @@ export default function EditTables() {
   }
 
   function onSaveRotation(table: Table) {
-    console.log("tableNumber", table.tableNumber)
+
     var tableIndex = getTableIndex(table);
 
     var dummySala = getSalaObjectCopy();
@@ -354,12 +350,14 @@ export default function EditTables() {
           top={table.top}
           left={table.left}
           rotate={table.rotate}
+          isCanBeClicked={true}
+          isCanBeDragged={true}
           isCanBeRotated={isRotateTableModeOn}
           isResetTableRotation={isResetTableRotationModeOn}
           functionOnDrag={onDrag}
           functionOnDragEnd={onDragEnd}
           functionOnDrop={onDrop}
-          functionOnClick={isResetTableRotationModeOn ? resetTableRotation : (isDeleteTableModeOn ? onClickWhileInDeleteTableMode : isRotateTableModeOn ? () => console.log("rotating table") : onClick)}
+          functionOnClick={isResetTableRotationModeOn ? resetTableRotation : (isDeleteTableModeOn ? onClickWhileInDeleteTableMode : isRotateTableModeOn ? null : onClick)}
           functionOnSaveRotation={onSaveRotation}
         />)
       }

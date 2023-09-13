@@ -35,6 +35,10 @@ export default function Home() {
 
   }, [])
 
+  function placeAnOrder(table: Table) {
+    console.log("place an order")
+  }
+
   return (
 
     <div>
@@ -47,12 +51,14 @@ export default function Home() {
           top={table.top}
           left={table.left}
           rotate={table.rotate}
+          isCanBeClicked={true}
+          isCanBeDragged={false}
           isCanBeRotated={false}
           isResetTableRotation={false}
           functionOnDrag={null}
           functionOnDragEnd={null}
           functionOnDrop={null}
-          functionOnClick={null}
+          functionOnClick={placeAnOrder}
           functionOnSaveRotation={null}
         />)
       }

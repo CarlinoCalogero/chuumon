@@ -10,16 +10,18 @@ interface TableProps {
     top: number,
     left: number,
     rotate: number,
+    isCanBeClicked: boolean,
+    isCanBeDragged: boolean,
     isCanBeRotated: boolean,
     isResetTableRotation: boolean,
-    functionOnDrag: any,
-    functionOnDragEnd: any,
-    functionOnDrop: any,
-    functionOnClick: any,
-    functionOnSaveRotation: any
+    functionOnDrag: null | any,
+    functionOnDragEnd: null | any,
+    functionOnDrop: null | any,
+    functionOnClick: null | any,
+    functionOnSaveRotation: null | any
 }
 
-export function Tables({ tableNumber, numberOfMergedTables, top, left, rotate, isCanBeRotated, isResetTableRotation, functionOnDrag, functionOnDragEnd, functionOnDrop, functionOnClick, functionOnSaveRotation }: TableProps) {
+export function Tables({ tableNumber, numberOfMergedTables, top, left, rotate, isCanBeClicked, isCanBeDragged, isCanBeRotated, isResetTableRotation, functionOnDrag, functionOnDragEnd, functionOnDrop, functionOnClick, functionOnSaveRotation }: TableProps) {
 
     function getCurrentTable(event: DragEvent<HTMLDivElement> | MouseEvent<HTMLDivElement> | MouseEvent<HTMLDivElement, globalThis.MouseEvent>) {
 
@@ -35,10 +37,17 @@ export function Tables({ tableNumber, numberOfMergedTables, top, left, rotate, i
     }
 
     function handleOnDrag(onDragEvent: DragEvent<HTMLDivElement>) {
+
+        if (functionOnDrag == null)
+            return;
+
         functionOnDrag(getCurrentTable(onDragEvent));
     }
 
     function handleOnDragEnd(onDragEvent: DragEvent<HTMLDivElement>) {
+
+        if (functionOnDragEnd == null)
+            return;
 
         var currentTable = getCurrentTable(onDragEvent);
 
@@ -49,17 +58,29 @@ export function Tables({ tableNumber, numberOfMergedTables, top, left, rotate, i
     }
 
     function handleOnDragOver(onDragEvent: DragEvent<HTMLDivElement>) {
+
+        if (!isCanBeDragged)
+            return;
+
         // prevent default to allow drop
         onDragEvent.preventDefault();
     }
 
     function handleOnDrop(onDragEvent: DragEvent<HTMLDivElement>) {
+
+        if (functionOnDrop == null)
+            return;
+
         // prevent default action (open as link for some elements)
         onDragEvent.preventDefault();
         functionOnDrop(getCurrentTable(onDragEvent));
     }
 
     function handleOnClick(onClickEvent: MouseEvent<HTMLDivElement>) {
+
+        if (functionOnClick == null)
+            return;
+
         functionOnClick(getCurrentTable(onClickEvent));
     }
 
@@ -83,7 +104,7 @@ export function Tables({ tableNumber, numberOfMergedTables, top, left, rotate, i
     }
 
     function handleOnMouseDown(onMouseDownEvent: MouseEvent<HTMLDivElement, globalThis.MouseEvent>) {
-        console.log("mouseDown")
+
         onMouseDownEvent.preventDefault();
         var bb = onMouseDownEvent.currentTarget.getBoundingClientRect(),
             t = bb.top,
@@ -108,7 +129,7 @@ export function Tables({ tableNumber, numberOfMergedTables, top, left, rotate, i
     }
 
     function handleOnMouseMove(onMouseMoveEvent: MouseEvent<HTMLDivElement, globalThis.MouseEvent>) {
-        console.log("mouseMove")
+
         if (rotateInfo.active == true) {
             onMouseMoveEvent.preventDefault();
 
@@ -126,7 +147,6 @@ export function Tables({ tableNumber, numberOfMergedTables, top, left, rotate, i
     }
 
     function handleOnMouseUp(onMouseUpEvent: MouseEvent<HTMLDivElement, globalThis.MouseEvent>) {
-        console.log("mouseUp")
 
         onMouseUpEvent.preventDefault();
 
@@ -150,17 +170,17 @@ export function Tables({ tableNumber, numberOfMergedTables, top, left, rotate, i
                     rotate: rotate + "deg"
                 }
             }
-            draggable="true"
-            onDrag={e => handleOnDrag(e)}
-            onDragEnd={e => handleOnDragEnd(e)}
-            onDragOver={(e) => handleOnDragOver(e)}
-            onDrop={(e) => handleOnDrop(e)}
-            onClick={(e) => handleOnClick(e)}
+            draggable={isCanBeDragged ? "true" : "false"}
+            onDrag={e => isCanBeDragged && handleOnDrag(e)}
+            onDragEnd={e => isCanBeDragged && handleOnDragEnd(e)}
+            onDragOver={e => isCanBeDragged && handleOnDragOver(e)}
+            onDrop={e => isCanBeDragged && handleOnDrop(e)}
+            onClick={e => isCanBeClicked && handleOnClick(e)}
 
             //needed for rotation
-            onMouseDown={e => isCanBeRotated ? handleOnMouseDown(e) : console.log("no rotation 1")}
-            onMouseMove={e => isCanBeRotated ? handleOnMouseMove(e) : console.log("no rotation 2")}
-            onMouseUp={e => isCanBeRotated ? handleOnMouseUp(e) : console.log("no rotation 3")}
+            onMouseDown={e => isCanBeRotated && handleOnMouseDown(e)}
+            onMouseMove={e => isCanBeRotated && handleOnMouseMove(e)}
+            onMouseUp={e => isCanBeRotated && handleOnMouseUp(e)}
         >
             <span>Tavolo {tableNumber}</span>
         </div>
