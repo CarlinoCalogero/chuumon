@@ -314,21 +314,36 @@
             },
             {
                 "name": "Crocchette di Patate",
-                "description": "6 pezzi",
-                "subEntries": null,
-                "price": "€3.00"
+                "description": null,
+                "subEntries": [
+                    {
+                        "name": "6 pezzi",
+                        "price": "€3.00"
+                    }
+                ],
+                "price": null
             },
             {
                 "name": "Mozzarelline",
-                "description": "6 pezzi",
-                "subEntries": null,
-                "price": "€3.00"
+                "description": null,
+                "subEntries": [
+                    {
+                        "name": "6 pezzi",
+                        "price": "€3.00"
+                    }
+                ],
+                "price": null
             },
             {
                 "name": "Olive Ascolane",
-                "description": "6 pezzi",
-                "subEntries": null,
-                "price": "€3.00"
+                "description": null,
+                "subEntries": [
+                    {
+                        "name": "6 pezzi",
+                        "price": "€3.00"
+                    }
+                ],
+                "price": null
             }
         ]
     },
@@ -337,9 +352,18 @@
         "entries": [
             {
                 "name": "Gelato Tartufo",
-                "description": "Bianco o Nero",
-                "subEntries": null,
-                "price": "€3.50"
+                "description": null,
+                "subEntries": [
+                    {
+                        "name": "Bianco",
+                        "price": "€3.50"
+                    },
+                    {
+                        "name": "Nero",
+                        "price": "€3.50"
+                    }
+                ],
+                "price": null
             }
         ]
     },
@@ -347,58 +371,118 @@
         "categoryName": "Bevande",
         "entries": [
             {
-                "name": "Acqua - 1 litro",
-                "description": "Naturale / Frizzante",
-                "subEntries": null,
-                "price": "€2.00"
-            },
-            {
-                "name": "Acqua - 0.5 litro",
-                "description": "Naturale / Frizzante",
-                "subEntries": null,
-                "price": "€1.00"
+                "name": "Acqua",
+                "description": null,
+                "subEntries": [
+                    {
+                        "name": "0.5 litri Naturale",
+                        "price": "€1.00"
+                    },
+                    {
+                        "name": "0.5 litri Frizzante",
+                        "price": "€1.00"
+                    },
+                    {
+                        "name": "1 litro Naturale",
+                        "price": "€2.00"
+                    },
+                    {
+                        "name": "1 litro Frizzante",
+                        "price": "€2.00"
+                    }
+                ],
+                "price": null
             },
             {
                 "name": "Lattina",
-                "description": "Coca Cola / Thé limone / Thé pesca / Fanta / Lemonsoda / Sprite",
-                "subEntries": null,
-                "price": "€2.00"
+                "description": null,
+                "subEntries": [
+                    {
+                        "name": "Coca Cola 33cl",
+                        "price": "€2.50"
+                    },
+                    {
+                        "name": "Coca Cola Zero 33cl",
+                        "price": "€2.50"
+                    },
+                    {
+                        "name": "Thé limone 33cl",
+                        "price": "€2.50"
+                    },
+                    {
+                        "name": "Thé pesca 33cl",
+                        "price": "€2.50"
+                    },
+                    {
+                        "name": "Fanta",
+                        "price": "€2.50"
+                    },
+                    {
+                        "name": "Lemonsoda",
+                        "price": "€2.50"
+                    },
+                    {
+                        "name": "Sprite",
+                        "price": "€2.50"
+                    }
+                ],
+                "price": null
             },
             {
-                "name": "DAB - 0.5 litri",
-                "description": "Birra Bionda Non Filtrata Artigianale",
-                "subEntries": null,
-                "price": "€4.00"
+                "name": "Birra Bionda Non Filtrata Artigianale",
+                "description": null,
+                "subEntries": [
+                    {
+                        "name": "DAB 0.5 litri",
+                        "price": "€3.50"
+                    }
+                ],
+                "price": null
             },
             {
-                "name": "Menabrea - 33cl",
-                "description": "Birra Rossa",
-                "subEntries": null,
-                "price": "€3.50"
+                "name": "Birra Bianca",
+                "description": null,
+                "subEntries": [
+                    {
+                        "name": "Hoegaarden 33cl",
+                        "price": "€3.00"
+                    }
+                ],
+                "price": null
             },
             {
-                "name": "Menabrea - 66cl",
-                "description": "Birra Bionda",
-                "subEntries": null,
-                "price": "€4.50"
+                "name": "Birra Rossa",
+                "description": null,
+                "subEntries": [
+                    {
+                        "name": "Menabrea 33cl",
+                        "price": "€3.00"
+                    }
+                ],
+                "price": null
             },
             {
-                "name": "DAB - 33cl",
-                "description": "Birra Bionda",
-                "subEntries": null,
-                "price": "€3.50"
-            },
-            {
-                "name": "Hoegaarden - 33cl",
-                "description": "Birra Bianca",
-                "subEntries": null,
-                "price": "€3.50"
-            },
-            {
-                "name": "Birra Bionda - 66cl",
-                "description": "Stella Artois / Poretti 4 Luppoli",
-                "subEntries": null,
-                "price": "€3.50"
+                "name": "Birra Bionda",
+                "description": null,
+                "subEntries": [
+                    {
+                        "name": "Menabrea 66cl",
+                        "price": "€4.00"
+                    },
+                    {
+                        "name": "DAB 33cl",
+                        "price": "€3.50"
+                    },
+                    {
+                        "name": "Stella Artois 66cl",
+                        "price": "€3.50"
+                    },
+                    {
+                        "name": "Poretti 4 Luppoli 66cl",
+                        "price": "€3.50"
+                    }
+                ],
+                "price": null
             }
         ]
     }

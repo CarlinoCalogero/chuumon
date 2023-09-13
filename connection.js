@@ -180,12 +180,9 @@ var semaphore = 0;
                         `CREATE TABLE compone (
                             id_ingrediente INTEGER UNSIGNED NOT NULL,
                             id_menu_item INTEGER UNSIGNED NOT NULL,
-                            quantita INTEGER,
-                            nome_unita_di_misura VARCHAR(50),
                             CONSTRAINT primary_key_compone PRIMARY KEY (id_ingrediente, id_menu_item),
                             CONSTRAINT compone_ingrediente FOREIGN KEY (id_ingrediente) REFERENCES ingrediente (id) ON DELETE RESTRICT ON UPDATE CASCADE,
-                            CONSTRAINT compone_menu_item FOREIGN KEY (id_menu_item) REFERENCES menu_item (id) ON DELETE CASCADE ON UPDATE CASCADE,
-                            CONSTRAINT quantita_unita_di_misura FOREIGN KEY (nome_unita_di_misura) REFERENCES unita_di_misura (nome) ON DELETE RESTRICT ON UPDATE CASCADE
+                            CONSTRAINT compone_menu_item FOREIGN KEY (id_menu_item) REFERENCES menu_item (id) ON DELETE CASCADE ON UPDATE CASCADE
                         )`,
                         (err) => {
                             if (err) {
