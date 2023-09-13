@@ -1,0 +1,405 @@
+[
+    {
+        "categoryName": "Classiche",
+        "entries": [
+            {
+                "name": "Margherita",
+                "description": "Pomodoro, mozzarella",
+                "subEntries": null,
+                "price": "€6.50"
+            },
+            {
+                "name": "Marinara",
+                "description": "Pomodoro, aglio, origano",
+                "subEntries": null,
+                "price": "€5.50"
+            },
+            {
+                "name": "Biancaneve",
+                "description": "Mozzarella",
+                "subEntries": null,
+                "price": "€5.50"
+            }
+        ]
+    },
+    {
+        "categoryName": "Rosse",
+        "entries": [
+            {
+                "name": "Salsiccia",
+                "description": "Pomodoro, mozzarella, salsiccia rossa fresca locale",
+                "subEntries": null,
+                "price": "€8.00"
+            },
+            {
+                "name": "Ventricina",
+                "description": "Pomodoro, mozzarella, ventricina piccantina",
+                "subEntries": null,
+                "price": "€8.00"
+            },
+            {
+                "name": "Capricciosa",
+                "description": "Pomodoro, mozzarella, olive nere, prosciutto cotto, carciofini, funghi",
+                "subEntries": null,
+                "price": "€8.50"
+            },
+            {
+                "name": "Napoletana",
+                "description": "Pomodoro, mozzarella, alici",
+                "subEntries": null,
+                "price": "€8.00"
+            },
+            {
+                "name": "Funghi",
+                "description": "Pomodoro, mozzarella, funghi",
+                "subEntries": null,
+                "price": "€8.00"
+            },
+            {
+                "name": "Alici e peperoni",
+                "description": "Pomodoro, mozzarella, alici, peperoni",
+                "subEntries": null,
+                "price": "€8.50"
+            },
+            {
+                "name": "Würstel",
+                "description": "Pomodoro, mozzarella, würstel",
+                "subEntries": null,
+                "price": "€8.00"
+            }
+        ]
+    },
+    {
+        "categoryName": "Bianche",
+        "entries": [
+            {
+                "name": "Prosciutto e Funghi",
+                "description": "Mozzarella, prosciutto cotto, funghi",
+                "subEntries": null,
+                "price": "€8.50"
+            },
+            {
+                "name": "Crostino",
+                "description": "Mozzarella, prosciutto cotto",
+                "subEntries": null,
+                "price": "€8.00"
+            },
+            {
+                "name": "Rucola",
+                "description": "Mozzarella, rucola, prosciutto crudo, grana",
+                "subEntries": null,
+                "price": "€8.50"
+            },
+            {
+                "name": "4 Formaggi",
+                "description": "Mix di formaggi",
+                "subEntries": null,
+                "price": "€8.00"
+            },
+            {
+                "name": "Pachino",
+                "description": "Mozzarella, pomodorino pachino, rucola, grana",
+                "subEntries": null,
+                "price": "€8.50"
+            },
+            {
+                "name": "Patate",
+                "description": "Mozzarella, patate, origano",
+                "subEntries": null,
+                "price": "€8.00"
+            },
+            {
+                "name": "Radicchio",
+                "description": "Mozzarella, radicchio, provola affumicata a fine cottura",
+                "subEntries": null,
+                "price": "€8.00"
+            },
+            {
+                "name": "Zingara",
+                "description": "Mozzarella, capperi, funghi, peperoni, olive",
+                "subEntries": null,
+                "price": "€8.00"
+            },
+            {
+                "name": "Tedesca",
+                "description": "Mozzarella, würstel, patatine fritte",
+                "subEntries": null,
+                "price": "€8.00"
+            },
+            {
+                "name": "Tonno e Cipolla",
+                "description": "Mozzarella, tonno, cipolla",
+                "subEntries": null,
+                "price": "€8.00"
+            },
+            {
+                "name": "Vegetariana",
+                "description": "Mozzarella, zucchine grigliate, melanzane grigliate, pomodorino pachino",
+                "subEntries": null,
+                "price": "€8.00"
+            },
+            {
+                "name": "Salsiccia e patate",
+                "description": "Mozzarella, salsiccia rossa fresca locale, patate",
+                "subEntries": null,
+                "price": "€9.00"
+            },
+            {
+                "name": "Boscaiola",
+                "description": "Mozzarella, funghi, salsiccia rossa fresca locale",
+                "subEntries": null,
+                "price": "€8.00"
+            }
+        ]
+    },
+    {
+        "categoryName": "Speciali",
+        "entries": [
+            {
+                "name": "Porcini",
+                "description": "Mozzarella, funghi porcini, rucola, grana",
+                "subEntries": null,
+                "price": "€9.00"
+            },
+            {
+                "name": "Rape e Salsiccia",
+                "description": "Mozzarella, cime di rapa, salsiccia rossa fresca locale",
+                "subEntries": null,
+                "price": "€10.00"
+            },
+            {
+                "name": "Tartufata",
+                "description": "Mozzarella, crema tartufata, funghi",
+                "subEntries": null,
+                "price": "€10.00"
+            },
+            {
+                "name": "Crema di Zucca",
+                "description": "Mozzarella, crema di zucca, funghi porcini, prosciutto crudo",
+                "subEntries": null,
+                "price": "€10.00"
+            },
+            {
+                "name": "Bufalina",
+                "description": "Pomodoro, mozzarella di bufala",
+                "subEntries": null,
+                "price": "€9.00"
+            },
+            {
+                "name": "Bresaola",
+                "description": "Mozzarella, rucola, bresaola, grana",
+                "subEntries": null,
+                "price": "€11.00"
+            },
+            {
+                "name": "Stella",
+                "description": "Peperoni, alici, mozzarella di bufala a fine cottura",
+                "subEntries": null,
+                "price": "€9.50"
+            },
+            {
+                "name": "Baccalà*",
+                "description": "Baccalà, peperoni",
+                "subEntries": null,
+                "price": "€10.50"
+            }
+        ]
+    },
+    {
+        "categoryName": "Farine Speciali",
+        "entries": [
+            {
+                "name": "Canapa",
+                "description": "Farina di canapa sativa, mozzarella, ventricina piccantina, carciofini, rucola, grana",
+                "subEntries": null,
+                "price": "€10.50"
+            },
+            {
+                "name": "Curcuma",
+                "description": "Farina di curcuma, mozzarella di bufala, pomodorino pachino",
+                "subEntries": null,
+                "price": "€9.50"
+            }
+        ]
+    },
+    {
+        "categoryName": "Pinse Romane",
+        "entries": [
+            {
+                "name": "Boscaiola alla Soia",
+                "description": "Mix farina di soia, mozzarella, funghi, salsiccia rossa fresca locale",
+                "subEntries": null,
+                "price": "€10.00"
+            },
+            {
+                "name": "Tartufata alla Soia",
+                "description": "Mix farina di soia, mozzarella, crema tartufata, funghi",
+                "subEntries": null,
+                "price": "€10.50"
+            },
+            {
+                "name": "Bresaola alla Soia",
+                "description": "Mix farina di soia, mozzarella, bresaola, rucola, grana",
+                "subEntries": null,
+                "price": "€11.00"
+            },
+            {
+                "name": "Pachino alla Soia",
+                "description": "Mix farina di soia, mozzarella, pomodorino pachino, rucola, grana",
+                "subEntries": null,
+                "price": "€10.00"
+            }
+        ]
+    },
+    {
+        "categoryName": "Calzoni Al Forno",
+        "entries": [
+            {
+                "name": "Tipo 0",
+                "description": "Pomodoro, mozzarella, prosciutto cotto",
+                "subEntries": null,
+                "price": "€8.00"
+            },
+            {
+                "name": "Tipo 1",
+                "description": "Pomodoro, mozzarella, prosciutto cotto, funghi",
+                "subEntries": null,
+                "price": "€8.50"
+            },
+            {
+                "name": "Tipo 2",
+                "description": "Pomodoro, mozzarella, ventricina piccantina, olive nere, gorgonzola",
+                "subEntries": null,
+                "price": "€9.00"
+            },
+            {
+                "name": "Tipo 3",
+                "description": "Pomodoro, mozzarella, funghi, salsiccia rossa fresca locale",
+                "subEntries": null,
+                "price": "€9.00"
+            },
+            {
+                "name": "Tipo 4",
+                "description": "Mozzarella, zucchine grigliate, melanzane grigliate, pomodorino pachino",
+                "subEntries": null,
+                "price": "€9.00"
+            }
+        ]
+    },
+    {
+        "categoryName": "Fritture",
+        "entries": [
+            {
+                "name": "Patatine Fritte",
+                "description": null,
+                "subEntries": [
+                    {
+                        "name": "Piccole",
+                        "price": "€2.50"
+                    },
+                    {
+                        "name": "Piccole con Buccia",
+                        "price": "€3.00"
+                    },
+                    {
+                        "name": "Grandi",
+                        "price": "€3.50"
+                    },
+                    {
+                        "name": "Grandi con Buccia",
+                        "price": "€4.00"
+                    }
+                ],
+                "price": null
+            },
+            {
+                "name": "Crocchette di Patate",
+                "description": "6 pezzi",
+                "subEntries": null,
+                "price": "€3.00"
+            },
+            {
+                "name": "Mozzarelline",
+                "description": "6 pezzi",
+                "subEntries": null,
+                "price": "€3.00"
+            },
+            {
+                "name": "Olive Ascolane",
+                "description": "6 pezzi",
+                "subEntries": null,
+                "price": "€3.00"
+            }
+        ]
+    },
+    {
+        "categoryName": "Desserts",
+        "entries": [
+            {
+                "name": "Gelato Tartufo",
+                "description": "Bianco o Nero",
+                "subEntries": null,
+                "price": "€3.50"
+            }
+        ]
+    },
+    {
+        "categoryName": "Bevande",
+        "entries": [
+            {
+                "name": "Acqua - 1 litro",
+                "description": "Naturale / Frizzante",
+                "subEntries": null,
+                "price": "€2.00"
+            },
+            {
+                "name": "Acqua - 0.5 litro",
+                "description": "Naturale / Frizzante",
+                "subEntries": null,
+                "price": "€1.00"
+            },
+            {
+                "name": "Lattina",
+                "description": "Coca Cola / Thé limone / Thé pesca / Fanta / Lemonsoda / Sprite",
+                "subEntries": null,
+                "price": "€2.00"
+            },
+            {
+                "name": "DAB - 0.5 litri",
+                "description": "Birra Bionda Non Filtrata Artigianale",
+                "subEntries": null,
+                "price": "€4.00"
+            },
+            {
+                "name": "Menabrea - 33cl",
+                "description": "Birra Rossa",
+                "subEntries": null,
+                "price": "€3.50"
+            },
+            {
+                "name": "Menabrea - 66cl",
+                "description": "Birra Bionda",
+                "subEntries": null,
+                "price": "€4.50"
+            },
+            {
+                "name": "DAB - 33cl",
+                "description": "Birra Bionda",
+                "subEntries": null,
+                "price": "€3.50"
+            },
+            {
+                "name": "Hoegaarden - 33cl",
+                "description": "Birra Bianca",
+                "subEntries": null,
+                "price": "€3.50"
+            },
+            {
+                "name": "Birra Bionda - 66cl",
+                "description": "Stella Artois / Poretti 4 Luppoli",
+                "subEntries": null,
+                "price": "€3.50"
+            }
+        ]
+    }
+]
