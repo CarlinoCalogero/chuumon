@@ -331,12 +331,12 @@ function insertCategoriaIntoDataBase(menuEntry) {
 
     var categoryName = menuEntry.categoryName;
 
-    db.run("INSERT INTO categoria(nome) VALUES (?)", categoryName, function (err) {
+    db.run("INSERT INTO categoria(nome) VALUES (?)", categoryName.toLowerCase(), function (err) {
         if (err) {
             return console.error(err.message);
         }
         const id = this.lastID; // get the id of the last inserted row
-        console.log(`Rows inserted, ID ${id}`);
+        console.log(`Rows inserted to \"categoria\" table, ID ${id}`);
 
         if (menuEntry.entries != null) {
 
@@ -354,31 +354,81 @@ function insertCategoryEntryIntoDataBase(categoryName, categoryEntry) {
 
     if (categoryEntry.subEntries == null && categoryEntry.price != null) {
 
-        insertMenuEntryIntoDataBase(categoryEntry.name, categoryEntry.price, categoryName)
+        insertMenuEntryIntoDataBase(categoryEntry.name, categoryEntry.price, categoryName, categoryEntry.description)
 
     } else {
 
         categoryEntry.subEntries.forEach(categorySubEntry => {
-            insertMenuEntryIntoDataBase(categoryEntry.name + " " + categorySubEntry.name, categorySubEntry.price, categoryName)
+            insertMenuEntryIntoDataBase(categoryEntry.name + " " + categorySubEntry.name, categorySubEntry.price, categoryName, categoryEntry.description)
         });
     }
 
-
-
 }
 
-function insertMenuEntryIntoDataBase(categoryEntryName, categoryEntryPrice, categoryName) {
+function insertMenuEntryIntoDataBase(categoryEntryName, categoryEntryPrice, categoryName, categoryEntryDescription) {
 
-    console.log([categoryEntryName, Number(categoryEntryPrice.replace("€", "")), categoryName]);
-
-    db.run("INSERT INTO menu_item(nome, prezzo, nome_categoria) VALUES (?, ?, ?)", [categoryEntryName, Number(categoryEntryPrice.replace("€", "")), categoryName], function (err) {
+    db.run("INSERT INTO menu_item(nome, prezzo, nome_categoria) VALUES (?, ?, ?)", [categoryEntryName.toLowerCase(), Number(categoryEntryPrice.replace("€", "")), categoryName.toLowerCase()], function (err) {
         if (err) {
             return console.error(err.message);
         }
         const id = this.lastID; // get the id of the last inserted row
-        console.log(`Rows inserted, ID ${id}`);
+        console.log(`Rows inserted to \"menu_item\" table, ID ${id}`);
+
+        if (categoryEntryDescription != null) {
+
+            var ingredientsArray = categoryEntryDescription.split(",");
+
+            ingredientsArray.forEach(ingredient => {
+                addIngredientToDataBase(ingredient.trim(), id)
+            });
+
+        }
 
     });
 
+}
+
+function addIngredientToDataBase(ingredient, menuEntryID) {
+
+    ingredient = ingredient.toLowerCase();
+
+    db.run("INSERT INTO ingrediente(nome) VALUES (?)", ingredient, function (err) {
+
+        if (err) {
+
+            // ingredient already exists
+
+            db.get('SELECT rowid FROM ingrediente WHERE nome = ?', ingredient, (err, row) => {
+                if (err) {
+                    return console.error(err.message);
+                }
+                addComponeToDataBase(row.rowid, menuEntryID)
+            });
+
+        } else {
+
+            // ingredient does not already exists
+
+            const id = this.lastID; // get the id of the last inserted row
+            console.log(`Rows inserted to \"ingrediente\" table, ID ${id}`);
+
+            addComponeToDataBase(id, menuEntryID)
+
+        }
+
+    });
+
+}
+
+function addComponeToDataBase(ingredientID, menuEntryID) {
+
+    db.run("INSERT INTO compone(id_ingrediente, id_menu_item) VALUES (?, ?)", [Number(ingredientID), Number(menuEntryID)], function (err) {
+        if (err) {
+            return console.error(err.message);
+        }
+        const id = this.lastID; // get the id of the last inserted row
+        console.log(`Rows inserted to \"compone\", ID ${id}`);
+
+    });
 
 }
