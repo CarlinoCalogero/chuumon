@@ -143,6 +143,10 @@ export function Tables({ tableNumber, numberOfMergedTables, top, left, rotate, i
 
             onMouseMoveEvent.currentTarget.style.rotate = (rotateInfo.angle + rotateInfo.rotation) + "deg";
 
+            // rotate text so it is always perpendicular to rotation sense
+            var textSpan = onMouseMoveEvent.currentTarget.children[0] as HTMLElement;
+            textSpan.style.rotate = -(rotateInfo.angle + rotateInfo.rotation) + "deg";
+
         }
     }
 
@@ -182,7 +186,13 @@ export function Tables({ tableNumber, numberOfMergedTables, top, left, rotate, i
             onMouseMove={e => isCanBeRotated && handleOnMouseMove(e)}
             onMouseUp={e => isCanBeRotated && handleOnMouseUp(e)}
         >
-            <span>Tavolo {tableNumber}</span>
+            <span
+                style={
+                    {
+                        rotate: -rotate + "deg"
+                    }
+                }
+            >Tavolo {tableNumber}</span>
         </div>
     )
 }
