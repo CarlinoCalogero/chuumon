@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, ChangeEvent, DragEvent, MouseEvent } from 'react'
+import { useState, useEffect, ChangeEvent, DragEvent, MouseEvent, useCallback } from 'react'
 import styles from './page.module.css'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Tables } from '@/components/Tables';
 import { SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS, removeNumbersFromArray } from '@/lib/utils';
 import { Sala } from '@/types/Sala';
@@ -35,8 +35,23 @@ export default function Home() {
 
   }, [])
 
+  const searchParams = useSearchParams()
+
+  // Get a new searchParams string by merging the current
+  // searchParams with a provided key/value pair
+  const createQueryString = useCallback(
+    (name: string, value: string) => {
+      const params = new URLSearchParams(searchParams)
+      params.set(name, value)
+
+      return params.toString()
+    },
+    [searchParams]
+  )
+
   function placeAnOrder(table: Table) {
     console.log("place an order")
+    router.push("/home/order" + '?' + createQueryString('tableNumber', table.tableNumber + ''))
   }
 
   return (
