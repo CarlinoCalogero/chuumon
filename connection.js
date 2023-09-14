@@ -153,7 +153,18 @@ var semaphore = 0;
             `CREATE TABLE unita_di_misura (
                 nome VARCHAR(50),
                 CONSTRAINT nome_unita_di_misura PRIMARY KEY (nome)
-            )`);
+            )`,
+            (err) => {
+                if (err) {
+                    return console.error(err.message);
+                }
+
+                const insertSql = `INSERT INTO unita_di_misura(nome) VALUES (?)`;
+
+                insertIntoDatabase(insertSql, ["intera"]);
+                insertIntoDatabase(insertSql, ["pezzi"]);
+
+            });
 
         //****** MENU_ITEM ******//
         db.run(`drop table if exists menu_item`);
