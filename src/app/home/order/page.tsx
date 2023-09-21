@@ -10,8 +10,7 @@ import { PIZZE_CATEGORIES } from '@/lib/utils';
 
 type Inputs = {
   menuItem: EventTarget & HTMLInputElement | null,
-  numberOf: EventTarget & HTMLInputElement | null,
-  unitOfMeasure: EventTarget & HTMLSelectElement | null
+  numberOf: EventTarget & HTMLInputElement | null
 }
 
 export default function Order() {
@@ -27,12 +26,12 @@ export default function Order() {
 
   const [inputs, setInputs] = useState<Inputs>({
     menuItem: null,
-    numberOf: null,
-    unitOfMeasure: null
+    numberOf: null
   });
 
   const [orderedItem, setOrderedItem] = useState<OrderedItem>({
     menuItem: null,
+    isMenuItemAPizza: false,
     numberOf: null,
     unitOfMeasure: null
   });
@@ -60,12 +59,16 @@ export default function Order() {
     console.log(menuItems);
   }, [menuItems])
 
+  useEffect(() => {
+    console.log(orderedItem);
+  }, [orderedItem])
+
   function getInputsCopy() {
-    return {
+    var inputsCopy: Inputs = {
       menuItem: inputs.menuItem,
-      numberOf: inputs.numberOf,
-      unitOfMeasure: inputs.unitOfMeasure
-    } as Inputs
+      numberOf: inputs.numberOf
+    }
+    return inputsCopy;
   }
 
   function getOrderedItemCopy() {
@@ -84,8 +87,11 @@ export default function Order() {
       setInputs(inputsCopy)
     }
 
+    var menuItemName = onChangeEvent.target.value;
+
     var orderedItemCopy = getOrderedItemCopy();
-    orderedItemCopy.menuItem = onChangeEvent.target.value;
+    orderedItemCopy.menuItem = menuItemName;
+    orderedItemCopy.isMenuItemAPizza = checkIfMenuItemIsAPizza(menuItemName)
     setOrderedItem(orderedItemCopy)
 
   }
@@ -104,13 +110,6 @@ export default function Order() {
   }
 
   function handleUnitOfMeasurementChange(onChangeEvent: ChangeEvent<HTMLSelectElement>) {
-    if (inputs.unitOfMeasure == null) {
-      console.log("3 null")
-      var inputsCopy = getInputsCopy();
-      inputsCopy.unitOfMeasure = onChangeEvent.target;
-      setInputs(inputsCopy)
-    }
-
     var orderedItemCopy = getOrderedItemCopy();
     orderedItemCopy.unitOfMeasure = onChangeEvent.target.value;
     setOrderedItem(orderedItemCopy)
@@ -155,10 +154,15 @@ export default function Order() {
 
     //check if all fields are not null
     for (const [key, value] of Object.entries(orderedItem)) {
-      if (value == null) {
-        console.log(key, "is null")
+
+      if (orderedItem.isMenuItemAPizza && value == null) { // orderedItem is a pizza
+        console.log("orderedItem is a pizza &", key, "is null")
+        return
+      } else if (!orderedItem.isMenuItemAPizza && key != "unitOfMeasure" && value == null) { // orderedItem is not a pizza
+        console.log("orderedItem is not a pizza &", key, "is null")
         return
       }
+
     }
 
     // clear the fields
@@ -170,6 +174,7 @@ export default function Order() {
     // clear currentMenuItem
     setOrderedItem({
       menuItem: null,
+      isMenuItemAPizza: false,
       numberOf: null,
       unitOfMeasure: null
     })
@@ -200,10 +205,9 @@ export default function Order() {
 
 
         {
-          orderedItem.menuItem != null && checkIfMenuItemIsAPizza(orderedItem.menuItem) &&
+          orderedItem.isMenuItemAPizza &&
           < select
             onChange={e => handleUnitOfMeasurementChange(e)}
-            value={''}
           >
             {
               unitaDiMisuraArray.map((unitaDiMisura, i) => <option key={"orderPage_" + unitaDiMisura.nome} value={unitaDiMisura.nome}>{unitaDiMisura.nome}</option>)
