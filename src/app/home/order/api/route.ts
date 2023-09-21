@@ -2,6 +2,7 @@ import sqlite3 from "sqlite3";
 import { open, Database } from "sqlite";
 import { DATABASE_INFO } from "@/lib/utils";
 import { MenuItemDatabaseTableRow } from "@/types/MenuItemDatabaseTableRow";
+import { CategoriesDatabaseTableRow } from "@/types/CategoriesDatabaseTableRow";
 
 // Let's initialize it as null initially, and we will assign the actual database instance later.
 var db: Database | null = null;
@@ -23,6 +24,7 @@ export async function GET() {
     // which is a wrapper around `sqlite3#Statement`
     const resultItem = {
         menuItems: await db.all('SELECT * FROM menu_item') as MenuItemDatabaseTableRow[],
+        categories: await db.all('SELECT * FROM categoria') as CategoriesDatabaseTableRow[],
         unitaDiMisura: await db.all('SELECT * FROM unita_di_misura') as string[]
     }
 

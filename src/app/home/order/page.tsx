@@ -7,10 +7,16 @@ import { MenuItemDatabaseTableRow } from '@/types/MenuItemDatabaseTableRow';
 import { UnitaDiMisuraDatabaseTableRow } from '@/types/UnitaDiMisuraDatabaseTableRow';
 import { OrderedItem } from '@/types/OrderedItem';
 import { PIZZE_CATEGORIES } from '@/lib/utils';
+import { CategoriesDatabaseTableRow } from '@/types/CategoriesDatabaseTableRow';
 
 type Inputs = {
   menuItem: EventTarget & HTMLInputElement | null,
   numberOf: EventTarget & HTMLInputElement | null
+}
+
+type OrderedItemsByCategories = {
+  categoryName: string,
+  thisCategoryOrderedItemsArray: OrderedItem[]
 }
 
 export default function Order() {
@@ -22,6 +28,7 @@ export default function Order() {
   console.log(searchParams.get('tableNumber'))
 
   const [menuItems, setMenuItems] = useState<MenuItemDatabaseTableRow[]>([]);
+  const [categories, setCategories] = useState<CategoriesDatabaseTableRow[]>([]);
   const [unitaDiMisuraArray, setUnitaDiMisuraArray] = useState<UnitaDiMisuraDatabaseTableRow[]>([]);
 
   const [inputs, setInputs] = useState<Inputs>({
@@ -31,11 +38,12 @@ export default function Order() {
 
   const [orderedItem, setOrderedItem] = useState<OrderedItem>({
     menuItem: null,
+    menuItemCategory: null,
     isMenuItemAPizza: false,
     numberOf: null,
     unitOfMeasure: null
   });
-  const [orderedItemsArray, setOrderedItemsArray] = useState<OrderedItem[]>([]);
+  const [orderedItemsByCategories, setOrderedItemsByCategories] = useState<OrderedItemsByCategories[]>([]);
 
   useEffect(() => {
     console.log("runs one time only");
@@ -50,6 +58,7 @@ export default function Order() {
       .then((data) => {
         console.log("data", data)
         setMenuItems(data.menuItems);
+        setCategories(data.categories)
         setUnitaDiMisuraArray(data.unitaDiMisura);
       }); // Update the state with the fetched data
 
@@ -58,6 +67,22 @@ export default function Order() {
   useEffect(() => {
     console.log(menuItems);
   }, [menuItems])
+
+  useEffect(() => {
+    console.log(categories);
+    var orderedItemsByCategoriesCopy = getOrderedItemsByCategoriesCopy();
+    categories.forEach(category => {
+      orderedItemsByCategoriesCopy.push({
+        categoryName: category.nome,
+        thisCategoryOrderedItemsArray: []
+      })
+    });
+    setOrderedItemsByCategories(orderedItemsByCategoriesCopy);
+  }, [categories])
+
+  useEffect(() => {
+    console.log(orderedItemsByCategories);
+  }, [orderedItemsByCategories])
 
   useEffect(() => {
     console.log(orderedItem);
@@ -75,8 +100,8 @@ export default function Order() {
     return JSON.parse(JSON.stringify(orderedItem)) as OrderedItem
   }
 
-  function getOrderedItemsArrayCopy() {
-    return JSON.parse(JSON.stringify(orderedItemsArray)) as OrderedItem[]
+  function getOrderedItemsByCategoriesCopy() {
+    return JSON.parse(JSON.stringify(orderedItemsByCategories)) as OrderedItemsByCategories[]
   }
 
   function handleMenuItemChange(onChangeEvent: ChangeEvent<HTMLInputElement>) {
@@ -88,10 +113,12 @@ export default function Order() {
     }
 
     var menuItemName = onChangeEvent.target.value;
+    var menuItemCategory = getMenuItemCategory(menuItemName)
 
     var orderedItemCopy = getOrderedItemCopy();
     orderedItemCopy.menuItem = menuItemName;
-    orderedItemCopy.isMenuItemAPizza = checkIfMenuItemIsAPizza(menuItemName)
+    orderedItemCopy.menuItemCategory = menuItemCategory;
+    orderedItemCopy.isMenuItemAPizza = checkIfMenuItemIsAPizza(menuItemName, menuItemCategory)
     setOrderedItem(orderedItemCopy)
 
   }
@@ -129,14 +156,9 @@ export default function Order() {
     return '';
   }
 
-  function checkIfMenuItemIsAPizza(menuItemName: string) {
+  function checkIfMenuItemIsAPizza(menuItemName: string, menuItemCategory: string) {
 
-    if (menuItemName == '')
-      return false
-
-    var menuItemCategory = getMenuItemCategory(menuItemName);
-
-    if (menuItemCategory == '')
+    if (menuItemName == '' || menuItemCategory == '')
       return false
 
     for (var count = 0; count < PIZZE_CATEGORIES.length; count++) {
@@ -175,13 +197,23 @@ export default function Order() {
     setOrderedItem({
       menuItem: null,
       isMenuItemAPizza: false,
+      menuItemCategory: null,
       numberOf: null,
       unitOfMeasure: null
     })
 
-    var orderedItemsArrayCopy = getOrderedItemsArrayCopy();
-    orderedItemsArrayCopy.push(orderedItem)
-    setOrderedItemsArray(orderedItemsArrayCopy);
+    var orderedItemsByCategoriesCopy = getOrderedItemsByCategoriesCopy();
+    var categoryWasFound = false;
+    var count = 0;
+    while (!categoryWasFound && count < orderedItemsByCategoriesCopy.length) {
+      var currentCategory = orderedItemsByCategoriesCopy[count];
+      if (currentCategory.categoryName == orderedItem.menuItemCategory) {
+        currentCategory.thisCategoryOrderedItemsArray.push(orderedItem);
+        categoryWasFound = true;
+      }
+      count++
+    }
+    setOrderedItemsByCategories(orderedItemsByCategoriesCopy);
   }
 
   return (
@@ -209,6 +241,7 @@ export default function Order() {
           < select
             onChange={e => handleUnitOfMeasurementChange(e)}
           >
+            <option value='' disabled selected></option>
             {
               unitaDiMisuraArray.map((unitaDiMisura, i) => <option key={"orderPage_" + unitaDiMisura.nome} value={unitaDiMisura.nome}>{unitaDiMisura.nome}</option>)
             }
@@ -227,7 +260,20 @@ export default function Order() {
       </div>
 
       {
-        orderedItemsArray.map((orderedItem, i) => <span key={"orderedItem_" + i}>{orderedItem.menuItem} {orderedItem.numberOf} {orderedItem.unitOfMeasure}</span>)
+        orderedItemsByCategories.map((orderedItemByCategory, i) =>
+          orderedItemByCategory.thisCategoryOrderedItemsArray.length != 0 &&
+          <div
+            key={"orderedItemByCategory_" + i}
+          >
+
+            <h2>{orderedItemByCategory.categoryName}</h2>
+
+            <div className={styles.outerDiv}>
+              {
+                orderedItemByCategory.thisCategoryOrderedItemsArray.map((orderedItem, j) => <span key={"orderedItem_" + j + "_inCategory_" + i}>{orderedItem.menuItem} {orderedItem.numberOf} {orderedItem.unitOfMeasure}</span>)
+              }
+            </div>
+          </div>)
       }
 
       <button onClick={() => router.push("/home")}>Back</button>
