@@ -45,6 +45,8 @@ export default function Order() {
   });
   const [orderedItemsByCategories, setOrderedItemsByCategories] = useState<OrderedItemsByCategories[]>([]);
 
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
   useEffect(() => {
     console.log("runs one time only");
 
@@ -142,6 +144,35 @@ export default function Order() {
     setOrderedItem(orderedItemCopy)
   }
 
+  function handleSelectCategoryChange(onChangeEvent: ChangeEvent<HTMLSelectElement>) {
+    setSelectedCategory(onChangeEvent.target.value)
+
+    var orderedItemCopy = getOrderedItemCopy();
+    orderedItemCopy.menuItem = null;
+    orderedItemCopy.menuItemCategory = onChangeEvent.target.value;
+    setOrderedItem(orderedItemCopy)
+  }
+
+  function handleSelectMenuItemChange(onChangeEvent: ChangeEvent<HTMLSelectElement>) {
+    var menuItemName = onChangeEvent.target.value;
+    var menuItemCategory = getMenuItemCategory(menuItemName)
+
+    var orderedItemCopy = getOrderedItemCopy();
+    orderedItemCopy.menuItem = menuItemName;
+    orderedItemCopy.menuItemCategory = menuItemCategory;
+    orderedItemCopy.isMenuItemAPizza = checkIfMenuItemIsAPizza(menuItemName, menuItemCategory)
+    setOrderedItem(orderedItemCopy)
+  }
+
+  function getMenuItemsFromCategory(categoryName: string) {
+    var menuItemsArray: string[] = [];
+    menuItems.forEach(menuItem => {
+      if (menuItem.nome_categoria == categoryName)
+        menuItemsArray.push(menuItem.nome);
+    });
+    return menuItemsArray;
+  }
+
   function getMenuItemCategory(menuItemName: string) {
 
     if (menuItemName == '')
@@ -202,6 +233,9 @@ export default function Order() {
       unitOfMeasure: null
     })
 
+    // clear selectedCategory
+    setSelectedCategory(null);
+
     var orderedItemsByCategoriesCopy = getOrderedItemsByCategoriesCopy();
     var categoryWasFound = false;
     var count = 0;
@@ -228,6 +262,42 @@ export default function Order() {
           onChange={e => handleMenuItemChange(e)}
         />
 
+        <datalist id="menu-items-list">
+          {
+            menuItems.map((menuItem, i) => <option key={"orderPage_" + menuItem.nome} value={menuItem.nome}></option>)
+          }
+        </datalist>
+
+      </div>
+
+      <div className={styles.addItemToOrderDiv}>
+        <select
+          value={selectedCategory != null ? selectedCategory : ''}
+          onChange={e => handleSelectCategoryChange(e)}
+        >
+          <option value='' disabled ></option>
+          {
+            categories.map((category, i) => <option key={"orderPage_" + category.nome} value={category.nome}>{category.nome}</option>)
+          }
+        </select>
+
+        {
+          selectedCategory != null &&
+          <select
+            value={orderedItem.menuItem != null ? orderedItem.menuItem : ''}
+            onChange={e => handleSelectMenuItemChange(e)}
+          >
+            <option value='' disabled></option>
+            {
+              getMenuItemsFromCategory(selectedCategory).map((menuItemInThisCategory, i) => <option key={"orderPage_menuItemInThisCategory" + i} value={menuItemInThisCategory}>{menuItemInThisCategory}</option>)
+            }
+          </select>
+        }
+
+      </div>
+
+      <div className={styles.addItemToOrderDiv}>
+
         <input
           type='number'
           placeholder='Number of'
@@ -235,25 +305,18 @@ export default function Order() {
           onChange={e => handleNumberOfChange(e)}
         />
 
-
         {
           orderedItem.isMenuItemAPizza &&
           < select
+            value={''}
             onChange={e => handleUnitOfMeasurementChange(e)}
           >
-            <option value='' disabled selected></option>
+            <option value='' disabled></option>
             {
               unitaDiMisuraArray.map((unitaDiMisura, i) => <option key={"orderPage_" + unitaDiMisura.nome} value={unitaDiMisura.nome}>{unitaDiMisura.nome}</option>)
             }
           </select>
         }
-
-
-        <datalist id="menu-items-list">
-          {
-            menuItems.map((menuItem, i) => <option key={"orderPage_" + menuItem.nome} value={menuItem.nome}></option>)
-          }
-        </datalist>
 
         <button onClick={() => addItem()}>Add Item</button>
 
