@@ -3,3 +3,10 @@
   flex-direction: column;
   max-width: 50vw;
 }
+
+.addItemToOrderDiv {
+  display: flex;
+  flex-direction: column;
+  max-width: 50vw;
+  padding: 2rem;
+}
