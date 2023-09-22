@@ -9,6 +9,7 @@ import { OrderedItem } from '@/types/OrderedItem';
 import { CATEGORIE_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO, PIZZE_CATEGORIES, UNITA_DI_MISURA } from '@/lib/utils';
 import { CategoriesDatabaseTableRow } from '@/types/CategoriesDatabaseTableRow';
 import { TableOrderInfo } from '@/types/TableOrderInfo';
+import { MenuItemWithIngredients } from '@/types/MenuItemWithIngredients';
 
 type Inputs = {
   menuItem: EventTarget & HTMLInputElement | null,
@@ -28,8 +29,7 @@ export default function Order() {
 
   console.log(searchParams.get('tableNumber'))
 
-  const [menuItems, setMenuItems] = useState<MenuItemDatabaseTableRow[]>([]);
-  const [categories, setCategories] = useState<CategoriesDatabaseTableRow[]>([]);
+  const [menuItemsWithIngredients, setMenuItemsWithIngredients] = useState<MenuItemWithIngredients[]>([]);
   const [unitaDiMisuraArray, setUnitaDiMisuraArray] = useState<UnitaDiMisuraDatabaseTableRow[]>([]);
 
   const [inputs, setInputs] = useState<Inputs>({
@@ -72,28 +72,15 @@ export default function Order() {
       .then((res) => res.json()) // Parse the response data as JSON
       .then((data) => {
         console.log("data", data)
-        setMenuItems(data.menuItems);
-        setCategories(data.categories)
+        setMenuItemsWithIngredients(data.menuItemsWithIngredients);
         setUnitaDiMisuraArray(data.unitaDiMisura);
       }); // Update the state with the fetched data
 
   }, [])
 
   useEffect(() => {
-    console.log(menuItems);
-  }, [menuItems])
-
-  useEffect(() => {
-    console.log(categories);
-    var orderedItemsByCategoriesCopy = getOrderedItemsByCategoriesCopy();
-    categories.forEach(category => {
-      orderedItemsByCategoriesCopy.push({
-        categoryName: category.nome,
-        thisCategoryOrderedItemsArray: []
-      })
-    });
-    setOrderedItemsByCategories(orderedItemsByCategoriesCopy);
-  }, [categories])
+    console.log(menuItemsWithIngredients);
+  }, [menuItemsWithIngredients])
 
   useEffect(() => {
     console.log(orderedItemsByCategories);
@@ -237,7 +224,7 @@ export default function Order() {
 
   function getMenuItemsFromCategory(categoryName: string) {
     var menuItemsArray: string[] = [];
-    menuItems.forEach(menuItem => {
+    menuItemsWithIngredients.forEach(menuItem => {
       if (menuItem.nome_categoria == categoryName)
         menuItemsArray.push(menuItem.nome);
     });
@@ -249,8 +236,8 @@ export default function Order() {
     if (menuItemName == '')
       return menuItemName
 
-    for (var count = 0; count < menuItems.length; count++) {
-      var currentMenuItem = menuItems[count];
+    for (var count = 0; count < menuItemsWithIngredients.length; count++) {
+      var currentMenuItem = menuItemsWithIngredients[count];
       if (currentMenuItem.nome.toUpperCase() == menuItemName.toUpperCase())
         return currentMenuItem.nome_categoria
     }
@@ -402,7 +389,7 @@ export default function Order() {
 
           <datalist id="menu-items-list">
             {
-              menuItems.map((menuItem, i) => <option key={"orderPage_" + menuItem.nome} value={menuItem.nome}></option>)
+              menuItemsWithIngredients.map((menuItem, i) => <option key={"orderPage_" + menuItem.nome} value={menuItem.nome}></option>)
             }
           </datalist>
 
