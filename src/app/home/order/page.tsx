@@ -49,6 +49,8 @@ export default function Order() {
     menuItemCategory: null,
     price: null,
     ingredients: [],
+    removedIngredients: [],
+    addedIngredients: [],
     isWereIngredientsModified: false,
     isMenuItemAPizza: false,
     isCanMenuItemBeSlicedUp: false,
@@ -366,6 +368,8 @@ export default function Order() {
       isMenuItemAPizza: false,
       price: null,
       ingredients: [],
+      removedIngredients: [],
+      addedIngredients: [],
       isWereIngredientsModified: false,
       isCanMenuItemBeSlicedUp: false,
       slicedIn: null,
@@ -396,7 +400,7 @@ export default function Order() {
   function removeIngredientFromOrderedItem(onClikEvent: MouseEvent<HTMLButtonElement>, ingredientName: string) {
     var orderedItemCopy = getOrderedItemCopy();
     orderedItemCopy.isWereIngredientsModified = true;
-    orderedItemCopy.ingredients.splice(orderedItemCopy.ingredients.indexOf(ingredientName), 1)
+    orderedItemCopy.removedIngredients = [...orderedItemCopy.removedIngredients, ...orderedItemCopy.ingredients.splice(orderedItemCopy.ingredients.indexOf(ingredientName), 1)]
     setOrderedItem(orderedItemCopy);
   }
 
@@ -553,9 +557,18 @@ export default function Order() {
                 orderedItemByCategory.orderedItem.map((orderedItem, j) => <div key={"orderedItem_" + j + "_inCategory_" + i}>
                   <span>{orderedItem.numberOf} {orderedItem.menuItem} {orderedItem.isWereIngredientsModified && <strong>modificata</strong>} {orderedItem.unitOfMeasure} {orderedItem.slicedIn != null && `tagliata in ${orderedItem.slicedIn}`}</span>
                   <div>
-                    <span>Ingredienti: </span>
+                    <span>Ingredienti:</span>
                     {
                       orderedItem.ingredients.map((ingredient, i) => <div key={"orderedItemModifiedIngredient_" + ingredient}>{ingredient}</div>)
+                    }
+                    {
+                      orderedItem.removedIngredients.length != 0 &&
+                      <div>
+                        <span>Ingredienti tolti:</span>
+                        {
+                          orderedItem.removedIngredients.map((removedIngredient, i) => <div key={"orderedItemRemovedIngredient_" + removedIngredient}>{removedIngredient}</div>)
+                        }
+                      </div>
                     }
                   </div>
                 </div>)
