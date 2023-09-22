@@ -233,11 +233,20 @@ export default function Order() {
     for (const [key, value] of Object.entries(orderedItem)) {
 
       if (orderedItem.isMenuItemAPizza && value == null) { // orderedItem is a pizza
-        console.log("orderedItem is a pizza &", key, "is null")
-        return
+        if (key == "slicedIn" && orderedItem.unitOfMeasure != null && orderedItem.unitOfMeasure.toUpperCase() == UNITA_DI_MISURA.pezzi.toUpperCase()) {
+          console.log("Pezzi cannot be sliced up")
+        } else {
+          console.log("orderedItem is a pizza &", key, "is null")
+          return
+        }
       } else if (!orderedItem.isMenuItemAPizza && key != "unitOfMeasure" && value == null) { // orderedItem is not a pizza
-        console.log("orderedItem is not a pizza &", key, "is null")
-        return
+        if (key == "slicedIn" && !orderedItem.isCanMenuItemBeSlicedUp) {
+          console.log("This item cannot be sliced up")
+        } else {
+          console.log("orderedItem is not a pizza &", key, "is null")
+          return
+        }
+
       }
 
     }
@@ -394,7 +403,7 @@ export default function Order() {
 
             <div className={styles.outerDiv}>
               {
-                orderedItemByCategory.thisCategoryOrderedItemsArray.map((orderedItem, j) => <span key={"orderedItem_" + j + "_inCategory_" + i}>{orderedItem.menuItem} {orderedItem.numberOf} {orderedItem.unitOfMeasure} tagliata in {orderedItem.slicedIn}</span>)
+                orderedItemByCategory.thisCategoryOrderedItemsArray.map((orderedItem, j) => <span key={"orderedItem_" + j + "_inCategory_" + i}>{orderedItem.menuItem} {orderedItem.numberOf} {orderedItem.unitOfMeasure} {orderedItem.slicedIn != null && `tagliata in ${orderedItem.slicedIn}`}</span>)
               }
             </div>
           </div>)
