@@ -37,6 +37,8 @@ export default function Order() {
     numberOf: null
   });
 
+  const [isInsertingMenuItemWithSearch, setIsInsertingMenuItemWithSearch] = useState<boolean | null>(null);
+
   const [tableOrderInfo, setTableOrderInfo] = useState<TableOrderInfo>({
     isFrittiPrimaDellaPizza: true,
     isSiDividonoLaPizza: false,
@@ -54,7 +56,7 @@ export default function Order() {
   });
   const [orderedItemsByCategories, setOrderedItemsByCategories] = useState<OrderedItemsByCategories[]>([]);
 
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
 
   var slicedInOptionsArray = [2, 4, 6, 8]
 
@@ -105,6 +107,10 @@ export default function Order() {
     console.log(tableOrderInfo);
   }, [tableOrderInfo])
 
+  useEffect(() => {
+    console.log(isInsertingMenuItemWithSearch);
+  }, [isInsertingMenuItemWithSearch])
+
   function getInputsCopy() {
     var inputsCopy: Inputs = {
       menuItem: inputs.menuItem,
@@ -142,6 +148,13 @@ export default function Order() {
     orderedItemCopy.isMenuItemAPizza = checkIfMenuItemIsAPizza(menuItemName, menuItemCategory)
     orderedItemCopy.isCanMenuItemBeSlicedUp = checkIfMenuItemCanBeSlicedUp(menuItemName, menuItemCategory)
     setOrderedItem(orderedItemCopy)
+
+    // hide the other type of insert
+    if (onChangeEvent.target.value == '') {
+      setIsInsertingMenuItemWithSearch(null)
+    } else {
+      setIsInsertingMenuItemWithSearch(true);
+    }
 
   }
 
@@ -183,6 +196,13 @@ export default function Order() {
     orderedItemCopy.menuItem = null;
     orderedItemCopy.menuItemCategory = onChangeEvent.target.value;
     setOrderedItem(orderedItemCopy)
+
+    // hide the other type of insert
+    if (onChangeEvent.target.value == '') {
+      setIsInsertingMenuItemWithSearch(null)
+    } else {
+      setIsInsertingMenuItemWithSearch(false);
+    }
   }
 
   function handleSelectMenuItemChange(onChangeEvent: ChangeEvent<HTMLSelectElement>) {
@@ -310,7 +330,7 @@ export default function Order() {
     })
 
     // clear selectedCategory
-    setSelectedCategory(null);
+    setSelectedCategory('');
 
     var orderedItemsByCategoriesCopy = getOrderedItemsByCategoriesCopy();
     var categoryWasFound = false;
@@ -324,6 +344,10 @@ export default function Order() {
       count++
     }
     setOrderedItemsByCategories(orderedItemsByCategoriesCopy);
+
+    // show hidden input fields
+    setIsInsertingMenuItemWithSearch(null);
+
   }
 
   return (
@@ -366,47 +390,53 @@ export default function Order() {
         }
       </div>
 
-      <div className={styles.addItemToOrderDiv}>
-        <input
-          type='search'
-          placeholder='Menu Item'
-          list='menu-items-list'
-          onChange={e => handleMenuItemChange(e)}
-        />
+      {
+        (isInsertingMenuItemWithSearch == null || isInsertingMenuItemWithSearch) &&
+        <div className={styles.addItemToOrderDiv}>
+          <input
+            type='search'
+            placeholder='Menu Item'
+            list='menu-items-list'
+            onChange={e => handleMenuItemChange(e)}
+          />
 
-        <datalist id="menu-items-list">
-          {
-            menuItems.map((menuItem, i) => <option key={"orderPage_" + menuItem.nome} value={menuItem.nome}></option>)
-          }
-        </datalist>
-
-      </div>
-
-      <div className={styles.addItemToOrderDiv}>
-        <select
-          value={selectedCategory != null ? selectedCategory : ''}
-          onChange={e => handleSelectCategoryChange(e)}
-        >
-          <option value='' disabled ></option>
-          {
-            categories.map((category, i) => <option key={"orderPage_" + category.nome} value={category.nome}>{category.nome}</option>)
-          }
-        </select>
-
-        {
-          selectedCategory != null &&
-          <select
-            value={orderedItem.menuItem != null ? orderedItem.menuItem : ''}
-            onChange={e => handleSelectMenuItemChange(e)}
-          >
-            <option value='' disabled></option>
+          <datalist id="menu-items-list">
             {
-              getMenuItemsFromCategory(selectedCategory).map((menuItemInThisCategory, i) => <option key={"orderPage_menuItemInThisCategory" + i} value={menuItemInThisCategory}>{menuItemInThisCategory}</option>)
+              menuItems.map((menuItem, i) => <option key={"orderPage_" + menuItem.nome} value={menuItem.nome}></option>)
+            }
+          </datalist>
+
+        </div>
+      }
+
+      {
+        (isInsertingMenuItemWithSearch == null || !isInsertingMenuItemWithSearch) &&
+        <div className={styles.addItemToOrderDiv}>
+          <select
+            value={selectedCategory}
+            onChange={e => handleSelectCategoryChange(e)}
+          >
+            <option value='' ></option>
+            {
+              categories.map((category, i) => <option key={"orderPage_" + category.nome} value={category.nome}>{category.nome}</option>)
             }
           </select>
-        }
 
-      </div>
+          {
+            selectedCategory != '' &&
+            <select
+              value={orderedItem.menuItem != null ? orderedItem.menuItem : ''}
+              onChange={e => handleSelectMenuItemChange(e)}
+            >
+              <option value='' disabled></option>
+              {
+                getMenuItemsFromCategory(selectedCategory).map((menuItemInThisCategory, i) => <option key={"orderPage_menuItemInThisCategory" + i} value={menuItemInThisCategory}>{menuItemInThisCategory}</option>)
+              }
+            </select>
+          }
+
+        </div>
+      }
 
       <div className={styles.addItemToOrderDiv}>
 
@@ -449,6 +479,7 @@ export default function Order() {
         <button onClick={() => addItem()}>Add Item</button>
 
       </div>
+
 
       {
         orderedItemsByCategories.map((orderedItemByCategory, i) =>
