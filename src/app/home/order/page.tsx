@@ -1,7 +1,7 @@
 'use client'
 
 import styles from './page.module.css'
-import { useState, useEffect, ChangeEvent } from 'react'
+import { useState, useEffect, ChangeEvent, MouseEvent } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { UnitaDiMisuraDatabaseTableRow } from '@/types/UnitaDiMisuraDatabaseTableRow';
 import { OrderedItem } from '@/types/OrderedItem';
@@ -48,6 +48,8 @@ export default function Order() {
     menuItem: null,
     menuItemCategory: null,
     price: null,
+    ingredients: [],
+    isWereIngredientsModified: false,
     isMenuItemAPizza: false,
     isCanMenuItemBeSlicedUp: false,
     slicedIn: null,
@@ -159,6 +161,7 @@ export default function Order() {
     orderedItemCopy.menuItem = menuItemName;
     orderedItemCopy.menuItemCategory = menuItemCategory;
     orderedItemCopy.price = getMenuItemPrice(menuItemName);
+    orderedItemCopy.ingredients = getMenuItemIngredients(menuItemName);
     orderedItemCopy.isMenuItemAPizza = checkIfMenuItemIsAPizza(menuItemCategory)
     orderedItemCopy.isCanMenuItemBeSlicedUp = checkIfMenuItemCanBeSlicedUp(menuItemCategory)
     setOrderedItem(orderedItemCopy)
@@ -227,6 +230,7 @@ export default function Order() {
     orderedItemCopy.menuItem = menuItemName;
     orderedItemCopy.menuItemCategory = menuItemCategory;
     orderedItemCopy.price = getMenuItemPrice(menuItemName);
+    orderedItemCopy.ingredients = getMenuItemIngredients(menuItemName);
     orderedItemCopy.isMenuItemAPizza = checkIfMenuItemIsAPizza(menuItemCategory)
     orderedItemCopy.isCanMenuItemBeSlicedUp = checkIfMenuItemCanBeSlicedUp(menuItemCategory)
     setOrderedItem(orderedItemCopy)
@@ -270,6 +274,18 @@ export default function Order() {
     }
 
     return menuItemPrice;
+  }
+
+  function getMenuItemIngredients(menuItemName: string) {
+    var menuItemIngredients: string[] = [];
+
+    if (menuItemsWithIngredientsMap.has(menuItemName)) {
+      var menuItemWithIngredient = menuItemsWithIngredientsMap.get(menuItemName);
+      if (menuItemWithIngredient != undefined)
+        menuItemIngredients = menuItemWithIngredient.ingredienti;
+    }
+
+    return menuItemIngredients;
   }
 
   function getMenuItemCategory(menuItemName: string) {
@@ -349,6 +365,8 @@ export default function Order() {
       menuItem: null,
       isMenuItemAPizza: false,
       price: null,
+      ingredients: [],
+      isWereIngredientsModified: false,
       isCanMenuItemBeSlicedUp: false,
       slicedIn: null,
       menuItemCategory: null,
@@ -358,8 +376,6 @@ export default function Order() {
 
     // clear selectedCategory
     setSelectedCategory('');
-
-    console.log("item", orderedItem)
 
     if (orderedItem.menuItemCategory == null)
       return
@@ -375,6 +391,13 @@ export default function Order() {
     // show hidden input fields
     setIsInsertingMenuItemWithSearch(null);
 
+  }
+
+  function removeIngredientFromOrderedItem(onClikEvent: MouseEvent<HTMLButtonElement>, ingredientName: string) {
+    var orderedItemCopy = getOrderedItemCopy();
+    orderedItemCopy.isWereIngredientsModified = true;
+    orderedItemCopy.ingredients.splice(orderedItemCopy.ingredients.indexOf(ingredientName), 1)
+    setOrderedItem(orderedItemCopy);
   }
 
   return (
@@ -465,6 +488,14 @@ export default function Order() {
         </div>
       }
 
+      {
+        orderedItem.ingredients.length != 0 &&
+        orderedItem.ingredients.map((ingredient, i) => <div key={"ingredient_" + ingredient}>
+          <span>{ingredient}</span>
+          <button onClick={e => removeIngredientFromOrderedItem(e, ingredient)}>X</button>
+        </div>)
+      }
+
       <div className={styles.addItemToOrderDiv}>
 
         <input
@@ -519,7 +550,15 @@ export default function Order() {
 
             <div className={styles.outerDiv}>
               {
-                orderedItemByCategory.orderedItem.map((orderedItem, j) => <span key={"orderedItem_" + j + "_inCategory_" + i}>{orderedItem.menuItem} {orderedItem.numberOf} {orderedItem.unitOfMeasure} {orderedItem.slicedIn != null && `tagliata in ${orderedItem.slicedIn}`}</span>)
+                orderedItemByCategory.orderedItem.map((orderedItem, j) => <div key={"orderedItem_" + j + "_inCategory_" + i}>
+                  <span>{orderedItem.numberOf} {orderedItem.menuItem} {orderedItem.isWereIngredientsModified && <strong>modificata</strong>} {orderedItem.unitOfMeasure} {orderedItem.slicedIn != null && `tagliata in ${orderedItem.slicedIn}`}</span>
+                  <div>
+                    <span>Ingredienti: </span>
+                    {
+                      orderedItem.ingredients.map((ingredient, i) => <div key={"orderedItemModifiedIngredient_" + ingredient}>{ingredient}</div>)
+                    }
+                  </div>
+                </div>)
               }
             </div>
           </div>)

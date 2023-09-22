@@ -2,6 +2,8 @@ export type OrderedItem = {
     menuItem: string | null,
     menuItemCategory: string | null,
     price: number | null,
+    ingredients: string[],
+    isWereIngredientsModified: boolean,
     isMenuItemAPizza: boolean,
     isCanMenuItemBeSlicedUp: boolean,
     slicedIn: number | null,
