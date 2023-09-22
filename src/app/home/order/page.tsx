@@ -8,6 +8,7 @@ import { UnitaDiMisuraDatabaseTableRow } from '@/types/UnitaDiMisuraDatabaseTabl
 import { OrderedItem } from '@/types/OrderedItem';
 import { CATEGORIE_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO, PIZZE_CATEGORIES, UNITA_DI_MISURA } from '@/lib/utils';
 import { CategoriesDatabaseTableRow } from '@/types/CategoriesDatabaseTableRow';
+import { TableOrderInfo } from '@/types/TableOrderInfo';
 
 type Inputs = {
   menuItem: EventTarget & HTMLInputElement | null,
@@ -36,6 +37,12 @@ export default function Order() {
     numberOf: null
   });
 
+  const [tableOrderInfo, setTableOrderInfo] = useState<TableOrderInfo>({
+    isFrittiPrimaDellaPizza: true,
+    isSiDividonoLaPizza: false,
+    slicedIn: null
+  });
+
   const [orderedItem, setOrderedItem] = useState<OrderedItem>({
     menuItem: null,
     menuItemCategory: null,
@@ -48,6 +55,8 @@ export default function Order() {
   const [orderedItemsByCategories, setOrderedItemsByCategories] = useState<OrderedItemsByCategories[]>([]);
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  var slicedInOptionsArray = [2, 4, 6, 8]
 
   useEffect(() => {
     console.log("runs one time only");
@@ -92,6 +101,10 @@ export default function Order() {
     console.log(orderedItem);
   }, [orderedItem])
 
+  useEffect(() => {
+    console.log(tableOrderInfo);
+  }, [tableOrderInfo])
+
   function getInputsCopy() {
     var inputsCopy: Inputs = {
       menuItem: inputs.menuItem,
@@ -102,6 +115,10 @@ export default function Order() {
 
   function getOrderedItemCopy() {
     return JSON.parse(JSON.stringify(orderedItem)) as OrderedItem
+  }
+
+  function getTableOrderInfoCopy() {
+    return JSON.parse(JSON.stringify(tableOrderInfo)) as TableOrderInfo
   }
 
   function getOrderedItemsByCategoriesCopy() {
@@ -147,6 +164,12 @@ export default function Order() {
     setOrderedItem(orderedItemCopy)
   }
 
+  function handleSlicedInTableOrderInfoChange(onChangeEvent: ChangeEvent<HTMLSelectElement>) {
+    var tableOrderInfoCopy = getTableOrderInfoCopy();
+    tableOrderInfoCopy.slicedIn = Number(onChangeEvent.target.value);
+    setTableOrderInfo(tableOrderInfoCopy)
+  }
+
   function handleUnitOfMeasurementChange(onChangeEvent: ChangeEvent<HTMLSelectElement>) {
     var orderedItemCopy = getOrderedItemCopy();
     orderedItemCopy.unitOfMeasure = onChangeEvent.target.value;
@@ -172,6 +195,24 @@ export default function Order() {
     orderedItemCopy.isMenuItemAPizza = checkIfMenuItemIsAPizza(menuItemName, menuItemCategory)
     orderedItemCopy.isCanMenuItemBeSlicedUp = checkIfMenuItemCanBeSlicedUp(menuItemName, menuItemCategory)
     setOrderedItem(orderedItemCopy)
+  }
+
+  function handleIsFrittiPrimaDellaPizzaChange(onChangeEvent: ChangeEvent<HTMLInputElement>) {
+    var tableOrderInfoCopy = getTableOrderInfoCopy();
+    tableOrderInfoCopy.isFrittiPrimaDellaPizza = onChangeEvent.target.checked;
+    setTableOrderInfo(tableOrderInfoCopy)
+  }
+
+  function handleIsSiDividonoLapizzaChange(onChangeEvent: ChangeEvent<HTMLInputElement>) {
+
+    var newBooleanValue = onChangeEvent.target.checked;
+
+    var tableOrderInfoCopy = getTableOrderInfoCopy();
+    tableOrderInfoCopy.isSiDividonoLaPizza = newBooleanValue;
+    if (newBooleanValue == false) {
+      tableOrderInfoCopy.slicedIn = null;
+    }
+    setTableOrderInfo(tableOrderInfoCopy)
   }
 
   function getMenuItemsFromCategory(categoryName: string) {
@@ -293,7 +334,8 @@ export default function Order() {
         <input
           type="checkbox"
           id="frittiPrimaDellaPizzaCheckbox"
-          onChange={e => console.log(e.target.checked)}
+          checked={tableOrderInfo.isFrittiPrimaDellaPizza}
+          onChange={e => handleIsFrittiPrimaDellaPizzaChange(e)}
         />
         <label htmlFor="frittiPrimaDellaPizzaCheckbox">Fritti Prima della Pizza</label>
       </div>
@@ -302,9 +344,26 @@ export default function Order() {
         <input
           type="checkbox"
           id="siDividonoLePizzeCheckbox"
-          onChange={e => console.log(e.target.checked)}
+          checked={tableOrderInfo.isSiDividonoLaPizza}
+          onChange={e => handleIsSiDividonoLapizzaChange(e)}
         />
         <label htmlFor="siDividonoLePizzeCheckbox">Si dividono la pizza</label>
+
+        {
+          tableOrderInfo.isSiDividonoLaPizza &&
+          <div>
+            <label>Sliced in</label>
+            <select
+              value={tableOrderInfo.slicedIn != null ? tableOrderInfo.slicedIn : ''}
+              onChange={e => handleSlicedInTableOrderInfoChange(e)}
+            >
+              <option value='' disabled></option>,
+              {
+                slicedInOptionsArray.map((option, i) => <option key={"slicedIn1_" + i} value={option}>{option}</option>,)
+              }
+            </select>
+          </div>
+        }
       </div>
 
       <div className={styles.addItemToOrderDiv}>
@@ -372,18 +431,17 @@ export default function Order() {
         }
 
         {
-          ((orderedItem.isMenuItemAPizza && (orderedItem.unitOfMeasure != null && orderedItem.unitOfMeasure.toUpperCase() != UNITA_DI_MISURA.pezzi.toUpperCase())) || orderedItem.isCanMenuItemBeSlicedUp) &&
+          ((orderedItem.isMenuItemAPizza && (orderedItem.unitOfMeasure != null && orderedItem.unitOfMeasure.toUpperCase() != UNITA_DI_MISURA.pezzi.toUpperCase())) || orderedItem.isCanMenuItemBeSlicedUp) && !tableOrderInfo.isSiDividonoLaPizza &&
           <div>
             <label>Sliced in</label>
             <select
               value={orderedItem.slicedIn != null ? orderedItem.slicedIn : ''}
               onChange={e => handleSlicedInChange(e)}
             >
-              <option value='' disabled></option>
-              <option value={2}>2</option>
-              <option value={4}>4</option>
-              <option value={6}>6</option>
-              <option value={8}>4</option>
+              <option value='' disabled></option>,
+              {
+                slicedInOptionsArray.map((option, i) => <option key={"slicedIn2_" + i} value={option}>{option}</option>,)
+              }
             </select>
           </div>
         }
