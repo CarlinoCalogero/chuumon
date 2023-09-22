@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { MenuItemDatabaseTableRow } from '@/types/MenuItemDatabaseTableRow';
 import { UnitaDiMisuraDatabaseTableRow } from '@/types/UnitaDiMisuraDatabaseTableRow';
 import { OrderedItem } from '@/types/OrderedItem';
-import { PIZZE_CATEGORIES } from '@/lib/utils';
+import { CATEGORIE_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO, PIZZE_CATEGORIES, UNITA_DI_MISURA } from '@/lib/utils';
 import { CategoriesDatabaseTableRow } from '@/types/CategoriesDatabaseTableRow';
 
 type Inputs = {
@@ -40,6 +40,8 @@ export default function Order() {
     menuItem: null,
     menuItemCategory: null,
     isMenuItemAPizza: false,
+    isCanMenuItemBeSlicedUp: false,
+    slicedIn: null,
     numberOf: null,
     unitOfMeasure: null
   });
@@ -121,6 +123,7 @@ export default function Order() {
     orderedItemCopy.menuItem = menuItemName;
     orderedItemCopy.menuItemCategory = menuItemCategory;
     orderedItemCopy.isMenuItemAPizza = checkIfMenuItemIsAPizza(menuItemName, menuItemCategory)
+    orderedItemCopy.isCanMenuItemBeSlicedUp = checkIfMenuItemCanBeSlicedUp(menuItemName, menuItemCategory)
     setOrderedItem(orderedItemCopy)
 
   }
@@ -135,6 +138,12 @@ export default function Order() {
 
     var orderedItemCopy = getOrderedItemCopy();
     orderedItemCopy.numberOf = Number(onChangeEvent.target.value)
+    setOrderedItem(orderedItemCopy)
+  }
+
+  function handleSlicedInChange(onChangeEvent: ChangeEvent<HTMLSelectElement>) {
+    var orderedItemCopy = getOrderedItemCopy();
+    orderedItemCopy.slicedIn = Number(onChangeEvent.target.value)
     setOrderedItem(orderedItemCopy)
   }
 
@@ -161,6 +170,7 @@ export default function Order() {
     orderedItemCopy.menuItem = menuItemName;
     orderedItemCopy.menuItemCategory = menuItemCategory;
     orderedItemCopy.isMenuItemAPizza = checkIfMenuItemIsAPizza(menuItemName, menuItemCategory)
+    orderedItemCopy.isCanMenuItemBeSlicedUp = checkIfMenuItemCanBeSlicedUp(menuItemName, menuItemCategory)
     setOrderedItem(orderedItemCopy)
   }
 
@@ -201,6 +211,20 @@ export default function Order() {
     return false;
   }
 
+  function checkIfMenuItemCanBeSlicedUp(menuItemName: string, menuItemCategory: string) {
+
+    if (menuItemName == '' || menuItemCategory == '')
+      return false
+
+    for (var count = 0; count < CATEGORIE_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO.length; count++) {
+      var currentSlicedUpItemCategory = CATEGORIE_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO[count];
+      if (currentSlicedUpItemCategory.toUpperCase() == menuItemCategory.toUpperCase())
+        return true
+    }
+
+    return false;
+  }
+
   function addItem() {
 
     console.log(orderedItem)
@@ -228,6 +252,8 @@ export default function Order() {
     setOrderedItem({
       menuItem: null,
       isMenuItemAPizza: false,
+      isCanMenuItemBeSlicedUp: false,
+      slicedIn: null,
       menuItemCategory: null,
       numberOf: null,
       unitOfMeasure: null
@@ -253,6 +279,24 @@ export default function Order() {
   return (
 
     <div className={styles.outerDiv}>
+
+      <div>
+        <input
+          type="checkbox"
+          id="frittiPrimaDellaPizzaCheckbox"
+          onChange={e => console.log(e.target.checked)}
+        />
+        <label htmlFor="frittiPrimaDellaPizzaCheckbox">Fritti Prima della Pizza</label>
+      </div>
+
+      <div>
+        <input
+          type="checkbox"
+          id="siDividonoLePizzeCheckbox"
+          onChange={e => console.log(e.target.checked)}
+        />
+        <label htmlFor="siDividonoLePizzeCheckbox">Si dividono la pizza</label>
+      </div>
 
       <div className={styles.addItemToOrderDiv}>
         <input
@@ -308,7 +352,7 @@ export default function Order() {
         {
           orderedItem.isMenuItemAPizza &&
           < select
-            value={''}
+            value={orderedItem.unitOfMeasure != null ? orderedItem.unitOfMeasure : ''}
             onChange={e => handleUnitOfMeasurementChange(e)}
           >
             <option value='' disabled></option>
@@ -316,6 +360,23 @@ export default function Order() {
               unitaDiMisuraArray.map((unitaDiMisura, i) => <option key={"orderPage_" + unitaDiMisura.nome} value={unitaDiMisura.nome}>{unitaDiMisura.nome}</option>)
             }
           </select>
+        }
+
+        {
+          ((orderedItem.isMenuItemAPizza && (orderedItem.unitOfMeasure != null && orderedItem.unitOfMeasure.toUpperCase() != UNITA_DI_MISURA.pezzi.toUpperCase())) || orderedItem.isCanMenuItemBeSlicedUp) &&
+          <div>
+            <label>Sliced in</label>
+            <select
+              value={orderedItem.slicedIn != null ? orderedItem.slicedIn : ''}
+              onChange={e => handleSlicedInChange(e)}
+            >
+              <option value='' disabled></option>
+              <option value={2}>2</option>
+              <option value={4}>4</option>
+              <option value={6}>6</option>
+              <option value={8}>4</option>
+            </select>
+          </div>
         }
 
         <button onClick={() => addItem()}>Add Item</button>
@@ -333,7 +394,7 @@ export default function Order() {
 
             <div className={styles.outerDiv}>
               {
-                orderedItemByCategory.thisCategoryOrderedItemsArray.map((orderedItem, j) => <span key={"orderedItem_" + j + "_inCategory_" + i}>{orderedItem.menuItem} {orderedItem.numberOf} {orderedItem.unitOfMeasure}</span>)
+                orderedItemByCategory.thisCategoryOrderedItemsArray.map((orderedItem, j) => <span key={"orderedItem_" + j + "_inCategory_" + i}>{orderedItem.menuItem} {orderedItem.numberOf} {orderedItem.unitOfMeasure} tagliata in {orderedItem.slicedIn}</span>)
               }
             </div>
           </div>)
