@@ -3,22 +3,17 @@
 import styles from './page.module.css'
 import { useState, useEffect, ChangeEvent } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { MenuItemDatabaseTableRow } from '@/types/MenuItemDatabaseTableRow';
 import { UnitaDiMisuraDatabaseTableRow } from '@/types/UnitaDiMisuraDatabaseTableRow';
 import { OrderedItem } from '@/types/OrderedItem';
-import { CATEGORIE_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO, PIZZE_CATEGORIES, UNITA_DI_MISURA } from '@/lib/utils';
-import { CategoriesDatabaseTableRow } from '@/types/CategoriesDatabaseTableRow';
+import { CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO, PIZZE_CATEGORIES, UNITA_DI_MISURA } from '@/lib/utils';
 import { TableOrderInfo } from '@/types/TableOrderInfo';
-import { MenuItemWithIngredients } from '@/types/MenuItemWithIngredients';
+import { MenuItemWithIngredientsMap } from '@/types/MenuItemWithIngredientsMap';
+import { CategoryWithMenuItemsMap } from '@/types/CategoryWithMenuItemsMap';
+import { OrderedItemByCategory } from '@/types/OrderedItemByCategory';
 
 type Inputs = {
   menuItem: EventTarget & HTMLInputElement | null,
   numberOf: EventTarget & HTMLInputElement | null
-}
-
-type OrderedItemsByCategories = {
-  categoryName: string,
-  thisCategoryOrderedItemsArray: OrderedItem[]
 }
 
 export default function Order() {
@@ -29,8 +24,12 @@ export default function Order() {
 
   console.log(searchParams.get('tableNumber'))
 
-  const [menuItemsWithIngredients, setMenuItemsWithIngredients] = useState<MenuItemWithIngredients[]>([]);
+  const [menuItemsWithIngredientsMap, setMenuItemsWithIngredientsMap] = useState<MenuItemWithIngredientsMap>(new Map());
+  const [categoriesWithMenuItemsMap, setCategoriesWithMenuItemsMap] = useState<CategoryWithMenuItemsMap>(new Map());
   const [unitaDiMisuraArray, setUnitaDiMisuraArray] = useState<UnitaDiMisuraDatabaseTableRow[]>([]);
+
+  const [menuItemsArray, setMenuItemsArray] = useState<string[]>([]);
+  const [categoriesArray, setCategoriesArray] = useState<string[]>([]);
 
   const [inputs, setInputs] = useState<Inputs>({
     menuItem: null,
@@ -48,13 +47,16 @@ export default function Order() {
   const [orderedItem, setOrderedItem] = useState<OrderedItem>({
     menuItem: null,
     menuItemCategory: null,
+    price: null,
     isMenuItemAPizza: false,
     isCanMenuItemBeSlicedUp: false,
     slicedIn: null,
     numberOf: null,
     unitOfMeasure: null
   });
-  const [orderedItemsByCategories, setOrderedItemsByCategories] = useState<OrderedItemsByCategories[]>([]);
+
+  const [orderedItemsByCategoriesMap, setOrderedItemsByCategoriesMap] = useState<OrderedItemByCategory>(new Map());
+  const [orderedItemsByCategoriesArray, setOrderedItemsByCategoriesArray] = useState<{ categoria: string; orderedItem: OrderedItem[] }[]>([]);
 
   const [selectedCategory, setSelectedCategory] = useState<string>('');
 
@@ -71,20 +73,44 @@ export default function Order() {
     })
       .then((res) => res.json()) // Parse the response data as JSON
       .then((data) => {
-        console.log("data", data)
-        setMenuItemsWithIngredients(data.menuItemsWithIngredients);
+        setMenuItemsWithIngredientsMap(new Map(Object.entries(data.menuItemsWithIngredientsMap)));
+        setCategoriesWithMenuItemsMap(new Map(Object.entries(data.categoriesWithMenuItemsMap)))
         setUnitaDiMisuraArray(data.unitaDiMisura);
       }); // Update the state with the fetched data
 
   }, [])
 
   useEffect(() => {
-    console.log(menuItemsWithIngredients);
-  }, [menuItemsWithIngredients])
+    var newMenuItemsArray: string[] = [];
+    for (var key of menuItemsWithIngredientsMap.keys()) {
+      newMenuItemsArray.push(key);
+    }
+    setMenuItemsArray(newMenuItemsArray)
+  }, [menuItemsWithIngredientsMap])
 
   useEffect(() => {
-    console.log(orderedItemsByCategories);
-  }, [orderedItemsByCategories])
+    console.log("menuItemsArray", menuItemsArray);
+  }, [menuItemsArray])
+
+  useEffect(() => {
+    var newCategoriesArray: string[] = [];
+    for (var key of categoriesWithMenuItemsMap.keys()) {
+      newCategoriesArray.push(key);
+    }
+    setCategoriesArray(newCategoriesArray)
+  }, [categoriesWithMenuItemsMap])
+
+  useEffect(() => {
+    console.log("categoriesArray", categoriesArray);
+  }, [categoriesArray])
+
+  useEffect(() => {
+    setOrderedItemsByCategoriesArray(Array.from(orderedItemsByCategoriesMap, ([categoria, orderedItem]) => ({ categoria, orderedItem })))
+  }, [orderedItemsByCategoriesMap])
+
+  useEffect(() => {
+    console.log("orderedItemsByCategoriesArray", orderedItemsByCategoriesArray);
+  }, [orderedItemsByCategoriesArray])
 
   useEffect(() => {
     console.log(orderedItem);
@@ -115,7 +141,7 @@ export default function Order() {
   }
 
   function getOrderedItemsByCategoriesCopy() {
-    return JSON.parse(JSON.stringify(orderedItemsByCategories)) as OrderedItemsByCategories[]
+    return new Map(orderedItemsByCategoriesMap)
   }
 
   function handleMenuItemChange(onChangeEvent: ChangeEvent<HTMLInputElement>) {
@@ -132,8 +158,9 @@ export default function Order() {
     var orderedItemCopy = getOrderedItemCopy();
     orderedItemCopy.menuItem = menuItemName;
     orderedItemCopy.menuItemCategory = menuItemCategory;
-    orderedItemCopy.isMenuItemAPizza = checkIfMenuItemIsAPizza(menuItemName, menuItemCategory)
-    orderedItemCopy.isCanMenuItemBeSlicedUp = checkIfMenuItemCanBeSlicedUp(menuItemName, menuItemCategory)
+    orderedItemCopy.price = getMenuItemPrice(menuItemName);
+    orderedItemCopy.isMenuItemAPizza = checkIfMenuItemIsAPizza(menuItemCategory)
+    orderedItemCopy.isCanMenuItemBeSlicedUp = checkIfMenuItemCanBeSlicedUp(menuItemCategory)
     setOrderedItem(orderedItemCopy)
 
     // hide the other type of insert
@@ -199,8 +226,9 @@ export default function Order() {
     var orderedItemCopy = getOrderedItemCopy();
     orderedItemCopy.menuItem = menuItemName;
     orderedItemCopy.menuItemCategory = menuItemCategory;
-    orderedItemCopy.isMenuItemAPizza = checkIfMenuItemIsAPizza(menuItemName, menuItemCategory)
-    orderedItemCopy.isCanMenuItemBeSlicedUp = checkIfMenuItemCanBeSlicedUp(menuItemName, menuItemCategory)
+    orderedItemCopy.price = getMenuItemPrice(menuItemName);
+    orderedItemCopy.isMenuItemAPizza = checkIfMenuItemIsAPizza(menuItemCategory)
+    orderedItemCopy.isCanMenuItemBeSlicedUp = checkIfMenuItemCanBeSlicedUp(menuItemCategory)
     setOrderedItem(orderedItemCopy)
   }
 
@@ -223,31 +251,44 @@ export default function Order() {
   }
 
   function getMenuItemsFromCategory(categoryName: string) {
-    var menuItemsArray: string[] = [];
-    menuItemsWithIngredients.forEach(menuItem => {
-      if (menuItem.nome_categoria == categoryName)
-        menuItemsArray.push(menuItem.nome);
-    });
-    return menuItemsArray;
+    var returnValue: string[] | undefined;
+    if (categoriesWithMenuItemsMap.has(categoryName))
+      returnValue = categoriesWithMenuItemsMap.get(categoryName)
+
+    if (returnValue != undefined)
+      return returnValue;
+    return [];
+  }
+
+  function getMenuItemPrice(menuItemName: string) {
+    var menuItemPrice = -1;
+
+    if (menuItemsWithIngredientsMap.has(menuItemName)) {
+      var menuItemWithIngredient = menuItemsWithIngredientsMap.get(menuItemName);
+      if (menuItemWithIngredient != undefined)
+        menuItemPrice = menuItemWithIngredient.prezzo;
+    }
+
+    return menuItemPrice;
   }
 
   function getMenuItemCategory(menuItemName: string) {
 
-    if (menuItemName == '')
-      return menuItemName
+    var resultCategory = '';
 
-    for (var count = 0; count < menuItemsWithIngredients.length; count++) {
-      var currentMenuItem = menuItemsWithIngredients[count];
-      if (currentMenuItem.nome.toUpperCase() == menuItemName.toUpperCase())
-        return currentMenuItem.nome_categoria
+    if (menuItemsWithIngredientsMap.has(menuItemName)) {
+      var menuItemInfo = menuItemsWithIngredientsMap.get(menuItemName);
+      if (menuItemInfo != undefined)
+        resultCategory = menuItemInfo.categoria;
     }
 
-    return '';
+    return resultCategory;
+
   }
 
-  function checkIfMenuItemIsAPizza(menuItemName: string, menuItemCategory: string) {
+  function checkIfMenuItemIsAPizza(menuItemCategory: string) {
 
-    if (menuItemName == '' || menuItemCategory == '')
+    if (menuItemCategory == '')
       return false
 
     for (var count = 0; count < PIZZE_CATEGORIES.length; count++) {
@@ -259,13 +300,13 @@ export default function Order() {
     return false;
   }
 
-  function checkIfMenuItemCanBeSlicedUp(menuItemName: string, menuItemCategory: string) {
+  function checkIfMenuItemCanBeSlicedUp(menuItemCategory: string) {
 
-    if (menuItemName == '' || menuItemCategory == '')
+    if (menuItemCategory == '')
       return false
 
-    for (var count = 0; count < CATEGORIE_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO.length; count++) {
-      var currentSlicedUpItemCategory = CATEGORIE_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO[count];
+    for (var count = 0; count < CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO.length; count++) {
+      var currentSlicedUpItemCategory = CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO[count];
       if (currentSlicedUpItemCategory.toUpperCase() == menuItemCategory.toUpperCase())
         return true
     }
@@ -274,8 +315,6 @@ export default function Order() {
   }
 
   function addItem() {
-
-    console.log(orderedItem)
 
     //check if all fields are not null
     for (const [key, value] of Object.entries(orderedItem)) {
@@ -309,6 +348,7 @@ export default function Order() {
     setOrderedItem({
       menuItem: null,
       isMenuItemAPizza: false,
+      price: null,
       isCanMenuItemBeSlicedUp: false,
       slicedIn: null,
       menuItemCategory: null,
@@ -319,18 +359,18 @@ export default function Order() {
     // clear selectedCategory
     setSelectedCategory('');
 
+    console.log("item", orderedItem)
+
+    if (orderedItem.menuItemCategory == null)
+      return
+
     var orderedItemsByCategoriesCopy = getOrderedItemsByCategoriesCopy();
-    var categoryWasFound = false;
-    var count = 0;
-    while (!categoryWasFound && count < orderedItemsByCategoriesCopy.length) {
-      var currentCategory = orderedItemsByCategoriesCopy[count];
-      if (currentCategory.categoryName == orderedItem.menuItemCategory) {
-        currentCategory.thisCategoryOrderedItemsArray.push(orderedItem);
-        categoryWasFound = true;
-      }
-      count++
+    if (orderedItemsByCategoriesCopy.has(orderedItem.menuItemCategory)) {
+      orderedItemsByCategoriesCopy.get(orderedItem.menuItemCategory)?.push(orderedItem);
+    } else {
+      orderedItemsByCategoriesCopy.set(orderedItem.menuItemCategory, [orderedItem])
     }
-    setOrderedItemsByCategories(orderedItemsByCategoriesCopy);
+    setOrderedItemsByCategoriesMap(orderedItemsByCategoriesCopy);
 
     // show hidden input fields
     setIsInsertingMenuItemWithSearch(null);
@@ -389,7 +429,7 @@ export default function Order() {
 
           <datalist id="menu-items-list">
             {
-              menuItemsWithIngredients.map((menuItem, i) => <option key={"orderPage_" + menuItem.nome} value={menuItem.nome}></option>)
+              menuItemsArray.map((menuItem, i) => <option key={"orderPage_" + menuItem} value={menuItem}></option>)
             }
           </datalist>
 
@@ -405,7 +445,7 @@ export default function Order() {
           >
             <option value='' ></option>
             {
-              categories.map((category, i) => <option key={"orderPage_" + category.nome} value={category.nome}>{category.nome}</option>)
+              categoriesArray.map((category, i) => <option key={"orderPage_" + category} value={category}>{category}</option>)
             }
           </select>
 
@@ -469,17 +509,17 @@ export default function Order() {
 
 
       {
-        orderedItemsByCategories.map((orderedItemByCategory, i) =>
-          orderedItemByCategory.thisCategoryOrderedItemsArray.length != 0 &&
+        orderedItemsByCategoriesArray.map((orderedItemByCategory, i) =>
+          orderedItemByCategory.orderedItem.length != 0 &&
           <div
             key={"orderedItemByCategory_" + i}
           >
 
-            <h2>{orderedItemByCategory.categoryName}</h2>
+            <h2>{orderedItemByCategory.categoria}</h2>
 
             <div className={styles.outerDiv}>
               {
-                orderedItemByCategory.thisCategoryOrderedItemsArray.map((orderedItem, j) => <span key={"orderedItem_" + j + "_inCategory_" + i}>{orderedItem.menuItem} {orderedItem.numberOf} {orderedItem.unitOfMeasure} {orderedItem.slicedIn != null && `tagliata in ${orderedItem.slicedIn}`}</span>)
+                orderedItemByCategory.orderedItem.map((orderedItem, j) => <span key={"orderedItem_" + j + "_inCategory_" + i}>{orderedItem.menuItem} {orderedItem.numberOf} {orderedItem.unitOfMeasure} {orderedItem.slicedIn != null && `tagliata in ${orderedItem.slicedIn}`}</span>)
               }
             </div>
           </div>)
