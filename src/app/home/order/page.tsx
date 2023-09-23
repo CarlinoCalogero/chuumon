@@ -588,7 +588,8 @@ export default function Order() {
       orderedItemCopy.isWereIngredientsModified = true;
       orderedItemCopy.removedIngredients.push(ingredientName);
 
-      if (confirm(`Intollerante/Allergico a \"${ingredientName}\"?`)) {
+      // do not ask if customer is intollerant to ingredient if it is an added ingredient
+      if (!orderedItemCopy.addedIngredients.includes(ingredientName) && confirm(`Intollerante/Allergico a \"${ingredientName}\"?`)) {
         orderedItemCopy.intolleranzaA.push(ingredientName);
       }
 
