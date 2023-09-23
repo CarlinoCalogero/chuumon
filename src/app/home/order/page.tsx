@@ -5,12 +5,13 @@ import { useState, useEffect, ChangeEvent, MouseEvent } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { UnitaDiMisuraDatabaseTableRow } from '@/types/UnitaDiMisuraDatabaseTableRow';
 import { OrderedItem } from '@/types/OrderedItem';
-import { CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO, PIZZE_CATEGORIES, UNITA_DI_MISURA } from '@/lib/utils';
+import { CALZONI, CATEGORIE_CREA, CATEGORIE_CREA_ARRAY, CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO, FARINE_SPECIALI, PINSE_ROMANE, PIZZE_BIANCHE, PIZZE_CATEGORIES, PIZZE_ROSSE, UNITA_DI_MISURA } from '@/lib/utils';
 import { TableOrderInfo } from '@/types/TableOrderInfo';
 import { MenuItemWithIngredientsMap } from '@/types/MenuItemWithIngredientsMap';
 import { CategoryWithMenuItemsMap } from '@/types/CategoryWithMenuItemsMap';
 import { OrderedItemByCategory } from '@/types/OrderedItemByCategory';
 import { IngredienteDatabaseTableRow } from '@/types/IngredienteDatabaseTableRow';
+import { CategoriaConIngredientiCheLaDefiniscono } from '@/types/CategoriaConIngredientiCheLaDefiniscono';
 
 type Inputs = {
   menuItem: EventTarget & HTMLInputElement | null,
@@ -41,6 +42,7 @@ export default function Order() {
   });
 
   const [isInsertingMenuItemWithSearch, setIsInsertingMenuItemWithSearch] = useState<boolean | null>(null);
+  const [isWasCreaButtonPressed, setIsWasCreaButtonPressed] = useState<boolean>(false);
 
   const [tableOrderInfo, setTableOrderInfo] = useState<TableOrderInfo>({
     isFrittiPrimaDellaPizza: true,
@@ -69,6 +71,7 @@ export default function Order() {
 
   const [addedIngredient, setAddedIngredient] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedCreaCategory, setSelectedCreaCategory] = useState<string>('');
 
   var slicedInOptionsArray = [2, 4, 6, 8]
 
@@ -357,6 +360,18 @@ export default function Order() {
   }
 
   function addIngredient() {
+
+    if (orderedItem.ingredients.includes(addedIngredient)) {
+      //reset addedIngredient
+      setAddedIngredient('');
+
+      //clear input field
+      if (inputs.addIngredient != null)
+        inputs.addIngredient.value = ''
+      return
+    }
+
+
     var orderedItemCopy = getOrderedItemCopy();
     orderedItemCopy.ingredients.push(addedIngredient);
     orderedItemCopy.addedIngredients.push(addedIngredient);
@@ -371,30 +386,114 @@ export default function Order() {
       inputs.addIngredient.value = ''
   }
 
-  function addItem() {
+  function tryCategory(orderedItemCopy: OrderedItem, categoriaConIngredientiCheLaDefiniscono: CategoriaConIngredientiCheLaDefiniscono) {
 
-    //check if all fields are not null
-    for (const [key, value] of Object.entries(orderedItem)) {
+    if (orderedItemCopy.menuItemCategory != null) {
+      return orderedItemCopy.menuItemCategory;
+    }
 
-      if (orderedItem.isMenuItemAPizza && value == null) { // orderedItem is a pizza
-        if (key == "slicedIn" && orderedItem.unitOfMeasure != null && orderedItem.unitOfMeasure.toUpperCase() == UNITA_DI_MISURA.pezzi.toUpperCase()) {
-          console.log("Pezzi cannot be sliced up")
-        } else {
-          console.log("orderedItem is a pizza &", key, "is null")
-          return
-        }
-      } else if (!orderedItem.isMenuItemAPizza && key != "unitOfMeasure" && value == null) { // orderedItem is not a pizza
-        if (key == "slicedIn" && !orderedItem.isCanMenuItemBeSlicedUp) {
-          console.log("This item cannot be sliced up")
-        } else {
-          console.log("orderedItem is not a pizza &", key, "is null")
-          return
-        }
+    categoriaConIngredientiCheLaDefiniscono.ingredientiCheDefinisconoLaCategoria.forEach(ingredient => {
+      if (orderedItemCopy.ingredients.includes(ingredient))
+        return categoriaConIngredientiCheLaDefiniscono.nomeCategoria;
+    });
 
+    return null;
+
+  }
+
+  function checkOrderedItemFields() {
+
+    var orderedItemCopy = getOrderedItemCopy()
+
+    // menuItem Check
+    if (orderedItemCopy.menuItem == null) {
+      if (isWasCreaButtonPressed) {
+        orderedItemCopy.menuItem = `${selectedCreaCategory.toUpperCase()} Personalizzato`
+      } else {
+        console.log("MenuItem is null")
+        return;
       }
+    }
+
+    // menuItemCategory
+    if (orderedItemCopy.menuItemCategory == null) {
+      if (isWasCreaButtonPressed) {
+        if (selectedCreaCategory.toUpperCase() == CATEGORIE_CREA.pizza) {
+
+          orderedItemCopy.menuItemCategory = tryCategory(orderedItemCopy, FARINE_SPECIALI);
+          orderedItemCopy.menuItemCategory = tryCategory(orderedItemCopy, PINSE_ROMANE);
+          //non invertire l'ordine di pizze rosse e pizze bianche altrimenti una pizza rossa può risultare essere di categoria "PIZZE_BIANCHE"
+          orderedItemCopy.menuItemCategory = tryCategory(orderedItemCopy, PIZZE_ROSSE);
+          orderedItemCopy.menuItemCategory = tryCategory(orderedItemCopy, PIZZE_BIANCHE);
+
+        } else {
+          orderedItemCopy.menuItemCategory = CALZONI.nomeCategoria;
+        }
+      }
+    }
+
+    if (orderedItemCopy == null) {
 
     }
 
+    if (orderedItemCopy == null) {
+
+    }
+
+    if (orderedItemCopy == null) {
+
+    }
+
+    if (orderedItemCopy == null) {
+
+    }
+
+    if (orderedItemCopy == null) {
+
+    }
+
+  }
+
+  function addItem() {
+
+
+
+    if (orderedItem.menuItemCategory == null)
+      return
+
+    var orderedItemsByCategoriesCopy = getOrderedItemsByCategoriesCopy();
+    if (orderedItemsByCategoriesCopy.has(orderedItem.menuItemCategory)) {
+      orderedItemsByCategoriesCopy.get(orderedItem.menuItemCategory)?.push(orderedItem);
+    } else {
+      orderedItemsByCategoriesCopy.set(orderedItem.menuItemCategory, [orderedItem])
+    }
+    setOrderedItemsByCategoriesMap(orderedItemsByCategoriesCopy);
+
+    // reset
+    resetFieldsAndOrderedItem();
+
+  }
+
+  function removeIngredientFromOrderedItem(onClikEvent: MouseEvent<HTMLButtonElement>, ingredientName: string) {
+    var orderedItemCopy = getOrderedItemCopy();
+    orderedItemCopy.isWereIngredientsModified = true;
+    orderedItemCopy.removedIngredients = [...orderedItemCopy.removedIngredients, ...orderedItemCopy.ingredients.splice(orderedItemCopy.ingredients.indexOf(ingredientName), 1)]
+
+    if (confirm(`Intollerante/Allergico a \"${ingredientName}\"?`)) {
+      orderedItemCopy.intolleranzaA.push(ingredientName);
+    }
+
+    setOrderedItem(orderedItemCopy);
+  }
+
+  function creaButtonWasPressed(onClickEvent: MouseEvent<HTMLButtonElement>) {
+    setIsWasCreaButtonPressed(!isWasCreaButtonPressed);
+
+    // reset
+    resetFieldsAndOrderedItem();
+  }
+
+  function resetFieldsAndOrderedItem() {
     // clear the fields
     for (const [key, value] of Object.entries(inputs)) {
       if (value != null)
@@ -421,32 +520,27 @@ export default function Order() {
     // clear selectedCategory
     setSelectedCategory('');
 
-    if (orderedItem.menuItemCategory == null)
-      return
-
-    var orderedItemsByCategoriesCopy = getOrderedItemsByCategoriesCopy();
-    if (orderedItemsByCategoriesCopy.has(orderedItem.menuItemCategory)) {
-      orderedItemsByCategoriesCopy.get(orderedItem.menuItemCategory)?.push(orderedItem);
-    } else {
-      orderedItemsByCategoriesCopy.set(orderedItem.menuItemCategory, [orderedItem])
-    }
-    setOrderedItemsByCategoriesMap(orderedItemsByCategoriesCopy);
-
     // show hidden input fields
     setIsInsertingMenuItemWithSearch(null);
-
   }
 
-  function removeIngredientFromOrderedItem(onClikEvent: MouseEvent<HTMLButtonElement>, ingredientName: string) {
-    var orderedItemCopy = getOrderedItemCopy();
-    orderedItemCopy.isWereIngredientsModified = true;
-    orderedItemCopy.removedIngredients = [...orderedItemCopy.removedIngredients, ...orderedItemCopy.ingredients.splice(orderedItemCopy.ingredients.indexOf(ingredientName), 1)]
+  function handleSelectedCreaCategory(onChangeEvent: ChangeEvent<HTMLSelectElement>) {
 
-    if (confirm(`Intollerante/Allergico a \"${ingredientName}\"?`)) {
-      orderedItemCopy.intolleranzaA.push(ingredientName);
+    var creaCategory = onChangeEvent.target.value;
+
+    var orderedItemCopy = getOrderedItemCopy();
+
+
+    if (creaCategory == CATEGORIE_CREA.pizza) {
+      orderedItemCopy.isMenuItemAPizza = true;
+      orderedItemCopy.isCanMenuItemBeSlicedUp = false;
+    } else {
+      orderedItemCopy.isMenuItemAPizza = false;
+      orderedItemCopy.isCanMenuItemBeSlicedUp = true;
     }
 
-    setOrderedItem(orderedItemCopy);
+    setOrderedItem(orderedItemCopy)
+    setSelectedCreaCategory(creaCategory)
   }
 
   return (
@@ -489,8 +583,27 @@ export default function Order() {
         }
       </div>
 
+      <div>
+        <button onClick={e => creaButtonWasPressed(e)}>Crea</button>
+        {
+          isWasCreaButtonPressed &&
+          <div>
+            <label>Selezione categoria:</label>
+            <select
+              value={selectedCreaCategory}
+              onChange={e => handleSelectedCreaCategory(e)}
+            >
+              <option value='' disabled></option>,
+              {
+                CATEGORIE_CREA_ARRAY.map((creaCategory, i) => <option key={"creaCategory_" + creaCategory + i} value={creaCategory}>{creaCategory}</option>,)
+              }
+            </select>
+          </div>
+        }
+      </div>
+
       {
-        (isInsertingMenuItemWithSearch == null || isInsertingMenuItemWithSearch) &&
+        (isInsertingMenuItemWithSearch == null || isInsertingMenuItemWithSearch) && !isWasCreaButtonPressed &&
         <div className={styles.addItemToOrderDiv}>
           <input
             type='search'
@@ -501,7 +614,7 @@ export default function Order() {
 
           <datalist id="menu-items-list">
             {
-              menuItemsArray.map((menuItem, i) => <option key={"orderPage_" + menuItem} value={menuItem}></option>)
+              menuItemsArray.map((menuItem, i) => <option key={"orderPage_" + menuItem + i} value={menuItem}></option>)
             }
           </datalist>
 
@@ -509,7 +622,7 @@ export default function Order() {
       }
 
       {
-        (isInsertingMenuItemWithSearch == null || !isInsertingMenuItemWithSearch) &&
+        (isInsertingMenuItemWithSearch == null || !isInsertingMenuItemWithSearch) && !isWasCreaButtonPressed &&
         <div className={styles.addItemToOrderDiv}>
           <select
             value={selectedCategory}
@@ -517,7 +630,7 @@ export default function Order() {
           >
             <option value='' ></option>
             {
-              categoriesArray.map((category, i) => <option key={"orderPage_" + category} value={category}>{category}</option>)
+              categoriesArray.map((category, i) => <option key={"orderPage_" + category + i} value={category}>{category}</option>)
             }
           </select>
 
@@ -538,10 +651,10 @@ export default function Order() {
       }
 
       {
-        orderedItem.ingredients.length != 0 &&
+        (orderedItem.ingredients.length != 0 || isWasCreaButtonPressed) &&
         <div>
           {
-            orderedItem.ingredients.map((ingredient, i) => <div key={"ingredient_" + ingredient}>
+            orderedItem.ingredients.map((ingredient, i) => <div key={"ingredient_" + ingredient + i}>
               <span>{ingredient}</span>
               <button onClick={e => removeIngredientFromOrderedItem(e, ingredient)}>X</button>
             </div>)
@@ -555,7 +668,7 @@ export default function Order() {
 
           <datalist id="ingredients-list">
             {
-              ingredientiArray.map((ingredient, i) => <option key={"orderPage_" + ingredient.nome} value={ingredient.nome}></option>)
+              ingredientiArray.map((ingredient, i) => <option key={"orderPage_" + ingredient.nome + i} value={ingredient.nome}></option>)
             }
           </datalist>
           <button onClick={addIngredient}>Add Ingredient</button>
@@ -579,7 +692,7 @@ export default function Order() {
           >
             <option value='' disabled></option>
             {
-              unitaDiMisuraArray.map((unitaDiMisura, i) => <option key={"orderPage_" + unitaDiMisura.nome} value={unitaDiMisura.nome}>{unitaDiMisura.nome}</option>)
+              unitaDiMisuraArray.map((unitaDiMisura, i) => <option key={"orderPage_" + unitaDiMisura.nome + i} value={unitaDiMisura.nome}>{unitaDiMisura.nome}</option>)
             }
           </select>
         }
@@ -623,14 +736,14 @@ export default function Order() {
                     <div>
                       <span>Ingredienti:</span>
                       {
-                        orderedItem.ingredients.map((ingredient, i) => <div key={"orderedItemModifiedIngredient_" + ingredient}>{ingredient}</div>)
+                        orderedItem.ingredients.map((ingredient, i) => <div key={"orderedItemModifiedIngredient_" + ingredient + i}>{ingredient}</div>)
                       }
                       {
                         orderedItem.removedIngredients.length != 0 &&
                         <div>
                           <span>Ingredienti tolti:</span>
                           {
-                            orderedItem.removedIngredients.map((removedIngredient, i) => <div key={"orderedItemRemovedIngredient_" + removedIngredient}>{removedIngredient}</div>)
+                            orderedItem.removedIngredients.map((removedIngredient, i) => <div key={"orderedItemRemovedIngredient_" + removedIngredient + i}>{removedIngredient}</div>)
                           }
                         </div>
                       }
@@ -639,7 +752,7 @@ export default function Order() {
                         <div>
                           <span>Ingredienti aggiunti:</span>
                           {
-                            orderedItem.addedIngredients.map((newIngredient, i) => <div key={"orderedItemNewIngredient_" + newIngredient}>{newIngredient}</div>)
+                            orderedItem.addedIngredients.map((newIngredient, i) => <div key={"orderedItemNewIngredient_" + newIngredient + i}>{newIngredient}</div>)
                           }
                         </div>
                       }
