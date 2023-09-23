@@ -288,11 +288,16 @@ export default function Order() {
   function getMenuItemIngredients(menuItemName: string) {
     var menuItemIngredients: string[] = [];
 
+    console.log("ingredientiPrima", menuItemIngredients)
+
     if (menuItemsWithIngredientsMap.has(menuItemName)) {
       var menuItemWithIngredient = menuItemsWithIngredientsMap.get(menuItemName);
       if (menuItemWithIngredient != undefined)
         menuItemIngredients = menuItemWithIngredient.ingredienti;
     }
+
+    if (menuItemIngredients[0] == null)
+      menuItemIngredients = [];
 
     return menuItemIngredients;
   }
@@ -606,30 +611,33 @@ export default function Order() {
               {
                 orderedItemByCategory.orderedItem.map((orderedItem, j) => <div key={"orderedItem_" + j + "_inCategory_" + i}>
                   <span>{orderedItem.numberOf} {orderedItem.menuItem} {orderedItem.isWereIngredientsModified && <strong>modificata</strong>} {orderedItem.unitOfMeasure} {orderedItem.slicedIn != null && `tagliata in ${orderedItem.slicedIn}`}</span>
-                  <div>
-                    <span>Ingredienti:</span>
-                    {
-                      orderedItem.ingredients.map((ingredient, i) => <div key={"orderedItemModifiedIngredient_" + ingredient}>{ingredient}</div>)
-                    }
-                    {
-                      orderedItem.removedIngredients.length != 0 &&
-                      <div>
-                        <span>Ingredienti tolti:</span>
-                        {
-                          orderedItem.removedIngredients.map((removedIngredient, i) => <div key={"orderedItemRemovedIngredient_" + removedIngredient}>{removedIngredient}</div>)
-                        }
-                      </div>
-                    }
-                    {
-                      orderedItem.addedIngredients.length != 0 &&
-                      <div>
-                        <span>Ingredienti aggiunti:</span>
-                        {
-                          orderedItem.addedIngredients.map((newIngredient, i) => <div key={"orderedItemNewIngredient_" + newIngredient}>{newIngredient}</div>)
-                        }
-                      </div>
-                    }
-                  </div>
+                  {
+                    orderedItem.ingredients.length != 0 &&
+                    <div>
+                      <span>Ingredienti:</span>
+                      {
+                        orderedItem.ingredients.map((ingredient, i) => <div key={"orderedItemModifiedIngredient_" + ingredient}>{ingredient}</div>)
+                      }
+                      {
+                        orderedItem.removedIngredients.length != 0 &&
+                        <div>
+                          <span>Ingredienti tolti:</span>
+                          {
+                            orderedItem.removedIngredients.map((removedIngredient, i) => <div key={"orderedItemRemovedIngredient_" + removedIngredient}>{removedIngredient}</div>)
+                          }
+                        </div>
+                      }
+                      {
+                        orderedItem.addedIngredients.length != 0 &&
+                        <div>
+                          <span>Ingredienti aggiunti:</span>
+                          {
+                            orderedItem.addedIngredients.map((newIngredient, i) => <div key={"orderedItemNewIngredient_" + newIngredient}>{newIngredient}</div>)
+                          }
+                        </div>
+                      }
+                    </div>
+                  }
                 </div>)
               }
             </div>
