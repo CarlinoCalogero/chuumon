@@ -13,6 +13,7 @@ import { OrderedItemByCategoryMap } from '@/types/OrderedItemByCategoryMap';
 import { IngredienteDatabaseTableRow } from '@/types/IngredienteDatabaseTableRow';
 import { CategoriaConIngredientiCheLaDefiniscono } from '@/types/CategoriaConIngredientiCheLaDefiniscono';
 import { OrderedItemsByCategoriesArray } from '@/types/OrderedItemsByCategoriesArray';
+import { TableOrder } from '@/types/TableOrder';
 
 type Inputs = {
   menuItem: EventTarget & HTMLInputElement | null,
@@ -46,6 +47,7 @@ export default function Order() {
   const [isWasCreaButtonPressed, setIsWasCreaButtonPressed] = useState<boolean>(false);
 
   const [tableOrderInfo, setTableOrderInfo] = useState<TableOrderInfo>({
+    tableNumber: Number(searchParams.get('tableNumber')),
     isFrittiPrimaDellaPizza: true,
     isSiDividonoLaPizza: false,
     slicedIn: null,
@@ -686,6 +688,42 @@ export default function Order() {
     setSelectedCreaCategory(creaCategory)
   }
 
+  function placeAnOrder() {
+
+    if (tableOrderInfo.numeroAdulti == null) {
+      console.log("numero adulti is null")
+      return;
+    }
+
+    if (tableOrderInfo.numeroBambini == null) {
+      console.log("numero bambini is null")
+      return;
+    }
+
+    var tableOrder: TableOrder = {
+      dateAndTime: new Date(),
+      tableOrderInfo: tableOrderInfo,
+      orderedItemsByCategoriesArray: orderedItemsByCategoriesArray
+    }
+
+    console.log("before placing the order", tableOrder)
+
+    fetch("http://localhost:3000/home/order/api", {
+      method: "POST",
+      body: JSON.stringify(tableOrder),
+      headers: {
+        "Content-Type": "application/json", // Set the request headers to indicate JSON format
+      },
+    })
+      .then((res) => res.json()) // Parse the response data as JSON
+      .then((data) => {
+        console.log("response", data)
+        //router.push('/home');
+
+      }); // Update the state with the fetched data
+
+  }
+
   return (
 
     <div className={styles.outerDiv}>
@@ -941,6 +979,8 @@ export default function Order() {
           </div>)
       }
 
+
+      <button onClick={placeAnOrder}>Order</button>
       <button onClick={() => router.push("/home")}>Back</button>
 
     </div >

@@ -1,4 +1,5 @@
 export type TableOrderInfo = {
+    tableNumber: number,
     isFrittiPrimaDellaPizza: boolean,
     isSiDividonoLaPizza: boolean,
     slicedIn: number | null,

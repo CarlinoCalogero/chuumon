@@ -2,7 +2,7 @@ import { OrderedItemsByCategoriesArray } from "./OrderedItemsByCategoriesArray"
 import { TableOrderInfo } from "./TableOrderInfo"
 
 export type TableOrder = {
-    tableNumber: number,
+    dateAndTime: Date,
     tableOrderInfo: TableOrderInfo,
     orderedItemsByCategoriesArray: OrderedItemsByCategoriesArray
   }

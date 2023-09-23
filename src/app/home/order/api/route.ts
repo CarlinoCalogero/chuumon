@@ -6,6 +6,7 @@ import { MenuItemInfo } from "@/types/MenuItemInfo";
 import { CategoryWithMenuItemsMap } from "@/types/CategoryWithMenuItemsMap";
 import { UnitaDiMisuraDatabaseTableRow } from "@/types/UnitaDiMisuraDatabaseTableRow";
 import { IngredienteDatabaseTableRow } from "@/types/IngredienteDatabaseTableRow";
+import { TableOrder } from "@/types/TableOrder";
 
 type MenuItemsAndOneIngredient = {
     menuItem: string,
@@ -69,6 +70,60 @@ export async function GET() {
 
     // Return the items as a JSON response with status 200
     return new Response(JSON.stringify(resultItem), {
+        headers: { "Content-Type": "application/json" },
+        status: 200,
+    });
+}
+
+// Define the GET request handler function
+export async function POST(request: Request, response: Response) {
+
+    var tableOrder: TableOrder = {
+        dateAndTime: new Date(),
+        tableOrderInfo: {
+            tableNumber: -1,
+            isFrittiPrimaDellaPizza: false,
+            isSiDividonoLaPizza: false,
+            slicedIn: null,
+            note: null,
+            numeroBambini: null,
+            numeroAdulti: null
+        },
+        orderedItemsByCategoriesArray: []
+    };
+
+    await request.json().then((data) => {
+        tableOrder = data;
+    })
+
+    // Check if the database instance has been initialized
+    if (!db) {
+        // If the database instance is not initialized, open the database connection
+        db = await open({
+            filename: `./${DATABASE_INFO}`, // Specify the database file path
+            driver: sqlite3.Database, // Specify the database driver (sqlite3 in this case)
+        });
+    }
+
+    // await db.run("delete from ordinazione");
+
+    var maxNumeroProgressivoGiornaliero: undefined | { max: null | number } = await db.get('SELECT MAX(numero_ordinazione_progressivo_giornaliero) as max FROM ordinazione')
+    var nuovoNumeroProgressivoGiornaliero = 1;
+
+    if (maxNumeroProgressivoGiornaliero != undefined && maxNumeroProgressivoGiornaliero.max != null) {
+        nuovoNumeroProgressivoGiornaliero = maxNumeroProgressivoGiornaliero.max + 1;
+    }
+
+
+    await db.run("INSERT INTO ordinazione(numero_tavolo, data_e_ora, note, is_si_dividono_le_pizze, numero_ordinazione_progressivo_giornaliero, pizze_divise_in, numero_bambini, numero_adulti)  VALUES(?, ?, ?, ?, ?, ?, ?, ?)", [tableOrder.tableOrderInfo.tableNumber, tableOrder.dateAndTime, tableOrder.tableOrderInfo.note, tableOrder.tableOrderInfo.isSiDividonoLaPizza, nuovoNumeroProgressivoGiornaliero, tableOrder.tableOrderInfo.slicedIn, tableOrder.tableOrderInfo.numeroBambini, tableOrder.tableOrderInfo.numeroAdulti]);
+
+    // get lastId
+    const lastId = await db.get('SELECT last_insert_rowid()')
+
+    console.log(lastId)
+
+    // Return the items as a JSON response with status 200
+    return new Response(JSON.stringify("miao"), {
         headers: { "Content-Type": "application/json" },
         status: 200,
     });
