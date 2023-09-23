@@ -404,13 +404,16 @@ export default function Order() {
 
   function checkOrderedItemFieldsAndGetCopy() {
 
+    if (isWasCreaButtonPressed && selectedCreaCategory == '') {
+      console.log("selectedCreaCategory is null")
+      return
+    }
+
     var orderedItemCopy = getOrderedItemCopy()
 
     // menuItem Check
     if (orderedItemCopy.menuItem == null) {
-      if (isWasCreaButtonPressed) {
-        orderedItemCopy.menuItem = `${selectedCreaCategory.toUpperCase()} Personalizzato`
-      } else {
+      if (!isWasCreaButtonPressed) {
         console.log("menuItem is null")
         return;
       }
@@ -466,10 +469,17 @@ export default function Order() {
     //intolleranzaA can be empty
 
     // isWasMenuItemCreated
-    if(isWasCreaButtonPressed){
+    if (isWasCreaButtonPressed) {
+      orderedItemCopy.menuItem = `${selectedCreaCategory.toUpperCase()} Personalizzato`
       orderedItemCopy.isWasMenuItemCreated = true;
-    }else{
+    } else {
       orderedItemCopy.isWasMenuItemCreated = false;
+    }
+
+    // isWereIngredientsModified
+    if (orderedItemCopy.isWereIngredientsModified) {
+      if (!orderedItemCopy.isWasMenuItemCreated)
+        orderedItemCopy.menuItem = `${orderedItemCopy.menuItem} Modificato`
     }
 
     // unitOfMeasure
@@ -795,7 +805,7 @@ export default function Order() {
             <div className={styles.outerDiv}>
               {
                 orderedItemByCategory.orderedItem.map((orderedItem, j) => <div key={"orderedItem_" + j + "_inCategory_" + i}>
-                  <span>{orderedItem.numberOf} {orderedItem.menuItem} {orderedItem.isWereIngredientsModified && <strong>modificata</strong>} {orderedItem.unitOfMeasure} {orderedItem.slicedIn != null && `tagliata in ${orderedItem.slicedIn}`}</span>
+                  <span>{orderedItem.numberOf} {orderedItem.menuItem} {orderedItem.unitOfMeasure} {orderedItem.slicedIn != null && `tagliata in ${orderedItem.slicedIn}`}</span>
                   {
                     orderedItem.ingredients.length != 0 &&
                     <div>
