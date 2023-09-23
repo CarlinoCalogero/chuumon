@@ -166,6 +166,23 @@ var semaphore = 0;
 
             });
 
+        //****** MENU_ITEM_NOT_IN_MENU ******//
+        db.run(`drop table if exists menu_item_not_in_menu`);
+        // Create tables table if it doesn't exist
+        db.run(
+            `CREATE TABLE menu_item_not_in_menu (
+                id INTEGER UNSIGNED AUTO_INCREMENT,
+                nome varchar(50) NOT NULL,
+                prezzo FLOAT NOT NULL,
+                CONSTRAINT ID_menu_item_not_in_menu PRIMARY KEY (id),
+                CONSTRAINT unique_menu_item_not_in_menu UNIQUE (nome)
+            )`,
+            (err) => {
+                if (err) {
+                    return console.error(err.message);
+                }
+            });
+
         //****** MENU_ITEM ******//
         db.run(`drop table if exists menu_item`);
         // Create tables table if it doesn't exist
@@ -258,10 +275,10 @@ var semaphore = 0;
                                                         // Create tables table if it doesn't exist
                                                         db.run(
                                                             `CREATE TABLE intolleranza (
-                                                                id_contiene INTEGER UNSIGNED NOT NULL,
+                                                                id_menu_item_not_in_menu INTEGER UNSIGNED NOT NULL,
                                                                 id_ingrediente INTEGER UNSIGNED NOT NULL,
-                                                                CONSTRAINT primary_key_intolleranza PRIMARY KEY (id_contiene, id_ingrediente),
-                                                                CONSTRAINT intolleranza_contiene FOREIGN KEY (id_contiene) REFERENCES contiene (id) ON DELETE CASCADE ON UPDATE CASCADE,
+                                                                CONSTRAINT primary_key_intolleranza PRIMARY KEY (id_menu_item_not_in_menu, id_ingrediente),
+                                                                CONSTRAINT intolleranza_menu_item_not_in_menu FOREIGN KEY (id_menu_item_not_in_menu) REFERENCES menu_item_not_in_menu (id) ON DELETE CASCADE ON UPDATE CASCADE,
                                                                 CONSTRAINT intolleranza_ingrediente FOREIGN KEY (id_ingrediente) REFERENCES ingrediente (id) ON DELETE RESTRICT ON UPDATE CASCADE
                                                             )`,
                                                             (err) => {
