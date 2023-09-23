@@ -2,6 +2,7 @@ export type OrderedItem = {
     menuItem: string | null,
     menuItemCategory: string | null,
     price: number | null,
+    originalIngredients: string[],
     ingredients: string[],
     removedIngredients: string[],
     addedIngredients: string[],

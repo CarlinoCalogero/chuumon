@@ -54,6 +54,7 @@ export default function Order() {
     menuItem: null,
     menuItemCategory: null,
     price: null,
+    originalIngredients: [],
     ingredients: [],
     removedIngredients: [],
     addedIngredients: [],
@@ -175,7 +176,8 @@ export default function Order() {
     orderedItemCopy.menuItem = menuItemName;
     orderedItemCopy.menuItemCategory = menuItemCategory;
     orderedItemCopy.price = getMenuItemPrice(menuItemName);
-    orderedItemCopy.ingredients = getMenuItemIngredients(menuItemName);
+    orderedItemCopy.originalIngredients = getMenuItemIngredients(menuItemName);
+    orderedItemCopy.ingredients = [...orderedItemCopy.originalIngredients];
     orderedItemCopy.isMenuItemAPizza = checkIfMenuItemIsAPizza(menuItemCategory)
     orderedItemCopy.isCanMenuItemBeSlicedUp = checkIfMenuItemCanBeSlicedUp(menuItemCategory)
     setOrderedItem(orderedItemCopy)
@@ -244,7 +246,8 @@ export default function Order() {
     orderedItemCopy.menuItem = menuItemName;
     orderedItemCopy.menuItemCategory = menuItemCategory;
     orderedItemCopy.price = getMenuItemPrice(menuItemName);
-    orderedItemCopy.ingredients = getMenuItemIngredients(menuItemName);
+    orderedItemCopy.originalIngredients = getMenuItemIngredients(menuItemName);
+    orderedItemCopy.ingredients = [...orderedItemCopy.originalIngredients];
     orderedItemCopy.isMenuItemAPizza = checkIfMenuItemIsAPizza(menuItemCategory)
     orderedItemCopy.isCanMenuItemBeSlicedUp = checkIfMenuItemCanBeSlicedUp(menuItemCategory)
     setOrderedItem(orderedItemCopy)
@@ -375,8 +378,24 @@ export default function Order() {
 
     var orderedItemCopy = getOrderedItemCopy();
     orderedItemCopy.ingredients.push(addedIngredient);
-    orderedItemCopy.addedIngredients.push(addedIngredient);
+
+    // only add ingredient to addedIngredients array if ingredient was not an original ingredient
+    if (!orderedItemCopy.originalIngredients.includes(addedIngredient)) {
+      orderedItemCopy.addedIngredients.push(addedIngredient);
+    }
+
     orderedItemCopy.isWereIngredientsModified = true;
+
+    // check if ingredient is in removedIngredients array and remove it
+    if (orderedItem.removedIngredients.includes(addedIngredient)) {
+      orderedItemCopy.removedIngredients.splice(orderedItemCopy.removedIngredients.indexOf(addedIngredient), 1) // remove ingredient
+    }
+
+    // check if ingredient is in intolleranzaA array and remove it
+    if (orderedItem.intolleranzaA.includes(addedIngredient)) {
+      orderedItemCopy.intolleranzaA.splice(orderedItemCopy.intolleranzaA.indexOf(addedIngredient), 1) // remove ingredient
+    }
+
     setOrderedItem(orderedItemCopy)
 
     //reset addedIngredient
@@ -549,9 +568,18 @@ export default function Order() {
   }
 
   function removeIngredientFromOrderedItem(onClikEvent: MouseEvent<HTMLButtonElement>, ingredientName: string) {
+
+    // cannot remove ingredient if menuItem has only one ingredient
+    if (orderedItem.ingredients.length == 1) {
+      console.log("A menuItem with only one ingredient cannot exist in this particularly case")
+      return;
+    }
+
+
     var orderedItemCopy = getOrderedItemCopy();
     orderedItemCopy.isWereIngredientsModified = true;
-    orderedItemCopy.removedIngredients = [...orderedItemCopy.removedIngredients, ...orderedItemCopy.ingredients.splice(orderedItemCopy.ingredients.indexOf(ingredientName), 1)]
+    orderedItemCopy.ingredients.splice(orderedItemCopy.ingredients.indexOf(ingredientName), 1) // remove ingredient
+    orderedItemCopy.removedIngredients.push(ingredientName);
 
     if (confirm(`Intollerante/Allergico a \"${ingredientName}\"?`)) {
       orderedItemCopy.intolleranzaA.push(ingredientName);
@@ -579,6 +607,7 @@ export default function Order() {
       menuItem: null,
       isMenuItemAPizza: false,
       price: null,
+      originalIngredients: [],
       ingredients: [],
       removedIngredients: [],
       addedIngredients: [],
