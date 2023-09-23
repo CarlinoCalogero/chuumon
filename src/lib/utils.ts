@@ -40,6 +40,8 @@ export const UNITA_DI_MISURA = {
 
 export const OGNI_INGREDIENTE_AGGIUNTO_COSTA_EURO = 1;
 
+export const DATABASE_STRING_SEPARATOR = "_";
+
 export function removeNumbersFromArray(array: number[], items: number[]) {
 
     if (array.length == 0)

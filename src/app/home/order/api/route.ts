@@ -1,12 +1,13 @@
 import sqlite3 from "sqlite3";
 import { open, Database } from "sqlite";
-import { DATABASE_INFO } from "@/lib/utils";
+import { DATABASE_INFO, DATABASE_STRING_SEPARATOR } from "@/lib/utils";
 import { MenuItemWithIngredientsMap } from "@/types/MenuItemWithIngredientsMap";
 import { MenuItemInfo } from "@/types/MenuItemInfo";
 import { CategoryWithMenuItemsMap } from "@/types/CategoryWithMenuItemsMap";
 import { UnitaDiMisuraDatabaseTableRow } from "@/types/UnitaDiMisuraDatabaseTableRow";
 import { IngredienteDatabaseTableRow } from "@/types/IngredienteDatabaseTableRow";
 import { TableOrder } from "@/types/TableOrder";
+import { DatabaseRowId } from "@/types/DatabaseRowId";
 
 type MenuItemsAndOneIngredient = {
     menuItem: string,
@@ -106,6 +107,7 @@ export async function POST(request: Request, response: Response) {
     }
 
     // await db.run("delete from ordinazione");
+    // await db.run("delete from menu_item_not_in_menu");
 
     var maxNumeroProgressivoGiornaliero: undefined | { max: null | number } = await db.get('SELECT MAX(numero_ordinazione_progressivo_giornaliero) as max FROM ordinazione')
     var nuovoNumeroProgressivoGiornaliero = 1;
@@ -117,8 +119,8 @@ export async function POST(request: Request, response: Response) {
 
     await db.run("INSERT INTO ordinazione(numero_tavolo, data_e_ora, note, is_si_dividono_le_pizze, numero_ordinazione_progressivo_giornaliero, pizze_divise_in, numero_bambini, numero_adulti)  VALUES(?, ?, ?, ?, ?, ?, ?, ?)", [tableOrder.tableOrderInfo.tableNumber, tableOrder.dateAndTime, tableOrder.tableOrderInfo.note, tableOrder.tableOrderInfo.isSiDividonoLaPizza, nuovoNumeroProgressivoGiornaliero, tableOrder.tableOrderInfo.slicedIn, tableOrder.tableOrderInfo.numeroBambini, tableOrder.tableOrderInfo.numeroAdulti]);
 
-    // get lastId
-    const ordinazioneLastId = await db.get('SELECT last_insert_rowid()')
+    // get ordinazioneLastId
+    const ordinazioneLastId: DatabaseRowId = await db.get('SELECT last_insert_rowid() as rowid')
 
     // link menuItems to order
     tableOrder.orderedItemsByCategoriesArray.forEach(categoryWithOrderedItems => {
@@ -127,7 +129,30 @@ export async function POST(request: Request, response: Response) {
 
             if (orderedItem.isWasMenuItemCreated || orderedItem.isWereIngredientsModified) {
                 if (db != null) {
-                    await db.run("INSERT INTO menu_item_not_in_menu(nome,prezzo) VALUES(?, ?)", [orderedItem.menuItem, orderedItem.price]);
+                    await db.run("INSERT INTO menu_item_not_in_menu(nome,prezzo) VALUES(?, ?)", [`${orderedItem.menuItem}${DATABASE_STRING_SEPARATOR}${tableOrder.tableOrderInfo.tableNumber}${DATABASE_STRING_SEPARATOR}${tableOrder.dateAndTime}`, orderedItem.price]);
+                    // get menuItemNotInMenuLastId
+                    const menuItemNotInMenuLastId: DatabaseRowId = await db.get('SELECT last_insert_rowid() as rowid')
+
+                    // add ingredients to menuItem fuori menu
+                    orderedItem.ingredients.forEach(async (ingrediente) => {
+                        if (db != null) {
+                            const stmt = await db.prepare('SELECT rowid FROM ingrediente WHERE nome=?');
+                            await stmt.bind({ 1: ingrediente })
+                            const ingredientId: DatabaseRowId = await stmt.get()
+                            await db.run("INSERT INTO compone_fuori_menu(id_ingrediente,id_menu_item_not_in_menu) VALUES(?, ?)", [ingredientId?.rowid, menuItemNotInMenuLastId?.rowid]);
+                        }
+                    });
+
+                    // add intollerances
+                    orderedItem.intolleranzaA.forEach(async (ingrediente) => {
+                        if (db != null) {
+                            const stmt = await db.prepare('SELECT rowid FROM ingrediente WHERE nome=?');
+                            await stmt.bind({ 1: ingrediente })
+                            const ingredientId: DatabaseRowId = await stmt.get()
+                            await db.run("INSERT INTO intolleranza(id_menu_item_not_in_menu,id_ingrediente) VALUES(?, ?)", [menuItemNotInMenuLastId?.rowid, ingredientId?.rowid]);
+                        }
+                    });
+
                 }
 
             }
