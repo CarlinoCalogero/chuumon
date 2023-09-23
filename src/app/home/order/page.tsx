@@ -9,9 +9,10 @@ import { CALZONI, CATEGORIE_CREA, CATEGORIE_CREA_ARRAY, CATEGORIE_OLTRE_ALLA_PIZ
 import { TableOrderInfo } from '@/types/TableOrderInfo';
 import { MenuItemWithIngredientsMap } from '@/types/MenuItemWithIngredientsMap';
 import { CategoryWithMenuItemsMap } from '@/types/CategoryWithMenuItemsMap';
-import { OrderedItemByCategory } from '@/types/OrderedItemByCategory';
+import { OrderedItemByCategoryMap } from '@/types/OrderedItemByCategoryMap';
 import { IngredienteDatabaseTableRow } from '@/types/IngredienteDatabaseTableRow';
 import { CategoriaConIngredientiCheLaDefiniscono } from '@/types/CategoriaConIngredientiCheLaDefiniscono';
+import { OrderedItemsByCategoriesArray } from '@/types/OrderedItemsByCategoriesArray';
 
 type Inputs = {
   menuItem: EventTarget & HTMLInputElement | null,
@@ -47,7 +48,10 @@ export default function Order() {
   const [tableOrderInfo, setTableOrderInfo] = useState<TableOrderInfo>({
     isFrittiPrimaDellaPizza: true,
     isSiDividonoLaPizza: false,
-    slicedIn: null
+    slicedIn: null,
+    note: null,
+    numeroBambini: null,
+    numeroAdulti: null
   });
 
   const [orderedItem, setOrderedItem] = useState<OrderedItem>({
@@ -68,8 +72,8 @@ export default function Order() {
     unitOfMeasure: null
   });
 
-  const [orderedItemsByCategoriesMap, setOrderedItemsByCategoriesMap] = useState<OrderedItemByCategory>(new Map());
-  const [orderedItemsByCategoriesArray, setOrderedItemsByCategoriesArray] = useState<{ categoria: string; orderedItem: OrderedItem[] }[]>([]);
+  const [orderedItemsByCategoriesMap, setOrderedItemsByCategoriesMap] = useState<OrderedItemByCategoryMap>(new Map());
+  const [orderedItemsByCategoriesArray, setOrderedItemsByCategoriesArray] = useState<OrderedItemsByCategoriesArray>([]);
 
   const [addedIngredient, setAddedIngredient] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
@@ -202,6 +206,31 @@ export default function Order() {
     var orderedItemCopy = getOrderedItemCopy();
     orderedItemCopy.numberOf = Number(onChangeEvent.target.value)
     setOrderedItem(orderedItemCopy)
+  }
+
+  function handleNumberoAdultiChange(onChangeEvent: ChangeEvent<HTMLInputElement>) {
+    var tableOrderInfoCopy = getTableOrderInfoCopy()
+    tableOrderInfoCopy.numeroAdulti = Number(onChangeEvent.target.value)
+    setTableOrderInfo(tableOrderInfoCopy)
+  }
+
+  function handleNumberoBambiniChange(onChangeEvent: ChangeEvent<HTMLInputElement>) {
+    var tableOrderInfoCopy = getTableOrderInfoCopy()
+    tableOrderInfoCopy.numeroBambini = Number(onChangeEvent.target.value)
+    setTableOrderInfo(tableOrderInfoCopy)
+  }
+
+  function handleNoteTextAreaChange(onChangeEvent: ChangeEvent<HTMLTextAreaElement>) {
+    var newNote: string | null = onChangeEvent.target.value;
+
+    var tableOrderInfoCopy = getTableOrderInfoCopy()
+
+    if (newNote == '') {
+      newNote = null;
+    }
+
+    tableOrderInfoCopy.note = newNote;
+    setTableOrderInfo(tableOrderInfoCopy)
   }
 
   function handleSlicedInChange(onChangeEvent: ChangeEvent<HTMLSelectElement>) {
@@ -695,6 +724,31 @@ export default function Order() {
             </select>
           </div>
         }
+      </div>
+
+      <div>
+        <input
+          type='number'
+          placeholder='Numero adulti'
+          min={0}
+          onChange={e => handleNumberoAdultiChange(e)}
+        />
+      </div>
+
+      <div>
+        <input
+          type='number'
+          placeholder='Numero bambini'
+          min={0}
+          onChange={e => handleNumberoBambiniChange(e)}
+        />
+      </div>
+
+      <div>
+        <textarea
+          value={tableOrderInfo.note == null ? '' : tableOrderInfo.note}
+          onChange={e => handleNoteTextAreaChange(e)}
+        />
       </div>
 
       <div>
