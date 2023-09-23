@@ -58,6 +58,7 @@ export default function Order() {
     removedIngredients: [],
     addedIngredients: [],
     intolleranzaA: [],
+    isWasMenuItemCreated: false,
     isWereIngredientsModified: false,
     isMenuItemAPizza: false,
     isCanMenuItemBeSlicedUp: false,
@@ -464,6 +465,13 @@ export default function Order() {
 
     //intolleranzaA can be empty
 
+    // isWasMenuItemCreated
+    if(isWasCreaButtonPressed){
+      orderedItemCopy.isWasMenuItemCreated = true;
+    }else{
+      orderedItemCopy.isWasMenuItemCreated = false;
+    }
+
     // unitOfMeasure
     if (orderedItemCopy.unitOfMeasure == null) {
       if (orderedItemCopy.isMenuItemAPizza) {
@@ -525,6 +533,9 @@ export default function Order() {
     // reset
     resetFieldsAndOrderedItem();
 
+    // reset creaButton
+    setIsWasCreaButtonPressed(false);
+
   }
 
   function removeIngredientFromOrderedItem(onClikEvent: MouseEvent<HTMLButtonElement>, ingredientName: string) {
@@ -562,6 +573,7 @@ export default function Order() {
       removedIngredients: [],
       addedIngredients: [],
       intolleranzaA: [],
+      isWasMenuItemCreated: false,
       isWereIngredientsModified: false,
       isCanMenuItemBeSlicedUp: false,
       slicedIn: null,

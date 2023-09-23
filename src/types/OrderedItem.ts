@@ -6,6 +6,7 @@ export type OrderedItem = {
     removedIngredients: string[],
     addedIngredients: string[],
     intolleranzaA: string[],
+    isWasMenuItemCreated: boolean,
     isWereIngredientsModified: boolean,
     isMenuItemAPizza: boolean,
     isCanMenuItemBeSlicedUp: boolean,
