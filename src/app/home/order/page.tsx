@@ -55,6 +55,7 @@ export default function Order() {
     ingredients: [],
     removedIngredients: [],
     addedIngredients: [],
+    intolleranzaA: [],
     isWereIngredientsModified: false,
     isMenuItemAPizza: false,
     isCanMenuItemBeSlicedUp: false,
@@ -408,6 +409,7 @@ export default function Order() {
       ingredients: [],
       removedIngredients: [],
       addedIngredients: [],
+      intolleranzaA: [],
       isWereIngredientsModified: false,
       isCanMenuItemBeSlicedUp: false,
       slicedIn: null,
@@ -439,6 +441,11 @@ export default function Order() {
     var orderedItemCopy = getOrderedItemCopy();
     orderedItemCopy.isWereIngredientsModified = true;
     orderedItemCopy.removedIngredients = [...orderedItemCopy.removedIngredients, ...orderedItemCopy.ingredients.splice(orderedItemCopy.ingredients.indexOf(ingredientName), 1)]
+
+    if (confirm(`Intollerante/Allergico a \"${ingredientName}\"?`)) {
+      orderedItemCopy.intolleranzaA.push(ingredientName);
+    }
+
     setOrderedItem(orderedItemCopy);
   }
 
@@ -635,6 +642,15 @@ export default function Order() {
                             orderedItem.addedIngredients.map((newIngredient, i) => <div key={"orderedItemNewIngredient_" + newIngredient}>{newIngredient}</div>)
                           }
                         </div>
+                      }
+                    </div>
+                  }
+                  {
+                    orderedItem.intolleranzaA.length != 0 &&
+                    <div>
+                      <strong>Intollerante a:</strong>
+                      {
+                        orderedItem.intolleranzaA.map((intolleranza, i) => <div key={"intolleranteA_" + intolleranza + i}>{intolleranza}</div>)
                       }
                     </div>
                   }
