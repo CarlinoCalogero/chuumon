@@ -26,7 +26,7 @@ export const CALZONI: CategoriaConIngredientiCheLaDefiniscono = {
 }
 
 export const PIZZE_CATEGORIES = ["classiche", FARINE_SPECIALI.nomeCategoria, PINSE_ROMANE.nomeCategoria, PIZZE_ROSSE.nomeCategoria, PIZZE_BIANCHE.nomeCategoria, "speciali"]
-export const CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO = [CALZONI]
+export const CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO = [CALZONI.nomeCategoria]
 export const CATEGORIE_CREA = {
     pizza: "pizza",
     calzone: "calzone"
@@ -37,6 +37,8 @@ export const UNITA_DI_MISURA = {
     intera: "intera",
     pezzi: "pezzi"
 }
+
+export const OGNI_INGREDIENTE_AGGIUNTO_COSTA_EURO = 1;
 
 export function removeNumbersFromArray(array: number[], items: number[]) {
 

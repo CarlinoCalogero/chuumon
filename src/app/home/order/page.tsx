@@ -5,7 +5,7 @@ import { useState, useEffect, ChangeEvent, MouseEvent } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { UnitaDiMisuraDatabaseTableRow } from '@/types/UnitaDiMisuraDatabaseTableRow';
 import { OrderedItem } from '@/types/OrderedItem';
-import { CALZONI, CATEGORIE_CREA, CATEGORIE_CREA_ARRAY, CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO, FARINE_SPECIALI, PINSE_ROMANE, PIZZE_BIANCHE, PIZZE_CATEGORIES, PIZZE_ROSSE, UNITA_DI_MISURA } from '@/lib/utils';
+import { CALZONI, CATEGORIE_CREA, CATEGORIE_CREA_ARRAY, CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO, FARINE_SPECIALI, OGNI_INGREDIENTE_AGGIUNTO_COSTA_EURO, PINSE_ROMANE, PIZZE_BIANCHE, PIZZE_CATEGORIES, PIZZE_ROSSE, UNITA_DI_MISURA } from '@/lib/utils';
 import { TableOrderInfo } from '@/types/TableOrderInfo';
 import { MenuItemWithIngredientsMap } from '@/types/MenuItemWithIngredientsMap';
 import { CategoryWithMenuItemsMap } from '@/types/CategoryWithMenuItemsMap';
@@ -401,7 +401,7 @@ export default function Order() {
 
   }
 
-  function checkOrderedItemFields() {
+  function checkOrderedItemFieldsAndGetCopy() {
 
     var orderedItemCopy = getOrderedItemCopy()
 
@@ -410,7 +410,7 @@ export default function Order() {
       if (isWasCreaButtonPressed) {
         orderedItemCopy.menuItem = `${selectedCreaCategory.toUpperCase()} Personalizzato`
       } else {
-        console.log("MenuItem is null")
+        console.log("menuItem is null")
         return;
       }
     }
@@ -429,43 +429,96 @@ export default function Order() {
         } else {
           orderedItemCopy.menuItemCategory = CALZONI.nomeCategoria;
         }
+      } else {
+        console.log("menuItemCategory is null")
+        return;
       }
     }
 
-    if (orderedItemCopy == null) {
-
+    // price
+    if (orderedItemCopy.price == null) {
+      if (isWasCreaButtonPressed) {
+        console.log("Il prezzo non può essere scelto qui")
+      } else {
+        console.log("price is null")
+        return;
+      }
     }
 
-    if (orderedItemCopy == null) {
-
+    // ingredients
+    if (orderedItemCopy.ingredients.length == 0) {
+      if (isWasCreaButtonPressed) {
+        console.log("ingredients is null")
+        return;
+      }
     }
 
-    if (orderedItemCopy == null) {
+    //removedIngredients can be empty
 
+    //addedIngredients can be empty
+    if (orderedItemCopy.addedIngredients.length != 0) {
+      if (orderedItemCopy.price == null)
+        orderedItemCopy.price = 0;
+      orderedItemCopy.price = orderedItemCopy.price + (OGNI_INGREDIENTE_AGGIUNTO_COSTA_EURO * orderedItemCopy.addedIngredients.length);
     }
 
-    if (orderedItemCopy == null) {
+    //intolleranzaA can be empty
 
+    // unitOfMeasure
+    if (orderedItemCopy.unitOfMeasure == null) {
+      if (orderedItemCopy.isMenuItemAPizza) {
+        console.log("unitOfMeasure is null")
+        return;
+      }
     }
 
-    if (orderedItemCopy == null) {
+    // slicedIn
+    if (orderedItemCopy.slicedIn == null) {
+      if (orderedItemCopy.isMenuItemAPizza) {
 
+        if (orderedItemCopy.unitOfMeasure?.toUpperCase() == UNITA_DI_MISURA.intera.toUpperCase()) {
+          console.log("slicedIn is null")
+          return;
+        }
+      }
+      if (orderedItemCopy.isCanMenuItemBeSlicedUp) {
+        console.log("slicedIn is null")
+        return;
+      }
     }
+
+    // numberOf
+    if (orderedItemCopy.numberOf == null) {
+      console.log("numberOf is null")
+      return;
+    }
+
+    // aggiungere il nuovo prezzo, 1 euro per ogni ingrediente aggiunto
+    // attento che uno può aggiungere e rimuovere più ingredienti più volte
+
+    //return the copy
+    return orderedItemCopy;
 
   }
 
   function addItem() {
 
+    // check fields and get a Copy
+    var orderedItemCopy = checkOrderedItemFieldsAndGetCopy();
 
+    // if true  one or more mandatory fields are empty
+    if (orderedItemCopy == undefined)
+      return;
 
-    if (orderedItem.menuItemCategory == null)
+    // useless but deletes compiler errors
+    if (orderedItemCopy.menuItemCategory == null)
       return
 
     var orderedItemsByCategoriesCopy = getOrderedItemsByCategoriesCopy();
-    if (orderedItemsByCategoriesCopy.has(orderedItem.menuItemCategory)) {
-      orderedItemsByCategoriesCopy.get(orderedItem.menuItemCategory)?.push(orderedItem);
+    if (orderedItemsByCategoriesCopy.has(orderedItemCopy.menuItemCategory)) {
+      orderedItemsByCategoriesCopy.get(orderedItemCopy.menuItemCategory)?.push(orderedItemCopy);
     } else {
-      orderedItemsByCategoriesCopy.set(orderedItem.menuItemCategory, [orderedItem])
+      orderedItemsByCategoriesCopy.set(orderedItemCopy.menuItemCategory, [orderedItemCopy])
     }
     setOrderedItemsByCategoriesMap(orderedItemsByCategoriesCopy);
 
