@@ -171,10 +171,8 @@ var semaphore = 0;
         // Create tables table if it doesn't exist
         db.run(
             `CREATE TABLE menu_item_not_in_menu (
-                id INTEGER UNSIGNED AUTO_INCREMENT,
                 nome varchar(50) NOT NULL,
                 prezzo FLOAT NOT NULL,
-                CONSTRAINT ID_menu_item_not_in_menu PRIMARY KEY (id),
                 CONSTRAINT unique_menu_item_not_in_menu UNIQUE (nome)
             )`,
             (err) => {
@@ -200,6 +198,23 @@ var semaphore = 0;
                 }
 
                 db.serialize(() => {
+
+                    //****** COMPONE_FUORI_MENU ******//
+                    db.run(`drop table if exists compone_fuori_menu`);
+                    // Create tables table if it doesn't exist
+                    db.run(
+                        `CREATE TABLE compone_fuori_menu (
+                            id_ingrediente INTEGER UNSIGNED NOT NULL,
+                            id_menu_item_not_in_menu INTEGER UNSIGNED NOT NULL,
+                            CONSTRAINT primary_key_compone PRIMARY KEY (id_ingrediente, id_menu_item_not_in_menu),
+                            CONSTRAINT compone_ingrediente_fuori_menu FOREIGN KEY (id_ingrediente) REFERENCES ingrediente (id) ON DELETE RESTRICT ON UPDATE CASCADE,
+                            CONSTRAINT compone_menu_item_not_in_menu FOREIGN KEY (id_menu_item_not_in_menu) REFERENCES menu_item_not_in_menu (id) ON DELETE CASCADE ON UPDATE CASCADE
+                        )`,
+                        (err) => {
+                            if (err) {
+                                return console.error(err.message);
+                            }
+                        });
 
                     //****** COMPONE ******//
                     db.run(`drop table if exists compone`);

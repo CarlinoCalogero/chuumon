@@ -497,6 +497,7 @@ export default function Order() {
     if (orderedItemCopy.price == null) {
       if (isWasCreaButtonPressed) {
         console.log("Il prezzo non può essere scelto qui")
+        orderedItemCopy.price = 0;
       } else {
         console.log("price is null")
         return;

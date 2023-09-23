@@ -118,9 +118,23 @@ export async function POST(request: Request, response: Response) {
     await db.run("INSERT INTO ordinazione(numero_tavolo, data_e_ora, note, is_si_dividono_le_pizze, numero_ordinazione_progressivo_giornaliero, pizze_divise_in, numero_bambini, numero_adulti)  VALUES(?, ?, ?, ?, ?, ?, ?, ?)", [tableOrder.tableOrderInfo.tableNumber, tableOrder.dateAndTime, tableOrder.tableOrderInfo.note, tableOrder.tableOrderInfo.isSiDividonoLaPizza, nuovoNumeroProgressivoGiornaliero, tableOrder.tableOrderInfo.slicedIn, tableOrder.tableOrderInfo.numeroBambini, tableOrder.tableOrderInfo.numeroAdulti]);
 
     // get lastId
-    const lastId = await db.get('SELECT last_insert_rowid()')
+    const ordinazioneLastId = await db.get('SELECT last_insert_rowid()')
 
-    console.log(lastId)
+    // link menuItems to order
+    tableOrder.orderedItemsByCategoriesArray.forEach(categoryWithOrderedItems => {
+
+        categoryWithOrderedItems.orderedItem.forEach(async (orderedItem) => {
+
+            if (orderedItem.isWasMenuItemCreated || orderedItem.isWereIngredientsModified) {
+                if (db != null) {
+                    await db.run("INSERT INTO menu_item_not_in_menu(nome,prezzo) VALUES(?, ?)", [orderedItem.menuItem, orderedItem.price]);
+                }
+
+            }
+
+        });
+
+    });
 
     // Return the items as a JSON response with status 200
     return new Response(JSON.stringify("miao"), {
