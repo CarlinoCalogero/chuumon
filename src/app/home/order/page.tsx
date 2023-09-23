@@ -10,10 +10,12 @@ import { TableOrderInfo } from '@/types/TableOrderInfo';
 import { MenuItemWithIngredientsMap } from '@/types/MenuItemWithIngredientsMap';
 import { CategoryWithMenuItemsMap } from '@/types/CategoryWithMenuItemsMap';
 import { OrderedItemByCategory } from '@/types/OrderedItemByCategory';
+import { IngredienteDatabaseTableRow } from '@/types/IngredienteDatabaseTableRow';
 
 type Inputs = {
   menuItem: EventTarget & HTMLInputElement | null,
   numberOf: EventTarget & HTMLInputElement | null
+  addIngredient: EventTarget & HTMLInputElement | null
 }
 
 export default function Order() {
@@ -26,6 +28,7 @@ export default function Order() {
 
   const [menuItemsWithIngredientsMap, setMenuItemsWithIngredientsMap] = useState<MenuItemWithIngredientsMap>(new Map());
   const [categoriesWithMenuItemsMap, setCategoriesWithMenuItemsMap] = useState<CategoryWithMenuItemsMap>(new Map());
+  const [ingredientiArray, setIngredientiArray] = useState<IngredienteDatabaseTableRow[]>([]);
   const [unitaDiMisuraArray, setUnitaDiMisuraArray] = useState<UnitaDiMisuraDatabaseTableRow[]>([]);
 
   const [menuItemsArray, setMenuItemsArray] = useState<string[]>([]);
@@ -33,7 +36,8 @@ export default function Order() {
 
   const [inputs, setInputs] = useState<Inputs>({
     menuItem: null,
-    numberOf: null
+    numberOf: null,
+    addIngredient: null
   });
 
   const [isInsertingMenuItemWithSearch, setIsInsertingMenuItemWithSearch] = useState<boolean | null>(null);
@@ -62,6 +66,7 @@ export default function Order() {
   const [orderedItemsByCategoriesMap, setOrderedItemsByCategoriesMap] = useState<OrderedItemByCategory>(new Map());
   const [orderedItemsByCategoriesArray, setOrderedItemsByCategoriesArray] = useState<{ categoria: string; orderedItem: OrderedItem[] }[]>([]);
 
+  const [addedIngredient, setAddedIngredient] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
 
   var slicedInOptionsArray = [2, 4, 6, 8]
@@ -79,6 +84,7 @@ export default function Order() {
       .then((data) => {
         setMenuItemsWithIngredientsMap(new Map(Object.entries(data.menuItemsWithIngredientsMap)));
         setCategoriesWithMenuItemsMap(new Map(Object.entries(data.categoriesWithMenuItemsMap)))
+        setIngredientiArray(data.ingredienti);
         setUnitaDiMisuraArray(data.unitaDiMisura);
       }); // Update the state with the fetched data
 
@@ -131,7 +137,8 @@ export default function Order() {
   function getInputsCopy() {
     var inputsCopy: Inputs = {
       menuItem: inputs.menuItem,
-      numberOf: inputs.numberOf
+      numberOf: inputs.numberOf,
+      addIngredient: inputs.addIngredient
     }
     return inputsCopy;
   }
@@ -332,6 +339,32 @@ export default function Order() {
     return false;
   }
 
+  function addIngredientToOrderedItem(onChangeEvent: ChangeEvent<HTMLInputElement>) {
+    if (inputs.addIngredient == null) {
+      console.log("3 null")
+      var inputsCopy = getInputsCopy();
+      inputsCopy.addIngredient = onChangeEvent.target;
+      setInputs(inputsCopy)
+    }
+
+    setAddedIngredient(onChangeEvent.target.value);
+  }
+
+  function addIngredient() {
+    var orderedItemCopy = getOrderedItemCopy();
+    orderedItemCopy.ingredients.push(addedIngredient);
+    orderedItemCopy.addedIngredients.push(addedIngredient);
+    orderedItemCopy.isWereIngredientsModified = true;
+    setOrderedItem(orderedItemCopy)
+
+    //reset addedIngredient
+    setAddedIngredient('');
+
+    //clear input field
+    if (inputs.addIngredient != null)
+      inputs.addIngredient.value = ''
+  }
+
   function addItem() {
 
     //check if all fields are not null
@@ -494,10 +527,27 @@ export default function Order() {
 
       {
         orderedItem.ingredients.length != 0 &&
-        orderedItem.ingredients.map((ingredient, i) => <div key={"ingredient_" + ingredient}>
-          <span>{ingredient}</span>
-          <button onClick={e => removeIngredientFromOrderedItem(e, ingredient)}>X</button>
-        </div>)
+        <div>
+          {
+            orderedItem.ingredients.map((ingredient, i) => <div key={"ingredient_" + ingredient}>
+              <span>{ingredient}</span>
+              <button onClick={e => removeIngredientFromOrderedItem(e, ingredient)}>X</button>
+            </div>)
+          }
+          <input
+            type='search'
+            placeholder='Aggiungi Ingrediente'
+            list='ingredients-list'
+            onChange={e => addIngredientToOrderedItem(e)}
+          />
+
+          <datalist id="ingredients-list">
+            {
+              ingredientiArray.map((ingredient, i) => <option key={"orderPage_" + ingredient.nome} value={ingredient.nome}></option>)
+            }
+          </datalist>
+          <button onClick={addIngredient}>Add Ingredient</button>
+        </div>
       }
 
       <div className={styles.addItemToOrderDiv}>
@@ -567,6 +617,15 @@ export default function Order() {
                         <span>Ingredienti tolti:</span>
                         {
                           orderedItem.removedIngredients.map((removedIngredient, i) => <div key={"orderedItemRemovedIngredient_" + removedIngredient}>{removedIngredient}</div>)
+                        }
+                      </div>
+                    }
+                    {
+                      orderedItem.addedIngredients.length != 0 &&
+                      <div>
+                        <span>Ingredienti aggiunti:</span>
+                        {
+                          orderedItem.addedIngredients.map((newIngredient, i) => <div key={"orderedItemNewIngredient_" + newIngredient}>{newIngredient}</div>)
                         }
                       </div>
                     }

@@ -4,6 +4,8 @@ import { DATABASE_INFO } from "@/lib/utils";
 import { MenuItemWithIngredientsMap } from "@/types/MenuItemWithIngredientsMap";
 import { MenuItemInfo } from "@/types/MenuItemInfo";
 import { CategoryWithMenuItemsMap } from "@/types/CategoryWithMenuItemsMap";
+import { UnitaDiMisuraDatabaseTableRow } from "@/types/UnitaDiMisuraDatabaseTableRow";
+import { IngredienteDatabaseTableRow } from "@/types/IngredienteDatabaseTableRow";
 
 type MenuItemsAndOneIngredient = {
     menuItem: string,
@@ -61,7 +63,8 @@ export async function GET() {
     const resultItem = {
         menuItemsWithIngredientsMap: Object.fromEntries(menuItemsWithIngredientsMap),
         categoriesWithMenuItemsMap: Object.fromEntries(categoriesWithMenuItemsMap),
-        unitaDiMisura: await db.all('SELECT * FROM unita_di_misura') as string[]
+        ingredienti: await db.all('SELECT * FROM ingrediente') as IngredienteDatabaseTableRow[],
+        unitaDiMisura: await db.all('SELECT * FROM unita_di_misura') as UnitaDiMisuraDatabaseTableRow[]
     }
 
     // Return the items as a JSON response with status 200
