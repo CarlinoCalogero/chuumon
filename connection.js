@@ -263,7 +263,8 @@ var semaphore = 0;
                                             db.run(
                                                 `CREATE TABLE contiene (
                                                     id_ordinazione INTEGER UNSIGNED NOT NULL,
-                                                    id_menu_item INTEGER UNSIGNED NOT NULL,
+                                                    id_menu_item INTEGER UNSIGNED,
+                                                    id_menu_item_not_in_menu INTEGER UNSIGNED,
                                                     quantita INTEGER NOT NULL,
                                                     nome_unita_di_misura VARCHAR(50) NOT NULL,
                                                     consegnato BOOLEAN NOT NULL,
@@ -273,6 +274,9 @@ var semaphore = 0;
                                                         ON DELETE CASCADE ON UPDATE CASCADE,
                                                     CONSTRAINT contiene_menu_item FOREIGN KEY (id_menu_item)
                                                         REFERENCES menu_item (id)
+                                                        ON DELETE RESTRICT ON UPDATE CASCADE,
+                                                    CONSTRAINT contiene_menu_item_not_in_menu FOREIGN KEY (id_menu_item_not_in_menu)
+                                                        REFERENCES menu_item_not_in_menu (id)
                                                         ON DELETE RESTRICT ON UPDATE CASCADE,
                                                     CONSTRAINT contiene_unita_di_misura FOREIGN KEY (nome_unita_di_misura)
                                                         REFERENCES unita_di_misura (nome)

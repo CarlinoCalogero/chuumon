@@ -129,33 +129,49 @@ export async function POST(request: Request, response: Response) {
 
             if (orderedItem.isWasMenuItemCreated || orderedItem.isWereIngredientsModified) {
                 if (db != null) {
-                    await db.run("INSERT INTO menu_item_not_in_menu(nome,prezzo) VALUES(?, ?)", [`${orderedItem.menuItem}${DATABASE_STRING_SEPARATOR}${tableOrder.tableOrderInfo.tableNumber}${DATABASE_STRING_SEPARATOR}${tableOrder.dateAndTime}`, orderedItem.price]);
-                    // get menuItemNotInMenuLastId
-                    const menuItemNotInMenuLastId: DatabaseRowId = await db.get('SELECT last_insert_rowid() as rowid')
 
-                    // add ingredients to menuItem fuori menu
-                    orderedItem.ingredients.forEach(async (ingrediente) => {
-                        if (db != null) {
-                            const stmt = await db.prepare('SELECT rowid FROM ingrediente WHERE nome=?');
-                            await stmt.bind({ 1: ingrediente })
-                            const ingredientId: DatabaseRowId = await stmt.get()
-                            await db.run("INSERT INTO compone_fuori_menu(id_ingrediente,id_menu_item_not_in_menu) VALUES(?, ?)", [ingredientId?.rowid, menuItemNotInMenuLastId?.rowid]);
-                        }
-                    });
+                    db.getDatabaseInstance().run("INSERT INTO menu_item_not_in_menu(nome,prezzo) VALUES(?, ?)", [`${orderedItem.menuItem}${DATABASE_STRING_SEPARATOR}${tableOrder.tableOrderInfo.tableNumber}${DATABASE_STRING_SEPARATOR}${tableOrder.dateAndTime}`, orderedItem.price],
+                        function (err) {
+                            if (err) {
+                                return console.error(err.message);
+                            }
 
-                    // add intollerances
-                    orderedItem.intolleranzaA.forEach(async (ingrediente) => {
-                        if (db != null) {
-                            const stmt = await db.prepare('SELECT rowid FROM ingrediente WHERE nome=?');
-                            await stmt.bind({ 1: ingrediente })
-                            const ingredientId: DatabaseRowId = await stmt.get()
-                            await db.run("INSERT INTO intolleranza(id_menu_item_not_in_menu,id_ingrediente) VALUES(?, ?)", [menuItemNotInMenuLastId?.rowid, ingredientId?.rowid]);
-                        }
-                    });
+                            // get menuItemNotInMenuLastId
+                            const menuItemNotInMenuLastId = this.lastID;
+                            console.log(`Rows inserted to \"menu_item_not_in_menu\" table, ID ${menuItemNotInMenuLastId}`);
+
+                            // add ingredients to menuItem fuori menu
+                            orderedItem.ingredients.forEach(async (ingrediente) => {
+                                if (db != null) {
+                                    const stmt = await db.prepare('SELECT rowid FROM ingrediente WHERE nome=?');
+                                    await stmt.bind({ 1: ingrediente })
+                                    const ingredientId: DatabaseRowId = await stmt.get()
+                                    await db.run("INSERT INTO compone_fuori_menu(id_ingrediente,id_menu_item_not_in_menu) VALUES(?, ?)", [ingredientId?.rowid, menuItemNotInMenuLastId]);
+                                }
+                            });
+
+                            // add intollerances
+                            orderedItem.intolleranzaA.forEach(async (ingrediente) => {
+                                if (db != null) {
+                                    const stmt = await db.prepare('SELECT rowid FROM ingrediente WHERE nome=?');
+                                    await stmt.bind({ 1: ingrediente })
+                                    const ingredientId: DatabaseRowId = await stmt.get()
+                                    await db.run("INSERT INTO intolleranza(id_menu_item_not_in_menu,id_ingrediente) VALUES(?, ?)", [menuItemNotInMenuLastId, ingredientId?.rowid]);
+                                }
+                            });
+
+                            // place order
+                            if (db != null) {
+                                db.run("INSERT INTO contiene(id_ordinazione,id_menu_item,id_menu_item_not_in_menu,quantita,nome_unita_di_misura,consegnato) VALUES(?,?,?,?,?,?)", [ordinazioneLastId?.rowid, null, menuItemNotInMenuLastId, orderedItem.numberOf, orderedItem.unitOfMeasure, false]);
+                            }
+
+                        });
 
                 }
 
             }
+
+            // riprendi da qui e fai i menuItem che non sono stati creati e/o modificati
 
         });
 
