@@ -3,13 +3,13 @@
 import { useState, useEffect, ChangeEvent, DragEvent, MouseEvent } from 'react'
 import styles from './page.module.css'
 import { useRouter } from 'next/navigation'
-import { OrdinazioneDatabaseTableRow } from '@/types/OrdinazioneDatabaseTableRow';
+import { Order } from '@/types/Order';
 
 export default function ViewOrder() {
 
   const router = useRouter();
 
-  const [orders, setOrders] = useState<OrdinazioneDatabaseTableRow[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
     console.log("runs one time only");
@@ -21,7 +21,7 @@ export default function ViewOrder() {
       },
     })
       .then((res) => res.json()) // Parse the response data as JSON
-      .then((data: OrdinazioneDatabaseTableRow[]) => {
+      .then((data: Order[]) => {
         setOrders(data);
       }); // Update the state with the fetched data
 
