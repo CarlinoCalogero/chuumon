@@ -173,7 +173,9 @@ var semaphore = 0;
             `CREATE TABLE menu_item_not_in_menu (
                 nome varchar(50) NOT NULL,
                 prezzo FLOAT NOT NULL,
-                CONSTRAINT unique_menu_item_not_in_menu UNIQUE (nome)
+                nome_categoria VARCHAR(50) NOT NULL,
+                CONSTRAINT unique_menu_item_not_in_menu UNIQUE (nome),
+                CONSTRAINT menu_item_not_in_menu_categoria FOREIGN KEY (nome_categoria) REFERENCES categoria (nome) ON DELETE RESTRICT ON UPDATE CASCADE
             )`,
             (err) => {
                 if (err) {
@@ -243,6 +245,7 @@ var semaphore = 0;
                                         data_e_ora DATETIME NOT NULL,
                                         note varchar(250),
                                         is_si_dividono_le_pizze BOOLEAN NOT NULL,
+                                        is_fritti_prima_della_pizza BOOLEAN NOT NULL,
                                         numero_ordinazione_progressivo_giornaliero INTEGER UNSIGNED NOT NULL,
                                         pizze_divise_in INTEGER UNSIGNED,
                                         numero_bambini INTEGER UNSIGNED,

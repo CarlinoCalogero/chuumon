@@ -117,7 +117,7 @@ export async function POST(request: Request, response: Response) {
     }
 
 
-    await db.run("INSERT INTO ordinazione(numero_tavolo, data_e_ora, note, is_si_dividono_le_pizze, numero_ordinazione_progressivo_giornaliero, pizze_divise_in, numero_bambini, numero_adulti)  VALUES(?, ?, ?, ?, ?, ?, ?, ?)", [tableOrder.tableOrderInfo.tableNumber, tableOrder.dateAndTime, tableOrder.tableOrderInfo.note, tableOrder.tableOrderInfo.isSiDividonoLaPizza, nuovoNumeroProgressivoGiornaliero, tableOrder.tableOrderInfo.slicedIn, tableOrder.tableOrderInfo.numeroBambini, tableOrder.tableOrderInfo.numeroAdulti]);
+    await db.run("INSERT INTO ordinazione(numero_tavolo, data_e_ora, note, is_si_dividono_le_pizze, is_fritti_prima_della_pizza, numero_ordinazione_progressivo_giornaliero, pizze_divise_in, numero_bambini, numero_adulti)  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)", [tableOrder.tableOrderInfo.tableNumber, tableOrder.dateAndTime, tableOrder.tableOrderInfo.note, tableOrder.tableOrderInfo.isSiDividonoLaPizza, tableOrder.tableOrderInfo.isFrittiPrimaDellaPizza, nuovoNumeroProgressivoGiornaliero, tableOrder.tableOrderInfo.slicedIn, tableOrder.tableOrderInfo.numeroBambini, tableOrder.tableOrderInfo.numeroAdulti]);
 
     // get ordinazioneLastId
     const ordinazioneLastId: DatabaseRowId = await db.get('SELECT last_insert_rowid() as rowid')
@@ -134,7 +134,7 @@ export async function POST(request: Request, response: Response) {
                 // menuItems were created anew or modified
                 if (orderedItem.isWasMenuItemCreated || orderedItem.isWereIngredientsModified) {
 
-                    db.getDatabaseInstance().run("INSERT INTO menu_item_not_in_menu(nome,prezzo) VALUES(?, ?)", [`${orderedItem.menuItem}${DATABASE_STRING_SEPARATOR}${tableOrder.tableOrderInfo.tableNumber}${DATABASE_STRING_SEPARATOR}${tableOrder.dateAndTime}`, orderedItem.price],
+                    db.getDatabaseInstance().run("INSERT INTO menu_item_not_in_menu(nome,prezzo,nome_categoria) VALUES(?,?,?)", [`${orderedItem.menuItem}${DATABASE_STRING_SEPARATOR}${tableOrder.tableOrderInfo.tableNumber}${DATABASE_STRING_SEPARATOR}${tableOrder.dateAndTime}`, orderedItem.price, orderedItem.menuItemCategory],
                         function (err) {
                             if (err) {
                                 return console.error(err.message);

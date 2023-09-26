@@ -5,7 +5,7 @@ import { useState, useEffect, ChangeEvent, MouseEvent } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { UnitaDiMisuraDatabaseTableRow } from '@/types/UnitaDiMisuraDatabaseTableRow';
 import { OrderedItem } from '@/types/OrderedItem';
-import { CALZONI, CATEGORIE_CREA, CATEGORIE_CREA_ARRAY, CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO, FARINE_SPECIALI, OGNI_INGREDIENTE_AGGIUNTO_COSTA_EURO, PINSE_ROMANE, PIZZE_BIANCHE, PIZZE_CATEGORIES, PIZZE_ROSSE, UNITA_DI_MISURA, checkIfMenuItemCanBeSlicedUp, checkIfMenuItemIsAPizza } from '@/lib/utils';
+import { CALZONI, CATEGORIE_CREA, CATEGORIE_CREA_ARRAY, CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO, FARINE_SPECIALI, OGNI_INGREDIENTE_AGGIUNTO_COSTA_EURO, PINSE_ROMANE, PIZZE_BIANCHE, PIZZE_CATEGORIES, PIZZE_ROSSE, UNITA_DI_MISURA, addMenuItemToStringKeyAndOrderedItemArrayValueMap, checkIfMenuItemCanBeSlicedUp, checkIfMenuItemIsAPizza } from '@/lib/utils';
 import { TableOrderInfo } from '@/types/TableOrderInfo';
 import { MenuItemWithIngredientsMap } from '@/types/MenuItemWithIngredientsMap';
 import { CategoryWithMenuItemsMap } from '@/types/CategoryWithMenuItemsMap';
@@ -560,11 +560,7 @@ export default function Order() {
       return
 
     var orderedItemsByCategoriesCopy = getOrderedItemsByCategoriesCopy();
-    if (orderedItemsByCategoriesCopy.has(orderedItemCopy.menuItemCategory)) {
-      orderedItemsByCategoriesCopy.get(orderedItemCopy.menuItemCategory)?.push(orderedItemCopy);
-    } else {
-      orderedItemsByCategoriesCopy.set(orderedItemCopy.menuItemCategory, [orderedItemCopy])
-    }
+    addMenuItemToStringKeyAndOrderedItemArrayValueMap(orderedItemsByCategoriesCopy, orderedItemCopy.menuItemCategory, orderedItemCopy);
     setOrderedItemsByCategoriesMap(orderedItemsByCategoriesCopy);
 
     // reset
@@ -665,11 +661,6 @@ export default function Order() {
 
     if (tableOrderInfo.numeroAdulti == null) {
       console.log("numero adulti is null")
-      return;
-    }
-
-    if (tableOrderInfo.numeroBambini == null) {
-      console.log("numero bambini is null")
       return;
     }
 

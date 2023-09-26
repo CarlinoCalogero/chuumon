@@ -1,4 +1,5 @@
 import { CategoriaConIngredientiCheLaDefiniscono } from "@/types/CategoriaConIngredientiCheLaDefiniscono";
+import { OrderedItem } from "@/types/OrderedItem";
 
 export const DATABASE_INFO = "database.db";
 
@@ -83,4 +84,14 @@ export function checkIfMenuItemCanBeSlicedUp(menuItemCategory: string) {
     }
 
     return false;
+}
+
+export function addMenuItemToStringKeyAndOrderedItemArrayValueMap(map: Map<string, OrderedItem[]>, key: string, value: OrderedItem) {
+
+    if (map.has(key)) {
+        map.get(key)?.push(value);
+    } else {
+        map.set(key, [value])
+    }
+
 }
