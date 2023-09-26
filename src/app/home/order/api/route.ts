@@ -127,8 +127,10 @@ export async function POST(request: Request, response: Response) {
 
         categoryWithOrderedItems.orderedItem.forEach(async (orderedItem) => {
 
-            if (orderedItem.isWasMenuItemCreated || orderedItem.isWereIngredientsModified) {
-                if (db != null) {
+            if (db != null) {
+
+                // menuItems were created anew or modified
+                if (orderedItem.isWasMenuItemCreated || orderedItem.isWereIngredientsModified) {
 
                     db.getDatabaseInstance().run("INSERT INTO menu_item_not_in_menu(nome,prezzo) VALUES(?, ?)", [`${orderedItem.menuItem}${DATABASE_STRING_SEPARATOR}${tableOrder.tableOrderInfo.tableNumber}${DATABASE_STRING_SEPARATOR}${tableOrder.dateAndTime}`, orderedItem.price],
                         function (err) {
@@ -167,11 +169,20 @@ export async function POST(request: Request, response: Response) {
 
                         });
 
+
+                } else { // menuItems were not created anew or modified
+
+                    const stmt = await db.prepare('SELECT rowid FROM menu_item WHERE nome=?');
+                    await stmt.bind({ 1: orderedItem.menuItem })
+                    const menuItemId: DatabaseRowId = await stmt.get()
+
+                    await db.run("INSERT INTO contiene(id_ordinazione,id_menu_item,id_menu_item_not_in_menu,quantita,nome_unita_di_misura,consegnato) VALUES(?,?,?,?,?,?)", [ordinazioneLastId?.rowid, menuItemId?.rowid, null, orderedItem.numberOf, orderedItem.unitOfMeasure, false]);
+
                 }
+
 
             }
 
-            // riprendi da qui e fai i menuItem che non sono stati creati e/o modificati
 
         });
 
