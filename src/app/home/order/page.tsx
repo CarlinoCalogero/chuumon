@@ -5,7 +5,7 @@ import { useState, useEffect, ChangeEvent, MouseEvent } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { UnitaDiMisuraDatabaseTableRow } from '@/types/UnitaDiMisuraDatabaseTableRow';
 import { OrderedItem } from '@/types/OrderedItem';
-import { CALZONI, CATEGORIE_CREA, CATEGORIE_CREA_ARRAY, CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO, FARINE_SPECIALI, OGNI_INGREDIENTE_AGGIUNTO_COSTA_EURO, PINSE_ROMANE, PIZZE_BIANCHE, PIZZE_CATEGORIES, PIZZE_ROSSE, UNITA_DI_MISURA } from '@/lib/utils';
+import { CALZONI, CATEGORIE_CREA, CATEGORIE_CREA_ARRAY, CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO, FARINE_SPECIALI, OGNI_INGREDIENTE_AGGIUNTO_COSTA_EURO, PINSE_ROMANE, PIZZE_BIANCHE, PIZZE_CATEGORIES, PIZZE_ROSSE, UNITA_DI_MISURA, checkIfMenuItemCanBeSlicedUp, checkIfMenuItemIsAPizza } from '@/lib/utils';
 import { TableOrderInfo } from '@/types/TableOrderInfo';
 import { MenuItemWithIngredientsMap } from '@/types/MenuItemWithIngredientsMap';
 import { CategoryWithMenuItemsMap } from '@/types/CategoryWithMenuItemsMap';
@@ -353,34 +353,6 @@ export default function Order() {
 
     return resultCategory;
 
-  }
-
-  function checkIfMenuItemIsAPizza(menuItemCategory: string) {
-
-    if (menuItemCategory == '')
-      return false
-
-    for (var count = 0; count < PIZZE_CATEGORIES.length; count++) {
-      var currentPizzaCategoria = PIZZE_CATEGORIES[count];
-      if (currentPizzaCategoria.toUpperCase() == menuItemCategory.toUpperCase())
-        return true
-    }
-
-    return false;
-  }
-
-  function checkIfMenuItemCanBeSlicedUp(menuItemCategory: string) {
-
-    if (menuItemCategory == '')
-      return false
-
-    for (var count = 0; count < CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO.length; count++) {
-      var currentSlicedUpItemCategory = CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO[count];
-      if (currentSlicedUpItemCategory.toUpperCase() == menuItemCategory.toUpperCase())
-        return true
-    }
-
-    return false;
   }
 
   function addIngredientToOrderedItem(onChangeEvent: ChangeEvent<HTMLInputElement>) {

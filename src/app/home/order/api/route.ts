@@ -127,6 +127,8 @@ export async function POST(request: Request, response: Response) {
 
         categoryWithOrderedItems.orderedItem.forEach(async (orderedItem) => {
 
+            const insertSql = "INSERT INTO contiene(id_ordinazione,id_menu_item,id_menu_item_not_in_menu,divisa_in,quantita,nome_unita_di_misura,consegnato) VALUES(?,?,?,?,?,?,?)";
+
             if (db != null) {
 
                 // menuItems were created anew or modified
@@ -164,7 +166,7 @@ export async function POST(request: Request, response: Response) {
 
                             // place order
                             if (db != null) {
-                                db.run("INSERT INTO contiene(id_ordinazione,id_menu_item,id_menu_item_not_in_menu,quantita,nome_unita_di_misura,consegnato) VALUES(?,?,?,?,?,?)", [ordinazioneLastId?.rowid, null, menuItemNotInMenuLastId, orderedItem.numberOf, orderedItem.unitOfMeasure, false]);
+                                db.run(insertSql, [ordinazioneLastId?.rowid, null, menuItemNotInMenuLastId, orderedItem.slicedIn, orderedItem.numberOf, orderedItem.unitOfMeasure, false]);
                             }
 
                         });
@@ -176,7 +178,7 @@ export async function POST(request: Request, response: Response) {
                     await stmt.bind({ 1: orderedItem.menuItem })
                     const menuItemId: DatabaseRowId = await stmt.get()
 
-                    await db.run("INSERT INTO contiene(id_ordinazione,id_menu_item,id_menu_item_not_in_menu,quantita,nome_unita_di_misura,consegnato) VALUES(?,?,?,?,?,?)", [ordinazioneLastId?.rowid, menuItemId?.rowid, null, orderedItem.numberOf, orderedItem.unitOfMeasure, false]);
+                    await db.run(insertSql, [ordinazioneLastId?.rowid, menuItemId?.rowid, null, orderedItem.slicedIn, orderedItem.numberOf, orderedItem.unitOfMeasure, false]);
 
                 }
 

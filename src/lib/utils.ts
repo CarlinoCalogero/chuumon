@@ -56,3 +56,31 @@ export function removeNumbersFromArray(array: number[], items: number[]) {
     return dummyArray;
 
 }
+
+export function checkIfMenuItemIsAPizza(menuItemCategory: string) {
+
+    if (menuItemCategory == '')
+        return false
+
+    for (var count = 0; count < PIZZE_CATEGORIES.length; count++) {
+        var currentPizzaCategoria = PIZZE_CATEGORIES[count];
+        if (currentPizzaCategoria.toUpperCase() == menuItemCategory.toUpperCase())
+            return true
+    }
+
+    return false;
+}
+
+export function checkIfMenuItemCanBeSlicedUp(menuItemCategory: string) {
+
+    if (menuItemCategory == '')
+        return false
+
+    for (var count = 0; count < CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO.length; count++) {
+        var currentSlicedUpItemCategory = CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO[count];
+        if (currentSlicedUpItemCategory.toUpperCase() == menuItemCategory.toUpperCase())
+            return true
+    }
+
+    return false;
+}

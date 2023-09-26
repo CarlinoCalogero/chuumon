@@ -265,6 +265,7 @@ var semaphore = 0;
                                                     id_ordinazione INTEGER UNSIGNED NOT NULL,
                                                     id_menu_item INTEGER UNSIGNED,
                                                     id_menu_item_not_in_menu INTEGER UNSIGNED,
+                                                    divisa_in INTEGER,
                                                     quantita INTEGER NOT NULL,
                                                     nome_unita_di_misura VARCHAR(50) NOT NULL,
                                                     consegnato BOOLEAN NOT NULL,
