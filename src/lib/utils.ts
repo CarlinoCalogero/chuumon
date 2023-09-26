@@ -40,6 +40,10 @@ export const UNITA_DI_MISURA = {
 }
 
 export const OGNI_INGREDIENTE_AGGIUNTO_COSTA_EURO = 1;
+export const COPERTO_COSTA_EURO = {
+    adulti: 1,
+    bambini: 0.5
+};
 
 export const DATABASE_STRING_SEPARATOR = "_";
 

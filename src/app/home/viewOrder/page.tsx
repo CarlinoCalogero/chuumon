@@ -4,6 +4,7 @@ import { useState, useEffect, ChangeEvent, DragEvent, MouseEvent } from 'react'
 import styles from './page.module.css'
 import { useRouter } from 'next/navigation'
 import { Order } from '@/types/Order';
+import { OrderSnippet } from '@/components/OrderSnippet';
 
 export default function ViewOrder() {
 
@@ -33,9 +34,11 @@ export default function ViewOrder() {
 
   return (
 
-    <div>
+    <div className={styles.outerDiv}>
 
-      miao
+      {
+        orders.map((order, i) => <OrderSnippet key={"orderSnippet_" + i} order={order} />)
+      }
 
     </div>
 

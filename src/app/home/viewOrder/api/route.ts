@@ -22,6 +22,8 @@ type OrdinazioneDatabaseTableRowWithRowId = {
 }
 
 type APIOrder = {
+    numeroOrdineProgressivoGiornaliero: number,
+    dateAndTime: Date,
     orderInfo: TableOrderInfo,
     orderedItems: { [k: string]: OrderedItem[]; },
 }
@@ -146,6 +148,8 @@ export async function GET() {
 
         //add the order to the Array
         ordersArray.push({
+            numeroOrdineProgressivoGiornaliero: order.numero_ordinazione_progressivo_giornaliero,
+            dateAndTime: order.data_e_ora,
             orderInfo: {
                 tableNumber: order.numero_tavolo,
                 isFrittiPrimaDellaPizza: order.is_fritti_prima_della_pizza,

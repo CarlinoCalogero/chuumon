@@ -1,0 +1,24 @@
+.outerDiv {
+    padding: 1rem;
+    border: 0.14rem solid black;
+    border-radius: 0.3rem;
+    min-width: 10rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.numeroComandaETavolo{
+    display: flex;
+    justify-content: space-between;
+    gap: 5rem;
+}
+
+.line {
+    border-top: 0.11rem solid black;
+    width: 100%;
+}
+
+.infoComanda{
+    display: flex;
+    flex-direction: column;
+}
