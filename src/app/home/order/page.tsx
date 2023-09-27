@@ -71,7 +71,8 @@ export default function Order() {
     isCanMenuItemBeSlicedUp: false,
     slicedIn: null,
     numberOf: null,
-    unitOfMeasure: null
+    unitOfMeasure: null,
+    consegnato: false
   });
 
   const [orderedItemsByCategoriesMap, setOrderedItemsByCategoriesMap] = useState<OrderedItemByCategoryMap>(new Map());
@@ -628,7 +629,8 @@ export default function Order() {
       slicedIn: null,
       menuItemCategory: null,
       numberOf: null,
-      unitOfMeasure: null
+      unitOfMeasure: null,
+      consegnato: false
     })
 
     // clear selectedCategory

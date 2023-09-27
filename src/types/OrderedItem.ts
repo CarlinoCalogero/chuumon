@@ -13,5 +13,6 @@ export type OrderedItem = {
     isCanMenuItemBeSlicedUp: boolean,
     slicedIn: number | null,
     numberOf: number | null,
-    unitOfMeasure: string | null
+    unitOfMeasure: string | null,
+    consegnato: boolean
 }

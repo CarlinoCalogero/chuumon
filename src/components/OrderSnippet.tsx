@@ -1,14 +1,36 @@
 import { COPERTO_COSTA_EURO } from '@/lib/utils';
 import styles from './OrderSnippet.module.css'
 import { Order } from '@/types/Order';
-import { useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import { OrderedItemsByCategoriesArray } from '@/types/OrderedItemsByCategoriesArray';
+import { OrderedItem } from '@/types/OrderedItem';
 
 interface OrderSnippetProps {
     order: Order
 }
 
 export function OrderSnippet({ order }: OrderSnippetProps) {
+
+    const [orderCopy, setOrderCopy] = useState<Order>({
+        numeroOrdineProgressivoGiornaliero: order.numeroOrdineProgressivoGiornaliero,
+        dateAndTime: order.dateAndTime,
+        orderInfo: {
+            tableNumber: order.orderInfo.tableNumber,
+            isFrittiPrimaDellaPizza: order.orderInfo.isFrittiPrimaDellaPizza,
+            isSiDividonoLaPizza: order.orderInfo.isSiDividonoLaPizza,
+            slicedIn: order.orderInfo.slicedIn,
+            note: order.orderInfo.note,
+            numeroBambini: order.orderInfo.numeroBambini,
+            numeroAdulti: order.orderInfo.numeroAdulti
+        },
+        orderedItems: new Map(JSON.parse(JSON.stringify(Array.from(order.orderedItems)))),
+    });
+
+    useEffect(() => {
+
+        console.log("miao",orderCopy.orderedItems)
+
+    }, [orderCopy])
 
     const coperto = computeCoperto();
     const bill = computeBill();
@@ -62,6 +84,12 @@ export function OrderSnippet({ order }: OrderSnippetProps) {
 
     }
 
+    function handleConsegnaOrdine(onChangeEvent: ChangeEvent<HTMLInputElement>, category: string, orderedItem: OrderedItem) {
+
+        console.log(orderCopy.orderedItems.has(category))
+
+    }
+
     return (
         <div className={styles.outerDiv}>
 
@@ -103,11 +131,21 @@ export function OrderSnippet({ order }: OrderSnippetProps) {
                     {
                         categoryWithOrderedItems.orderedItem.map((orderedItem, j) => <div key={"categoryWithOrderedItems_" + i + "_orderedItem_" + j}>
 
+                            <div>
 
-                            {
-                                orderedItem.slicedIn != null &&
-                                <span className={styles.noNewLineText}>Tagliata in {orderedItem.slicedIn}</span>
-                            }
+                                {
+                                    orderedItem.slicedIn != null &&
+                                    <span className={styles.noNewLineText}>Tagliata in {orderedItem.slicedIn}</span>
+                                }
+
+                                <input
+                                    type="checkbox"
+                                    id="consegnatoOrderedItem"
+                                    checked={orderedItem.consegnato}
+                                    onChange={e => handleConsegnaOrdine(e, categoryWithOrderedItems.categoria, orderedItem)}
+                                />
+                                <label htmlFor="consegnatoOrderedItem">Consegnato</label>
+                            </div>
 
                             <div className={styles.orderedItemInnerDiv}>
 

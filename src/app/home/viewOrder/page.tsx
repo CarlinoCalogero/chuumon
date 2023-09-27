@@ -5,6 +5,7 @@ import styles from './page.module.css'
 import { useRouter } from 'next/navigation'
 import { Order } from '@/types/Order';
 import { OrderSnippet } from '@/components/OrderSnippet';
+import { OrderedItem } from '@/types/OrderedItem';
 
 export default function ViewOrder() {
 

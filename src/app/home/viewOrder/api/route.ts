@@ -83,7 +83,8 @@ export async function GET() {
                         isCanMenuItemBeSlicedUp: false,
                         slicedIn: orderedItem.divisa_in,
                         numberOf: orderedItem.quantita,
-                        unitOfMeasure: orderedItem.nome_unita_di_misura
+                        unitOfMeasure: orderedItem.nome_unita_di_misura,
+                        consegnato: orderedItem.consegnato
                     }
 
                     // it is a not created anew or modified menuItem
