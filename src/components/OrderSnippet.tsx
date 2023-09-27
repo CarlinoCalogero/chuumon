@@ -84,7 +84,7 @@ export function OrderSnippet({ order }: OrderSnippetProps) {
                             <div>
                                 <span>Ingredienti:</span>
                                 {
-                                    orderedItem.ingredients.map((ingredient, k) => <span key={"ingredientOnShowOrder_" + k}>{ingredient}</span>)
+                                    orderedItem.ingredients.map((ingredient, k) => <div key={"ingredientOnShowOrder_" + k}>{ingredient}</div>)
 
                                     // recuperare gli ingredienti dalla API
                                 }

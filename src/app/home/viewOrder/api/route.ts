@@ -92,13 +92,29 @@ export async function GET() {
                         // Perform a database query to retrieve all items from the "items" table
                         // stmt is an instance of `sqlite#Statement`
                         // which is a wrapper around `sqlite3#Statement`
-                        const stmt = await db.prepare('SELECT * FROM menu_item WHERE rowid=?');
+                        const stmt = await db.prepare('SELECT rowid,* FROM menu_item WHERE rowid=?');
                         await stmt.bind({ 1: orderedItem.id_menu_item })
                         const menuItem: MenuItemDatabaseTableRow | undefined = await stmt.get()
 
                         // console.log("menuItem", menuItem)
 
                         if (menuItem != undefined) {
+
+                            // get ingredients
+
+                            const stmt1 = await db.prepare('SELECT i.nome FROM compone as c join ingrediente as i on c.id_ingrediente=i.rowid where c.id_menu_item=?');
+                            await stmt1.bind({ 1: menuItem.rowid })
+                            const ingredientsArray: { nome: string }[] | undefined = await stmt1.all()
+
+                            // console.log("ingredientsArray", ingredientsArray)
+
+                            if (ingredientsArray != undefined) {
+
+                                ingredientsArray.forEach(ingredient => {
+                                    newOrderedItem.ingredients.push(ingredient.nome)
+                                });
+
+                            }
 
                             // fill in fields
                             newOrderedItem.menuItem = menuItem.nome;
@@ -119,13 +135,45 @@ export async function GET() {
                         // Perform a database query to retrieve all items from the "items" table
                         // stmt is an instance of `sqlite#Statement`
                         // which is a wrapper around `sqlite3#Statement`
-                        const stmt = await db.prepare('SELECT * FROM menu_item_not_in_menu WHERE rowid=?');
+                        const stmt = await db.prepare('SELECT rowid,* FROM menu_item_not_in_menu WHERE rowid=?');
                         await stmt.bind({ 1: orderedItem.id_menu_item_not_in_menu })
                         const menuItemNotInMenu: MenuItemNotInMenuDatabaseTableRow | undefined = await stmt.get()
 
-                        // console.log("menuItem", menuItem)
+                        // console.log("menuItemNotInMenu", menuItemNotInMenu)
 
                         if (menuItemNotInMenu != undefined) {
+
+                            // get ingredients
+
+                            const stmt1 = await db.prepare('SELECT i.nome FROM compone_fuori_menu as c join ingrediente as i on c.id_ingrediente=i.rowid where c.id_menu_item_not_in_menu=?');
+                            await stmt1.bind({ 1: menuItemNotInMenu.rowid })
+                            const ingredientsArray: { nome: string }[] | undefined = await stmt1.all()
+
+                            // console.log("ingredientsArray", ingredientsArray)
+
+                            if (ingredientsArray != undefined) {
+
+                                ingredientsArray.forEach(ingredient => {
+                                    newOrderedItem.ingredients.push(ingredient.nome)
+                                });
+
+                            }
+
+                            // get intolleranze
+
+                            const stmt2 = await db.prepare('SELECT i.nome FROM intolleranza as c join ingrediente as i on c.id_ingrediente=i.rowid where c.id_menu_item_not_in_menu=?');
+                            await stmt2.bind({ 1: menuItemNotInMenu.rowid })
+                            const intolleranzaArray: { nome: string }[] | undefined = await stmt2.all()
+
+                            // console.log("ingredientsArray", ingredientsArray)
+
+                            if (intolleranzaArray != undefined) {
+
+                                intolleranzaArray.forEach(ingredient => {
+                                    newOrderedItem.intolleranzaA.push(ingredient.nome)
+                                });
+
+                            }
 
                             // fill in fields
                             newOrderedItem.menuItem = menuItemNotInMenu.nome;
