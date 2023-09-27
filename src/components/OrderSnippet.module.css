@@ -2,12 +2,12 @@
     padding: 1rem;
     border: 0.14rem solid black;
     border-radius: 0.3rem;
-    min-width: 10rem;
     display: flex;
     flex-direction: column;
+    max-width: fit-content;
 }
 
-.numeroComandaETavolo{
+.numeroComandaETavolo {
     display: flex;
     justify-content: space-between;
     gap: 5rem;
@@ -18,7 +18,54 @@
     width: 100%;
 }
 
-.infoComanda{
+.infoComanda {
     display: flex;
     flex-direction: column;
+}
+
+.orderedItemInnerDiv {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 2rem;
+}
+
+.orderedItemInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.noNewLineText {
+    white-space: nowrap;
+}
+
+.coperto {
+    display: flex;
+    flex-direction: column;
+}
+
+.copertoHeader {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.copertoDetails {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: gray;
+}
+
+.bill {
+    display: flex;
+    flex-direction: row;
+    justify-content: right;
+    gap: 1rem;
+    align-items: center;
+}
+
+.bill>span {
+    font-size: 1.5em;
 }

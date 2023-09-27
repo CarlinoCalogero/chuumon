@@ -10,6 +10,30 @@ interface OrderSnippetProps {
 
 export function OrderSnippet({ order }: OrderSnippetProps) {
 
+    const coperto = computeCoperto();
+    const bill = computeBill();
+
+    function computeBill() {
+
+        var bill = 0;
+
+        getArrayFromMap().forEach(categoryWithOrderedItems => {
+
+            categoryWithOrderedItems.orderedItem.forEach(orderedItem => {
+
+                var price = orderedItem.price;
+
+                if (price != null)
+                    bill = bill + price;
+
+            });
+
+        });
+
+        return bill + coperto;
+
+    }
+
     function computeCoperto() {
 
         var coperto = 0;
@@ -74,20 +98,34 @@ export function OrderSnippet({ order }: OrderSnippetProps) {
 
                 getArrayFromMap().map((categoryWithOrderedItems, i) => <div key={"categoryWithOrderedItems_" + i}>
 
-                    <h3>{categoryWithOrderedItems.categoria}</h3>
+                    <h3>{categoryWithOrderedItems.categoria.toUpperCase()}</h3>
 
                     {
                         categoryWithOrderedItems.orderedItem.map((orderedItem, j) => <div key={"categoryWithOrderedItems_" + i + "_orderedItem_" + j}>
 
-                            <span>{orderedItem.menuItem}</span>
 
-                            <div>
-                                <span>Ingredienti:</span>
-                                {
-                                    orderedItem.ingredients.map((ingredient, k) => <div key={"ingredientOnShowOrder_" + k}>{ingredient}</div>)
+                            {
+                                orderedItem.slicedIn != null &&
+                                <span className={styles.noNewLineText}>Tagliata in {orderedItem.slicedIn}</span>
+                            }
 
-                                    // recuperare gli ingredienti dalla API
-                                }
+                            <div className={styles.orderedItemInnerDiv}>
+
+                                <div className={styles.orderedItemInfo}>
+                                    <b>{`${orderedItem.numberOf} ${orderedItem.unitOfMeasure?.toUpperCase()} - ${orderedItem.menuItem?.split("_")[0].toUpperCase()}`}</b>
+                                    {
+                                        orderedItem.ingredients.length != 0 &&
+                                        <span>{orderedItem.ingredients.toString()}</span>
+                                    }
+                                    {
+                                        orderedItem.intolleranzaA.length != 0 &&
+                                        <span><b>Intolleranza:</b> {orderedItem.intolleranzaA.toString()}</span>
+                                    }
+                                </div>
+
+                                <span className={styles.noNewLineText}>€ {orderedItem.price}</span>
+
+
                             </div>
 
 
@@ -100,7 +138,35 @@ export function OrderSnippet({ order }: OrderSnippetProps) {
 
             <hr className={styles.line} />
 
-            <span>Coperto: €{computeCoperto()}</span>
+            <div className={styles.coperto}>
+                <div className={styles.copertoHeader}>
+                    <span>Coperto:</span>
+                    <span>€{coperto}</span>
+                </div>
+                {
+                    order.orderInfo.numeroAdulti != null &&
+                    <div className={styles.copertoDetails}>
+                        <span>Adulti</span>
+                        <span>{COPERTO_COSTA_EURO.adulti}x€{order.orderInfo.numeroAdulti}</span>
+                    </div>
+                }
+                {
+                    order.orderInfo.numeroBambini != null &&
+                    <div>
+                        <span>Bambini</span>
+                        <span>{COPERTO_COSTA_EURO.bambini}x€{order.orderInfo.numeroBambini}</span>
+                    </div>
+                }
+            </div>
+
+            <hr className={styles.line} />
+
+            <div className={styles.bill}>
+                <h2>Totale:</h2>
+                <span>€ {bill}</span>
+            </div>
+
+
 
         </div>
     )
