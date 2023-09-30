@@ -1,0 +1,1 @@
+export type CategoriesWithMenuItems = Record<string, string[]>

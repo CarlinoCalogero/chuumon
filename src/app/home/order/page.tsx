@@ -5,15 +5,16 @@ import { useState, useEffect, ChangeEvent, MouseEvent } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { UnitaDiMisuraDatabaseTableRow } from '@/types/UnitaDiMisuraDatabaseTableRow';
 import { OrderedItem } from '@/types/OrderedItem';
-import { CALZONI, CATEGORIE_CREA, CATEGORIE_CREA_ARRAY, CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO, FARINE_SPECIALI, OGNI_INGREDIENTE_AGGIUNTO_COSTA_EURO, PINSE_ROMANE, PIZZE_BIANCHE, PIZZE_CATEGORIES, PIZZE_ROSSE, UNITA_DI_MISURA, addMenuItemToStringKeyAndOrderedItemArrayValueMap, checkIfMenuItemCanBeSlicedUp, checkIfMenuItemIsAPizza } from '@/lib/utils';
+import { CALZONI, CATEGORIE_CREA, CATEGORIE_CREA_ARRAY, CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO, FARINE_SPECIALI, OGNI_INGREDIENTE_AGGIUNTO_COSTA_EURO, PINSE_ROMANE, PIZZE_BIANCHE, PIZZE_CATEGORIES, PIZZE_ROSSE, UNITA_DI_MISURA, checkIfMenuItemCanBeSlicedUp, checkIfMenuItemIsAPizza, getCategoriesAndMenuItemsObjectFromCategoriesWithMenuItemsObject, getArrayFromOrderedItemsByCategoriesObject, getObjectDeepCopy, getMenuItemPriceFromMenuItemsWithIngredientsObject, getMenuItemIngredientsFromMenuItemsWithIngredientsObject, getMenuItemCategoryFromMenuItemsWithIngredientsObject, addOrderedItemToOrderedItemByCategoriesObject, getMenuItemsFromCategoryFromCategoriesWithMenuItemsObject } from '@/lib/utils';
 import { TableOrderInfo } from '@/types/TableOrderInfo';
-import { MenuItemWithIngredientsMap } from '@/types/MenuItemWithIngredientsMap';
-import { CategoryWithMenuItemsMap } from '@/types/CategoryWithMenuItemsMap';
-import { OrderedItemByCategoryMap } from '@/types/OrderedItemByCategoryMap';
 import { IngredienteDatabaseTableRow } from '@/types/IngredienteDatabaseTableRow';
 import { CategoriaConIngredientiCheLaDefiniscono } from '@/types/CategoriaConIngredientiCheLaDefiniscono';
 import { OrderedItemsByCategoriesArray } from '@/types/OrderedItemsByCategoriesArray';
 import { TableOrder } from '@/types/TableOrder';
+import { MenuItemsWithIngredients } from '@/types/MenuItemsWithIngredients';
+import { CategoriesWithMenuItems } from '@/types/CategoriesWithMenuItems';
+import { OrderedItemByCategories } from '@/types/OrderedItemByCategories';
+import { CategoriesAndMenuItems } from '@/types/CategoriesAndMenuItems';
 
 type Inputs = {
   menuItem: EventTarget & HTMLInputElement | null,
@@ -29,13 +30,15 @@ export default function Order() {
 
   console.log(searchParams.get('tableNumber'))
 
-  const [menuItemsWithIngredientsMap, setMenuItemsWithIngredientsMap] = useState<MenuItemWithIngredientsMap>(new Map());
-  const [categoriesWithMenuItemsMap, setCategoriesWithMenuItemsMap] = useState<CategoryWithMenuItemsMap>(new Map());
+  const [menuItemsWithIngredients, setMenuItemsWithIngredients] = useState<MenuItemsWithIngredients>({});
+  const [categoriesWithMenuItems, setCategoriesWithMenuItems] = useState<CategoriesWithMenuItems>({});
   const [ingredientiArray, setIngredientiArray] = useState<IngredienteDatabaseTableRow[]>([]);
   const [unitaDiMisuraArray, setUnitaDiMisuraArray] = useState<UnitaDiMisuraDatabaseTableRow[]>([]);
 
-  const [menuItemsArray, setMenuItemsArray] = useState<string[]>([]);
-  const [categoriesArray, setCategoriesArray] = useState<string[]>([]);
+  const [categoriesAndMenuItems, setCategoriesAndMenuItems] = useState<CategoriesAndMenuItems>({
+    categories: [],
+    menuItems: []
+  });
 
   const [inputs, setInputs] = useState<Inputs>({
     menuItem: null,
@@ -75,8 +78,8 @@ export default function Order() {
     consegnato: false
   });
 
-  const [orderedItemsByCategoriesMap, setOrderedItemsByCategoriesMap] = useState<OrderedItemByCategoryMap>(new Map());
-  const [orderedItemsByCategoriesArray, setOrderedItemsByCategoriesArray] = useState<OrderedItemsByCategoriesArray>([]);
+  const [orderedItemsByCategory, setOrderedItemsByCategory] = useState<OrderedItemByCategories>({});
+  const [orderedItemsByCategoryArray, setOrderedItemsByCategoryArray] = useState<OrderedItemsByCategoriesArray>([]);
 
   const [addedIngredient, setAddedIngredient] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
@@ -95,8 +98,8 @@ export default function Order() {
     })
       .then((res) => res.json()) // Parse the response data as JSON
       .then((data) => {
-        setMenuItemsWithIngredientsMap(new Map(Object.entries(data.menuItemsWithIngredientsMap)));
-        setCategoriesWithMenuItemsMap(new Map(Object.entries(data.categoriesWithMenuItemsMap)))
+        setMenuItemsWithIngredients(data.menuItemsWithIngredients);
+        setCategoriesWithMenuItems(data.categoriesWithMenuItems)
         setIngredientiArray(data.ingredienti);
         setUnitaDiMisuraArray(data.unitaDiMisura);
       }); // Update the state with the fetched data
@@ -104,47 +107,36 @@ export default function Order() {
   }, [])
 
   useEffect(() => {
-    var newMenuItemsArray: string[] = [];
-    for (var key of menuItemsWithIngredientsMap.keys()) {
-      newMenuItemsArray.push(key);
-    }
-    setMenuItemsArray(newMenuItemsArray)
-  }, [menuItemsWithIngredientsMap])
+    console.log("menuItemsWithIngredients", menuItemsWithIngredients)
+  }, [menuItemsWithIngredients])
 
   useEffect(() => {
-    console.log("menuItemsArray", menuItemsArray);
-  }, [menuItemsArray])
+    console.log("categoriesWithMenuItems", categoriesWithMenuItems)
+    setCategoriesAndMenuItems(getCategoriesAndMenuItemsObjectFromCategoriesWithMenuItemsObject(categoriesWithMenuItems))
+  }, [categoriesWithMenuItems])
 
   useEffect(() => {
-    var newCategoriesArray: string[] = [];
-    for (var key of categoriesWithMenuItemsMap.keys()) {
-      newCategoriesArray.push(key);
-    }
-    setCategoriesArray(newCategoriesArray)
-  }, [categoriesWithMenuItemsMap])
+    console.log("categoriesAndMenuItems", categoriesAndMenuItems);
+  }, [categoriesAndMenuItems])
 
   useEffect(() => {
-    console.log("categoriesArray", categoriesArray);
-  }, [categoriesArray])
+    setOrderedItemsByCategoryArray(getArrayFromOrderedItemsByCategoriesObject(orderedItemsByCategory))
+  }, [orderedItemsByCategory])
 
   useEffect(() => {
-    setOrderedItemsByCategoriesArray(Array.from(orderedItemsByCategoriesMap, ([categoria, orderedItem]) => ({ categoria, orderedItem })))
-  }, [orderedItemsByCategoriesMap])
+    console.log("orderedItemsByCategoriesArray", orderedItemsByCategoryArray);
+  }, [orderedItemsByCategoryArray])
 
   useEffect(() => {
-    console.log("orderedItemsByCategoriesArray", orderedItemsByCategoriesArray);
-  }, [orderedItemsByCategoriesArray])
-
-  useEffect(() => {
-    console.log(orderedItem);
+    console.log("orderedItem", orderedItem);
   }, [orderedItem])
 
   useEffect(() => {
-    console.log(tableOrderInfo);
+    console.log("tableOrderInfo", tableOrderInfo);
   }, [tableOrderInfo])
 
   useEffect(() => {
-    console.log(isInsertingMenuItemWithSearch);
+    console.log("isInsertingMenuItemWithSearch", isInsertingMenuItemWithSearch);
   }, [isInsertingMenuItemWithSearch])
 
   function getInputsCopy() {
@@ -156,18 +148,6 @@ export default function Order() {
     return inputsCopy;
   }
 
-  function getOrderedItemCopy() {
-    return JSON.parse(JSON.stringify(orderedItem)) as OrderedItem
-  }
-
-  function getTableOrderInfoCopy() {
-    return JSON.parse(JSON.stringify(tableOrderInfo)) as TableOrderInfo
-  }
-
-  function getOrderedItemsByCategoriesCopy() {
-    return new Map(orderedItemsByCategoriesMap)
-  }
-
   function handleMenuItemChange(onChangeEvent: ChangeEvent<HTMLInputElement>) {
     if (inputs.menuItem == null) {
       console.log("1 null")
@@ -177,13 +157,13 @@ export default function Order() {
     }
 
     var menuItemName = onChangeEvent.target.value;
-    var menuItemCategory = getMenuItemCategory(menuItemName)
+    var menuItemCategory = getMenuItemCategoryFromMenuItemsWithIngredientsObject(menuItemsWithIngredients, menuItemName)
 
-    var orderedItemCopy = getOrderedItemCopy();
+    var orderedItemCopy = getObjectDeepCopy(orderedItem) as OrderedItem;
     orderedItemCopy.menuItem = menuItemName;
     orderedItemCopy.menuItemCategory = menuItemCategory;
-    orderedItemCopy.price = getMenuItemPrice(menuItemName);
-    orderedItemCopy.originalIngredients = getMenuItemIngredients(menuItemName);
+    orderedItemCopy.price = getMenuItemPriceFromMenuItemsWithIngredientsObject(menuItemsWithIngredients, menuItemName);
+    orderedItemCopy.originalIngredients = getMenuItemIngredientsFromMenuItemsWithIngredientsObject(menuItemsWithIngredients, menuItemName);
     orderedItemCopy.ingredients = [...orderedItemCopy.originalIngredients];
     orderedItemCopy.isMenuItemAPizza = checkIfMenuItemIsAPizza(menuItemCategory)
     orderedItemCopy.isCanMenuItemBeSlicedUp = checkIfMenuItemCanBeSlicedUp(menuItemCategory)
@@ -206,19 +186,19 @@ export default function Order() {
       setInputs(inputsCopy)
     }
 
-    var orderedItemCopy = getOrderedItemCopy();
+    var orderedItemCopy = getObjectDeepCopy(orderedItem) as OrderedItem;
     orderedItemCopy.numberOf = Number(onChangeEvent.target.value)
     setOrderedItem(orderedItemCopy)
   }
 
   function handleNumberoAdultiChange(onChangeEvent: ChangeEvent<HTMLInputElement>) {
-    var tableOrderInfoCopy = getTableOrderInfoCopy()
+    var tableOrderInfoCopy = getObjectDeepCopy(tableOrderInfo) as TableOrderInfo
     tableOrderInfoCopy.numeroAdulti = Number(onChangeEvent.target.value)
     setTableOrderInfo(tableOrderInfoCopy)
   }
 
   function handleNumberoBambiniChange(onChangeEvent: ChangeEvent<HTMLInputElement>) {
-    var tableOrderInfoCopy = getTableOrderInfoCopy()
+    var tableOrderInfoCopy = getObjectDeepCopy(tableOrderInfo) as TableOrderInfo
     tableOrderInfoCopy.numeroBambini = Number(onChangeEvent.target.value)
     setTableOrderInfo(tableOrderInfoCopy)
   }
@@ -226,7 +206,7 @@ export default function Order() {
   function handleNoteTextAreaChange(onChangeEvent: ChangeEvent<HTMLTextAreaElement>) {
     var newNote: string | null = onChangeEvent.target.value;
 
-    var tableOrderInfoCopy = getTableOrderInfoCopy()
+    var tableOrderInfoCopy = getObjectDeepCopy(tableOrderInfo) as TableOrderInfo
 
     if (newNote == '') {
       newNote = null;
@@ -237,19 +217,19 @@ export default function Order() {
   }
 
   function handleSlicedInChange(onChangeEvent: ChangeEvent<HTMLSelectElement>) {
-    var orderedItemCopy = getOrderedItemCopy();
+    var orderedItemCopy = getObjectDeepCopy(orderedItem) as OrderedItem;
     orderedItemCopy.slicedIn = Number(onChangeEvent.target.value)
     setOrderedItem(orderedItemCopy)
   }
 
   function handleSlicedInTableOrderInfoChange(onChangeEvent: ChangeEvent<HTMLSelectElement>) {
-    var tableOrderInfoCopy = getTableOrderInfoCopy();
+    var tableOrderInfoCopy = getObjectDeepCopy(tableOrderInfo) as TableOrderInfo;
     tableOrderInfoCopy.slicedIn = Number(onChangeEvent.target.value);
     setTableOrderInfo(tableOrderInfoCopy)
   }
 
   function handleUnitOfMeasurementChange(onChangeEvent: ChangeEvent<HTMLSelectElement>) {
-    var orderedItemCopy = getOrderedItemCopy();
+    var orderedItemCopy = getObjectDeepCopy(orderedItem) as OrderedItem;
     orderedItemCopy.unitOfMeasure = onChangeEvent.target.value;
     setOrderedItem(orderedItemCopy)
   }
@@ -257,7 +237,7 @@ export default function Order() {
   function handleSelectCategoryChange(onChangeEvent: ChangeEvent<HTMLSelectElement>) {
     setSelectedCategory(onChangeEvent.target.value)
 
-    var orderedItemCopy = getOrderedItemCopy();
+    var orderedItemCopy = getObjectDeepCopy(orderedItem) as OrderedItem;
     orderedItemCopy.menuItem = null;
     orderedItemCopy.menuItemCategory = onChangeEvent.target.value;
     setOrderedItem(orderedItemCopy)
@@ -272,13 +252,13 @@ export default function Order() {
 
   function handleSelectMenuItemChange(onChangeEvent: ChangeEvent<HTMLSelectElement>) {
     var menuItemName = onChangeEvent.target.value;
-    var menuItemCategory = getMenuItemCategory(menuItemName)
+    var menuItemCategory = getMenuItemCategoryFromMenuItemsWithIngredientsObject(menuItemsWithIngredients, menuItemName)
 
-    var orderedItemCopy = getOrderedItemCopy();
+    var orderedItemCopy = getObjectDeepCopy(orderedItem) as OrderedItem;
     orderedItemCopy.menuItem = menuItemName;
     orderedItemCopy.menuItemCategory = menuItemCategory;
-    orderedItemCopy.price = getMenuItemPrice(menuItemName);
-    orderedItemCopy.originalIngredients = getMenuItemIngredients(menuItemName);
+    orderedItemCopy.price = getMenuItemPriceFromMenuItemsWithIngredientsObject(menuItemsWithIngredients, menuItemName);
+    orderedItemCopy.originalIngredients = getMenuItemIngredientsFromMenuItemsWithIngredientsObject(menuItemsWithIngredients, menuItemName);
     orderedItemCopy.ingredients = [...orderedItemCopy.originalIngredients];
     orderedItemCopy.isMenuItemAPizza = checkIfMenuItemIsAPizza(menuItemCategory)
     orderedItemCopy.isCanMenuItemBeSlicedUp = checkIfMenuItemCanBeSlicedUp(menuItemCategory)
@@ -286,7 +266,7 @@ export default function Order() {
   }
 
   function handleIsFrittiPrimaDellaPizzaChange(onChangeEvent: ChangeEvent<HTMLInputElement>) {
-    var tableOrderInfoCopy = getTableOrderInfoCopy();
+    var tableOrderInfoCopy = getObjectDeepCopy(tableOrderInfo) as TableOrderInfo;
     tableOrderInfoCopy.isFrittiPrimaDellaPizza = onChangeEvent.target.checked;
     setTableOrderInfo(tableOrderInfoCopy)
   }
@@ -295,65 +275,12 @@ export default function Order() {
 
     var newBooleanValue = onChangeEvent.target.checked;
 
-    var tableOrderInfoCopy = getTableOrderInfoCopy();
+    var tableOrderInfoCopy = getObjectDeepCopy(tableOrderInfo) as TableOrderInfo;
     tableOrderInfoCopy.isSiDividonoLaPizza = newBooleanValue;
     if (newBooleanValue == false) {
       tableOrderInfoCopy.slicedIn = null;
     }
     setTableOrderInfo(tableOrderInfoCopy)
-  }
-
-  function getMenuItemsFromCategory(categoryName: string) {
-    var returnValue: string[] | undefined;
-    if (categoriesWithMenuItemsMap.has(categoryName))
-      returnValue = categoriesWithMenuItemsMap.get(categoryName)
-
-    if (returnValue != undefined)
-      return returnValue;
-    return [];
-  }
-
-  function getMenuItemPrice(menuItemName: string) {
-    var menuItemPrice = -1;
-
-    if (menuItemsWithIngredientsMap.has(menuItemName)) {
-      var menuItemWithIngredient = menuItemsWithIngredientsMap.get(menuItemName);
-      if (menuItemWithIngredient != undefined)
-        menuItemPrice = menuItemWithIngredient.prezzo;
-    }
-
-    return menuItemPrice;
-  }
-
-  function getMenuItemIngredients(menuItemName: string) {
-    var menuItemIngredients: string[] = [];
-
-    console.log("ingredientiPrima", menuItemIngredients)
-
-    if (menuItemsWithIngredientsMap.has(menuItemName)) {
-      var menuItemWithIngredient = menuItemsWithIngredientsMap.get(menuItemName);
-      if (menuItemWithIngredient != undefined)
-        menuItemIngredients = menuItemWithIngredient.ingredienti;
-    }
-
-    if (menuItemIngredients[0] == null)
-      menuItemIngredients = [];
-
-    return menuItemIngredients;
-  }
-
-  function getMenuItemCategory(menuItemName: string) {
-
-    var resultCategory = '';
-
-    if (menuItemsWithIngredientsMap.has(menuItemName)) {
-      var menuItemInfo = menuItemsWithIngredientsMap.get(menuItemName);
-      if (menuItemInfo != undefined)
-        resultCategory = menuItemInfo.categoria;
-    }
-
-    return resultCategory;
-
   }
 
   function addIngredientToOrderedItem(onChangeEvent: ChangeEvent<HTMLInputElement>) {
@@ -380,7 +307,7 @@ export default function Order() {
     }
 
 
-    var orderedItemCopy = getOrderedItemCopy();
+    var orderedItemCopy = getObjectDeepCopy(orderedItem) as OrderedItem;
     orderedItemCopy.ingredients.push(addedIngredient);
 
     if (!isWasCreaButtonPressed) {
@@ -436,7 +363,7 @@ export default function Order() {
       return
     }
 
-    var orderedItemCopy = getOrderedItemCopy()
+    var orderedItemCopy = getObjectDeepCopy(orderedItem) as OrderedItem
 
     // menuItem Check
     if (orderedItemCopy.menuItem == null) {
@@ -560,9 +487,9 @@ export default function Order() {
     if (orderedItemCopy.menuItemCategory == null)
       return
 
-    var orderedItemsByCategoriesCopy = getOrderedItemsByCategoriesCopy();
-    addMenuItemToStringKeyAndOrderedItemArrayValueMap(orderedItemsByCategoriesCopy, orderedItemCopy.menuItemCategory, orderedItemCopy);
-    setOrderedItemsByCategoriesMap(orderedItemsByCategoriesCopy);
+    var orderedItemsByCategoriesCopy = getObjectDeepCopy(orderedItemsByCategory) as OrderedItemByCategories;
+    addOrderedItemToOrderedItemByCategoriesObject(orderedItemsByCategoriesCopy, orderedItemCopy);
+    setOrderedItemsByCategory(orderedItemsByCategoriesCopy);
 
     // reset
     resetFieldsAndOrderedItem();
@@ -582,7 +509,7 @@ export default function Order() {
       }
     }
 
-    var orderedItemCopy = getOrderedItemCopy();
+    var orderedItemCopy = getObjectDeepCopy(orderedItem) as OrderedItem;
     orderedItemCopy.ingredients.splice(orderedItemCopy.ingredients.indexOf(ingredientName), 1) // remove ingredient
 
     if (!isWasCreaButtonPressed) {
@@ -644,7 +571,7 @@ export default function Order() {
 
     var creaCategory = onChangeEvent.target.value;
 
-    var orderedItemCopy = getOrderedItemCopy();
+    var orderedItemCopy = getObjectDeepCopy(orderedItem) as OrderedItem;
 
 
     if (creaCategory == CATEGORIE_CREA.pizza) {
@@ -669,7 +596,7 @@ export default function Order() {
     var tableOrder: TableOrder = {
       dateAndTime: new Date(),
       tableOrderInfo: tableOrderInfo,
-      orderedItemsByCategoriesArray: orderedItemsByCategoriesArray
+      orderedItemsByCategoriesArray: orderedItemsByCategoryArray
     }
 
     console.log("before placing the order", tableOrder)
@@ -786,7 +713,7 @@ export default function Order() {
 
           <datalist id="menu-items-list">
             {
-              menuItemsArray.map((menuItem, i) => <option key={"orderPage_" + menuItem + i} value={menuItem}></option>)
+              categoriesAndMenuItems.menuItems.map((menuItem, i) => <option key={"orderPage_" + menuItem + i} value={menuItem}></option>)
             }
           </datalist>
 
@@ -802,7 +729,7 @@ export default function Order() {
           >
             <option value='' ></option>
             {
-              categoriesArray.map((category, i) => <option key={"orderPage_" + category + i} value={category}>{category}</option>)
+              categoriesAndMenuItems.categories.map((category, i) => <option key={"orderPage_" + category + i} value={category}>{category}</option>)
             }
           </select>
 
@@ -814,7 +741,7 @@ export default function Order() {
             >
               <option value='' disabled></option>
               {
-                getMenuItemsFromCategory(selectedCategory).map((menuItemInThisCategory, i) => <option key={"orderPage_menuItemInThisCategory" + i} value={menuItemInThisCategory}>{menuItemInThisCategory}</option>)
+                getMenuItemsFromCategoryFromCategoriesWithMenuItemsObject(categoriesWithMenuItems, selectedCategory).map((menuItemInThisCategory, i) => <option key={"orderPage_menuItemInThisCategory" + i} value={menuItemInThisCategory}>{menuItemInThisCategory}</option>)
               }
             </select>
           }
@@ -891,8 +818,8 @@ export default function Order() {
 
 
       {
-        orderedItemsByCategoriesArray.map((orderedItemByCategory, i) =>
-          orderedItemByCategory.orderedItem.length != 0 &&
+        orderedItemsByCategoryArray.map((orderedItemByCategory, i) =>
+          orderedItemByCategory.orderedItems.length != 0 &&
           <div
             key={"orderedItemByCategory_" + i}
           >
@@ -901,7 +828,7 @@ export default function Order() {
 
             <div className={styles.outerDiv}>
               {
-                orderedItemByCategory.orderedItem.map((orderedItem, j) => <div key={"orderedItem_" + j + "_inCategory_" + i}>
+                orderedItemByCategory.orderedItems.map((orderedItem, j) => <div key={"orderedItem_" + j + "_inCategory_" + i}>
                   <span>{orderedItem.numberOf} {orderedItem.menuItem} {orderedItem.unitOfMeasure} {orderedItem.slicedIn != null && `tagliata in ${orderedItem.slicedIn}`}</span>
                   {
                     orderedItem.ingredients.length != 0 &&

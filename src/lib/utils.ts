@@ -1,7 +1,13 @@
 import { CategoriaConIngredientiCheLaDefiniscono } from "@/types/CategoriaConIngredientiCheLaDefiniscono";
+import { CategoriesWithMenuItems } from "@/types/CategoriesWithMenuItems";
+import { MenuItemInfo } from "@/types/MenuItemInfo";
+import { MenuItemsWithIngredients } from "@/types/MenuItemsWithIngredients";
+import { MenuItemsAndOneIngredient } from "@/types/MenuItemsAndOneIngredient";
 import { Order } from "@/types/Order";
 import { OrderedItem } from "@/types/OrderedItem";
-import { OrderedItemByCategoryMap } from "@/types/OrderedItemByCategoryMap";
+import { OrderedItemByCategories } from "@/types/OrderedItemByCategories";
+import { OrderedItemsByCategoriesArray } from "@/types/OrderedItemsByCategoriesArray";
+import { CategoriesAndMenuItems } from "@/types/CategoriesAndMenuItems";
 
 export const DATABASE_INFO = "database.db";
 
@@ -92,43 +98,116 @@ export function checkIfMenuItemCanBeSlicedUp(menuItemCategory: string) {
     return false;
 }
 
-export function addMenuItemToStringKeyAndOrderedItemArrayValueMap(map: Map<string, OrderedItem[]>, key: string, value: OrderedItem) {
+export function addIngredientToMenuItemWithIngredients(menuItemsWithIngredients: MenuItemsWithIngredients, menuItemsAndOneIngredient: MenuItemsAndOneIngredient) {
 
-    if (map.has(key)) {
-        map.get(key)?.push(value);
+    if (menuItemsAndOneIngredient.menuItem in menuItemsWithIngredients) {
+        menuItemsWithIngredients[menuItemsAndOneIngredient.menuItem].ingredienti.push(menuItemsAndOneIngredient.ingrediente);
     } else {
-        map.set(key, [value])
+        var insert: MenuItemInfo = {
+            categoria: menuItemsAndOneIngredient.categoria,
+            prezzo: menuItemsAndOneIngredient.prezzo,
+            ingredienti: [menuItemsAndOneIngredient.ingrediente]
+        }
+        menuItemsWithIngredients[menuItemsAndOneIngredient.menuItem] = insert;
     }
 
 }
 
-export function getOrderObjectCopy(orderObject: Order, isObjectAUseStateObject: boolean) {
+export function addMenuItemInCategory(categoriesWithMenuItems: CategoriesWithMenuItems, menuItemsAndOneIngredient: MenuItemsAndOneIngredient) {
 
-    var orderCopy: Order = {
-        numeroOrdineProgressivoGiornaliero: orderObject.numeroOrdineProgressivoGiornaliero,
-        dateAndTime: orderObject.dateAndTime,
-        orderInfo: {
-            tableNumber: orderObject.orderInfo.tableNumber,
-            isFrittiPrimaDellaPizza: orderObject.orderInfo.isFrittiPrimaDellaPizza,
-            isSiDividonoLaPizza: orderObject.orderInfo.isSiDividonoLaPizza,
-            slicedIn: orderObject.orderInfo.slicedIn,
-            note: orderObject.orderInfo.note,
-            numeroBambini: orderObject.orderInfo.numeroBambini,
-            numeroAdulti: orderObject.orderInfo.numeroAdulti
-        },
-        orderedItems: getOrderedItemByCategoryMapDeepCopy(orderObject.orderedItems, isObjectAUseStateObject),
+    if (menuItemsAndOneIngredient.categoria in categoriesWithMenuItems && !categoriesWithMenuItems[menuItemsAndOneIngredient.categoria].includes(menuItemsAndOneIngredient.menuItem)) {
+        categoriesWithMenuItems[menuItemsAndOneIngredient.categoria].push(menuItemsAndOneIngredient.menuItem)
+    } else {
+        categoriesWithMenuItems[menuItemsAndOneIngredient.categoria] = [menuItemsAndOneIngredient.menuItem];
     }
-
-    return orderCopy;
 
 }
 
-export function getOrderedItemByCategoryMapDeepCopy(orderedItemByCategoryMap: OrderedItemByCategoryMap, isObjectAUseStateObject: boolean) {
-    // don't know the reason why but if we're copyng an useState then the second method won't work
-    // if we're copying a variable and not an useState then the first method won't work
+export function addOrderedItemToOrderedItemByCategoriesObject(orderedItemsByCategories: OrderedItemByCategories, orderedItem: OrderedItem) {
 
-    if (isObjectAUseStateObject) // the map was inside a useState
-        return new Map(JSON.parse(JSON.stringify(Array.from(orderedItemByCategoryMap)))) as OrderedItemByCategoryMap;
-    else // the map was inside a variable
-        return new Map(Object.entries(orderedItemByCategoryMap)) as OrderedItemByCategoryMap;
+    if (orderedItem.menuItemCategory == null || orderedItem.menuItem == null)
+        return;
+
+    if (orderedItem.menuItemCategory in orderedItemsByCategories && !orderedItemsByCategories[orderedItem.menuItemCategory].insertedOrderedItemsNames.includes(orderedItem.menuItem)) {
+        orderedItemsByCategories[orderedItem.menuItemCategory].insertedOrderedItemsNames.push(orderedItem.menuItem);
+        orderedItemsByCategories[orderedItem.menuItemCategory].orderedItems.push(orderedItem);
+    } else {
+        orderedItemsByCategories[orderedItem.menuItemCategory] = {
+            insertedOrderedItemsNames: [orderedItem.menuItem],
+            orderedItems: [orderedItem]
+        };
+    }
+
+}
+
+export function getArrayFromOrderedItemsByCategoriesObject(orderedItemsByCategories: OrderedItemByCategories) {
+
+    let orderedItemsByCategoriesArray: OrderedItemsByCategoriesArray = []
+
+    for (const [category, orderedItems] of Object.entries(orderedItemsByCategories)) {
+
+        orderedItemsByCategoriesArray.push({
+            categoria: category,
+            orderedItems: orderedItems.orderedItems
+        });
+
+    }
+
+    return orderedItemsByCategoriesArray;
+
+}
+
+export function getCategoriesAndMenuItemsObjectFromCategoriesWithMenuItemsObject(categoriesWithMenuItems: CategoriesWithMenuItems) {
+
+    let categoriesAndMenuItems: CategoriesAndMenuItems = {
+        categories: [],
+        menuItems: []
+    }
+
+    for (const [category, menuItems] of Object.entries(categoriesWithMenuItems)) {
+
+        categoriesAndMenuItems.categories.push(category);
+        categoriesAndMenuItems.menuItems = [...categoriesAndMenuItems.menuItems, ...menuItems]
+
+    }
+
+    return categoriesAndMenuItems;
+
+}
+
+export function getMenuItemsFromCategoryFromCategoriesWithMenuItemsObject(categoriesWithMenuItems: CategoriesWithMenuItems, categoryName: string) {
+
+    if (categoryName in categoriesWithMenuItems)
+        return categoriesWithMenuItems[categoryName]
+
+    return [];
+}
+
+export function getMenuItemPriceFromMenuItemsWithIngredientsObject(menuItemsWithIngredients: MenuItemsWithIngredients, menuItemName: string) {
+
+    if (menuItemName in menuItemsWithIngredients)
+        return menuItemsWithIngredients[menuItemName].prezzo;
+
+    return 0;
+}
+
+export function getMenuItemIngredientsFromMenuItemsWithIngredientsObject(menuItemsWithIngredients: MenuItemsWithIngredients, menuItemName: string) {
+
+    if (menuItemName in menuItemsWithIngredients)
+        return menuItemsWithIngredients[menuItemName].ingredienti
+
+    return [];
+}
+
+export function getMenuItemCategoryFromMenuItemsWithIngredientsObject(menuItemsWithIngredients: MenuItemsWithIngredients, menuItemName: string) {
+
+    if (menuItemName in menuItemsWithIngredients)
+        return menuItemsWithIngredients[menuItemName].categoria
+
+    return '';
+
+}
+
+export function getObjectDeepCopy(object: any) {
+    return JSON.parse(JSON.stringify(object));
 }

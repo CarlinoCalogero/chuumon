@@ -1,1 +1,0 @@
-export type CategoryWithMenuItemsMap = Map<string, string[]>;

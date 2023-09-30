@@ -1,20 +1,14 @@
 import sqlite3 from "sqlite3";
 import { open, Database } from "sqlite";
-import { DATABASE_INFO, DATABASE_STRING_SEPARATOR } from "@/lib/utils";
-import { MenuItemWithIngredientsMap } from "@/types/MenuItemWithIngredientsMap";
+import { DATABASE_INFO, DATABASE_STRING_SEPARATOR, addIngredientToMenuItemWithIngredients, addMenuItemInCategory } from "@/lib/utils";
 import { MenuItemInfo } from "@/types/MenuItemInfo";
-import { CategoryWithMenuItemsMap } from "@/types/CategoryWithMenuItemsMap";
 import { UnitaDiMisuraDatabaseTableRow } from "@/types/UnitaDiMisuraDatabaseTableRow";
 import { IngredienteDatabaseTableRow } from "@/types/IngredienteDatabaseTableRow";
 import { TableOrder } from "@/types/TableOrder";
 import { DatabaseRowId } from "@/types/DatabaseRowId";
-
-type MenuItemsAndOneIngredient = {
-    menuItem: string,
-    prezzo: number,
-    categoria: string,
-    ingrediente: string
-}
+import { MenuItemsWithIngredients } from "@/types/MenuItemsWithIngredients";
+import { CategoriesWithMenuItems } from "@/types/CategoriesWithMenuItems";
+import { MenuItemsAndOneIngredient } from "@/types/MenuItemsAndOneIngredient";
 
 // Let's initialize it as null initially, and we will assign the actual database instance later.
 var db: Database | null = null;
@@ -33,38 +27,24 @@ export async function GET() {
 
     var menuItemsAndIngredients = await db.all('SELECT mi.nome as "menuItem", mi.prezzo as "prezzo", cat.nome as "categoria", i.nome as "ingrediente" FROM compone as c join ingrediente as i on i.rowid=c.id_ingrediente right join menu_item as mi on mi.rowid=c.id_menu_item join categoria as cat on cat.nome=mi.nome_categoria') as MenuItemsAndOneIngredient[]
 
-    var menuItemsWithIngredientsMap: MenuItemWithIngredientsMap = new Map();
-    var categoriesWithMenuItemsMap: CategoryWithMenuItemsMap = new Map();
+    var menuItemsWithIngredients: MenuItemsWithIngredients = {};
+    var categoriesWithMenuItems: CategoriesWithMenuItems = {};
 
 
     menuItemsAndIngredients.forEach(menuItemAndOneIngredient => {
-        // add in menuItemsWithIngredientsMap
-        if (menuItemsWithIngredientsMap.has(menuItemAndOneIngredient.menuItem)) {
-            menuItemsWithIngredientsMap.get(menuItemAndOneIngredient.menuItem)?.ingredienti.push(menuItemAndOneIngredient.ingrediente);
-        } else {
-            var insert: MenuItemInfo = {
-                categoria: menuItemAndOneIngredient.categoria,
-                prezzo: menuItemAndOneIngredient.prezzo,
-                ingredienti: [menuItemAndOneIngredient.ingrediente]
-            }
-            menuItemsWithIngredientsMap.set(menuItemAndOneIngredient.menuItem, insert)
-        }
+        // add in menuItemsWithIngredients
+        addIngredientToMenuItemWithIngredients(menuItemsWithIngredients, menuItemAndOneIngredient);
 
-        // add in categoriesWithMenuItemsMaps
-        if (categoriesWithMenuItemsMap.has(menuItemAndOneIngredient.categoria)) {
-            if (!categoriesWithMenuItemsMap.get(menuItemAndOneIngredient.categoria)?.includes(menuItemAndOneIngredient.menuItem))
-                categoriesWithMenuItemsMap.get(menuItemAndOneIngredient.categoria)?.push(menuItemAndOneIngredient.menuItem)
-        } else {
-            categoriesWithMenuItemsMap.set(menuItemAndOneIngredient.categoria, [menuItemAndOneIngredient.menuItem])
-        }
+        // add in categoriesWithMenuItems
+        addMenuItemInCategory(categoriesWithMenuItems, menuItemAndOneIngredient)
     });
 
     // Perform a database query to retrieve all items from the "items" table
     // stmt is an instance of `sqlite#Statement`
     // which is a wrapper around `sqlite3#Statement`
     const resultItem = {
-        menuItemsWithIngredientsMap: Object.fromEntries(menuItemsWithIngredientsMap),
-        categoriesWithMenuItemsMap: Object.fromEntries(categoriesWithMenuItemsMap),
+        menuItemsWithIngredients: menuItemsWithIngredients,
+        categoriesWithMenuItems: categoriesWithMenuItems,
         ingredienti: await db.all('SELECT * FROM ingrediente') as IngredienteDatabaseTableRow[],
         unitaDiMisura: await db.all('SELECT * FROM unita_di_misura') as UnitaDiMisuraDatabaseTableRow[]
     }
@@ -125,7 +105,7 @@ export async function POST(request: Request, response: Response) {
     // link menuItems to order
     tableOrder.orderedItemsByCategoriesArray.forEach(categoryWithOrderedItems => {
 
-        categoryWithOrderedItems.orderedItem.forEach(async (orderedItem) => {
+        categoryWithOrderedItems.orderedItems.forEach(async (orderedItem) => {
 
             const insertSql = "INSERT INTO contiene(id_ordinazione,id_menu_item,id_menu_item_not_in_menu,divisa_in,quantita,nome_unita_di_misura,consegnato) VALUES(?,?,?,?,?,?,?)";
 

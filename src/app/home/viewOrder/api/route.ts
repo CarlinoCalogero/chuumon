@@ -1,12 +1,13 @@
 import sqlite3 from "sqlite3";
 import { open, Database } from "sqlite";
-import { DATABASE_INFO, addMenuItemToStringKeyAndOrderedItemArrayValueMap, checkIfMenuItemCanBeSlicedUp, checkIfMenuItemIsAPizza } from "@/lib/utils";
+import { DATABASE_INFO, addOrderedItemToOrderedItemByCategoriesObject, checkIfMenuItemCanBeSlicedUp, checkIfMenuItemIsAPizza } from "@/lib/utils";
 import { ContieneDatabaseTableRow } from "@/types/ContieneDatabaseTableRow";
 import { MenuItemDatabaseTableRow } from "@/types/MenuItemDatabaseTableRow";
-import { OrderedItemByCategoryMap } from "@/types/OrderedItemByCategoryMap";
 import { OrderedItem } from "@/types/OrderedItem";
 import { MenuItemNotInMenuDatabaseTableRow } from "@/types/MenuItemNotInMenuDatabaseTableRow";
 import { TableOrderInfo } from "@/types/TableOrderInfo";
+import { OrderedItemByCategories } from "@/types/OrderedItemByCategories";
+import { Order } from "@/types/Order";
 
 type OrdinazioneDatabaseTableRowWithRowId = {
     rowid: number,
@@ -19,13 +20,6 @@ type OrdinazioneDatabaseTableRowWithRowId = {
     pizze_divise_in: number | null,
     numero_bambini: number | null,
     numero_adulti: number
-}
-
-type APIOrder = {
-    numeroOrdineProgressivoGiornaliero: number,
-    dateAndTime: Date,
-    orderInfo: TableOrderInfo,
-    orderedItems: { [k: string]: OrderedItem[]; },
 }
 
 // Let's initialize it as null initially, and we will assign the actual database instance later.
@@ -47,11 +41,11 @@ export async function GET() {
 
     // console.log("orders", orders)
 
-    var ordersArray: APIOrder[] = [];
+    var ordersArray: Order[] = [];
 
     for (const order of ordersFromDatabase) {
 
-        var orderedItemsByCategoriesMap: OrderedItemByCategoryMap = new Map();
+        var orderedItemsByCategories: OrderedItemByCategories = {};
 
         if (db != null) {
 
@@ -124,7 +118,7 @@ export async function GET() {
                             newOrderedItem.isMenuItemAPizza = checkIfMenuItemIsAPizza(menuItem.nome_categoria);
                             newOrderedItem.isCanMenuItemBeSlicedUp = checkIfMenuItemCanBeSlicedUp(menuItem.nome_categoria);
 
-                            addMenuItemToStringKeyAndOrderedItemArrayValueMap(orderedItemsByCategoriesMap, menuItem.nome_categoria, newOrderedItem);
+                            addOrderedItemToOrderedItemByCategoriesObject(orderedItemsByCategories, newOrderedItem);
 
                         }
 
@@ -183,7 +177,7 @@ export async function GET() {
                             newOrderedItem.isMenuItemAPizza = checkIfMenuItemIsAPizza(menuItemNotInMenu.nome_categoria);
                             newOrderedItem.isCanMenuItemBeSlicedUp = checkIfMenuItemCanBeSlicedUp(menuItemNotInMenu.nome_categoria);
 
-                            addMenuItemToStringKeyAndOrderedItemArrayValueMap(orderedItemsByCategoriesMap, menuItemNotInMenu.nome_categoria, newOrderedItem);
+                            addOrderedItemToOrderedItemByCategoriesObject(orderedItemsByCategories, newOrderedItem);
 
                         }
 
@@ -208,7 +202,7 @@ export async function GET() {
                 numeroBambini: order.numero_bambini,
                 numeroAdulti: order.numero_adulti
             },
-            orderedItems: Object.fromEntries(orderedItemsByCategoriesMap),
+            orderedItems: orderedItemsByCategories,
         })
 
     };

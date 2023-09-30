@@ -1,4 +1,4 @@
-import { COPERTO_COSTA_EURO, getOrderObjectCopy, getOrderedItemByCategoryMapDeepCopy } from '@/lib/utils';
+import { COPERTO_COSTA_EURO, getArrayFromOrderedItemsByCategoriesObject, getObjectDeepCopy } from '@/lib/utils';
 import styles from './OrderSnippet.module.css'
 import { Order } from '@/types/Order';
 import { ChangeEvent, useEffect, useState } from 'react';
@@ -12,13 +12,13 @@ interface OrderSnippetProps {
 
 export function OrderSnippet({ orderNumber, order }: OrderSnippetProps) {
 
-    const [orderCopy, setOrderCopy] = useState<Order>(getOrderObjectCopy(order, false));
-    const [ordersArray, setOrdersArray] = useState<OrderedItemsByCategoriesArray>([]);
+    const [orderCopy, setOrderCopy] = useState<Order>(getObjectDeepCopy(order));
+    const [orderedItemsByCategoriesArray, setOrderedItemsByCategoriesArray] = useState<OrderedItemsByCategoriesArray>([]);
 
     useEffect(() => {
 
-        console.log(orderCopy.orderedItems)
-        setOrdersArray(getArrayFromMap())
+        console.log("orderCopy", orderCopy)
+        setOrderedItemsByCategoriesArray(getArrayFromOrderedItemsByCategoriesObject(orderCopy.orderedItems))
 
     }, [orderCopy])
 
@@ -29,18 +29,19 @@ export function OrderSnippet({ orderNumber, order }: OrderSnippetProps) {
 
         var bill = 0;
 
-        ordersArray.forEach(categoryWithOrderedItems => {
+        for (const [category, orderedItems] of Object.entries(orderCopy.orderedItems)) {
 
-            categoryWithOrderedItems.orderedItem.forEach(orderedItem => {
+            orderedItems.orderedItems.forEach(orderedItem => {
 
                 var price = orderedItem.price;
 
                 if (price != null)
                     bill = bill + price;
 
+
             });
 
-        });
+        }
 
         return bill + coperto;
 
@@ -59,40 +60,12 @@ export function OrderSnippet({ orderNumber, order }: OrderSnippetProps) {
         return coperto;
     }
 
-    function getArrayFromMap() {
-
-        var array: OrderedItemsByCategoriesArray = [];
-
-        for (let [key, value] of orderCopy.orderedItems.entries()) {
-            array.push({
-                categoria: key,
-                orderedItem: value
-            })
-        }
-
-        return array;
-
-    }
-
     function handleConsegnaOrdine(onChangeEvent: ChangeEvent<HTMLInputElement>, category: string, orderedItemIndex: number) {
 
-        var orderedItemByCategoryMapDeepCopy = getOrderedItemByCategoryMapDeepCopy(orderCopy.orderedItems, true);
+        var dummyOrder = getObjectDeepCopy(orderCopy) as Order;
+        dummyOrder.orderedItems[category].orderedItems[orderedItemIndex].consegnato = !dummyOrder.orderedItems[category].orderedItems[orderedItemIndex].consegnato;
 
-        if (orderedItemByCategoryMapDeepCopy.has(category)) {
-            var categoryWithOrderedItems = JSON.parse(JSON.stringify(orderedItemByCategoryMapDeepCopy.get(category))) as OrderedItem[] | undefined;
-
-            if (categoryWithOrderedItems != undefined) {
-                categoryWithOrderedItems[orderedItemIndex].consegnato = !categoryWithOrderedItems[orderedItemIndex].consegnato;
-                orderedItemByCategoryMapDeepCopy.set(category, categoryWithOrderedItems);
-            }
-
-            var dummyOrder = getOrderObjectCopy(orderCopy, true);
-            dummyOrder.orderedItems = orderedItemByCategoryMapDeepCopy;
-
-            setOrderCopy(dummyOrder)
-
-        }
-
+        setOrderCopy(dummyOrder)
 
 
     }
@@ -131,12 +104,12 @@ export function OrderSnippet({ orderNumber, order }: OrderSnippetProps) {
 
             {
 
-                ordersArray.map((categoryWithOrderedItems, i) => <div key={"categoryWithOrderedItems_" + i}>
+                orderedItemsByCategoriesArray.map((categoryWithOrderedItems, i) => <div key={"categoryWithOrderedItems_" + i}>
 
                     <h3>{categoryWithOrderedItems.categoria.toUpperCase()}</h3>
 
                     {
-                        categoryWithOrderedItems.orderedItem.map((orderedItem, j) => <div key={"categoryWithOrderedItems_" + i + "_orderedItem_" + j}>
+                        categoryWithOrderedItems.orderedItems.map((orderedItem, j) => <div key={"categoryWithOrderedItems_" + i + "_orderedItem_" + j}>
 
                             <div>
 
