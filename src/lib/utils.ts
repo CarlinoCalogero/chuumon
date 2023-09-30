@@ -103,12 +103,18 @@ export function checkIfMenuItemCanBeSlicedUp(menuItemCategory: string) {
 export function addIngredientToMenuItemWithIngredients(menuItemsWithIngredients: MenuItemsWithIngredients, menuItemsAndOneIngredient: MenuItemsAndOneIngredient) {
 
     if (menuItemsAndOneIngredient.menuItem in menuItemsWithIngredients) {
-        menuItemsWithIngredients[menuItemsAndOneIngredient.menuItem].ingredienti.push(menuItemsAndOneIngredient.ingrediente);
+        if (menuItemsAndOneIngredient.ingrediente != null)
+            menuItemsWithIngredients[menuItemsAndOneIngredient.menuItem].ingredienti.push(menuItemsAndOneIngredient.ingrediente);
     } else {
-        var insert: MenuItemInfo = {
+        let ingredient: string[] = [];
+
+        if (menuItemsAndOneIngredient.ingrediente != null)
+            ingredient = [menuItemsAndOneIngredient.ingrediente]
+
+        let insert: MenuItemInfo = {
             categoria: menuItemsAndOneIngredient.categoria,
             prezzo: menuItemsAndOneIngredient.prezzo,
-            ingredienti: [menuItemsAndOneIngredient.ingrediente]
+            ingredienti: ingredient
         }
         menuItemsWithIngredients[menuItemsAndOneIngredient.menuItem] = insert;
     }
