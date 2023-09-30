@@ -785,6 +785,7 @@ export default function Order() {
             type='search'
             placeholder='Aggiungi Ingrediente'
             list='ingredients-list'
+            value={addedIngredient}
             onChange={e => addIngredientToOrderedItem(e)}
           />
 
