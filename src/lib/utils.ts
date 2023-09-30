@@ -213,3 +213,21 @@ export function getMenuItemCategoryFromMenuItemsWithIngredientsObject(menuItemsW
 export function getObjectDeepCopy(object: any) {
     return JSON.parse(JSON.stringify(object));
 }
+
+export function putIngredientsTogether(ingredientsArray: string[]) {
+
+    let separator = ",";
+    let returnText = ""
+
+    ingredientsArray.forEach(ingredient => {
+        if (returnText != "") {
+            returnText = `${returnText}${separator} ${ingredient}`
+        } else {
+            returnText = ingredient;
+        }
+
+    });
+
+    return returnText;
+
+}

@@ -1,4 +1,4 @@
-import { COPERTO_COSTA_EURO, getArrayFromOrderedItemsByCategoriesObject, getObjectDeepCopy } from '@/lib/utils';
+import { COPERTO_COSTA_EURO, getArrayFromOrderedItemsByCategoriesObject, getObjectDeepCopy, putIngredientsTogether } from '@/lib/utils';
 import styles from './OrderSnippet.module.css'
 import { Order } from '@/types/Order';
 import { ChangeEvent, useEffect, useState } from 'react';
@@ -117,7 +117,15 @@ export function OrderSnippet({ order, updateConsegnato }: OrderSnippetProps) {
                     {
                         categoryWithOrderedItems.orderedItems.map((orderedItem, j) => <div key={"categoryWithOrderedItems_" + i + "_orderedItem_" + j}>
 
-                            <div>
+                            <div className={styles.orderedItemHeader}>
+
+                                <input
+                                    type="checkbox"
+                                    id="consegnatoOrderedItem"
+                                    checked={orderedItem.consegnato}
+                                    onChange={e => handleConsegnaOrdine(e, categoryWithOrderedItems.categoria, j)}
+                                />
+                                <label htmlFor="consegnatoOrderedItem">Consegnato</label>
 
                                 {
                                     orderedItem.slicedIn != null &&
@@ -133,13 +141,6 @@ export function OrderSnippet({ order, updateConsegnato }: OrderSnippetProps) {
                                     </div>
                                 }
 
-                                <input
-                                    type="checkbox"
-                                    id="consegnatoOrderedItem"
-                                    checked={orderedItem.consegnato}
-                                    onChange={e => handleConsegnaOrdine(e, categoryWithOrderedItems.categoria, j)}
-                                />
-                                <label htmlFor="consegnatoOrderedItem">Consegnato</label>
                             </div>
 
                             <div className={styles.orderedItemInnerDiv}>
@@ -162,10 +163,10 @@ export function OrderSnippet({ order, updateConsegnato }: OrderSnippetProps) {
                                             {
                                                 orderedItem.consegnato ?
                                                     <s>
-                                                        <span>{orderedItem.ingredients.toString()}</span>
+                                                        <span>{putIngredientsTogether(orderedItem.ingredients)}</span>
                                                     </s>
                                                     :
-                                                    <span>{orderedItem.ingredients.toString()}</span>
+                                                    <span>{putIngredientsTogether(orderedItem.ingredients)}</span>
                                             }
                                         </div>
 
@@ -176,10 +177,10 @@ export function OrderSnippet({ order, updateConsegnato }: OrderSnippetProps) {
                                             {
                                                 orderedItem.consegnato ?
                                                     <s>
-                                                        <span><b>Intolleranza:</b> {orderedItem.intolleranzaA.toString()}</span>
+                                                        <span><b>Intolleranza:</b> {putIngredientsTogether(orderedItem.intolleranzaA)}</span>
                                                     </s>
                                                     :
-                                                    <span><b>Intolleranza:</b> {orderedItem.intolleranzaA.toString()}</span>
+                                                    <span><b>Intolleranza:</b> {putIngredientsTogether(orderedItem.intolleranzaA)}</span>
                                             }
                                         </div>
                                     }
