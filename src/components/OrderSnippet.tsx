@@ -1,4 +1,4 @@
-import { COPERTO_COSTA_EURO } from '@/lib/utils';
+import { COPERTO_COSTA_EURO, getOrderObjectCopy } from '@/lib/utils';
 import styles from './OrderSnippet.module.css'
 import { Order } from '@/types/Order';
 import { ChangeEvent, useEffect, useState } from 'react';
@@ -6,29 +6,17 @@ import { OrderedItemsByCategoriesArray } from '@/types/OrderedItemsByCategoriesA
 import { OrderedItem } from '@/types/OrderedItem';
 
 interface OrderSnippetProps {
+    orderNumber: number,
     order: Order
 }
 
-export function OrderSnippet({ order }: OrderSnippetProps) {
+export function OrderSnippet({ orderNumber, order }: OrderSnippetProps) {
 
-    const [orderCopy, setOrderCopy] = useState<Order>({
-        numeroOrdineProgressivoGiornaliero: order.numeroOrdineProgressivoGiornaliero,
-        dateAndTime: order.dateAndTime,
-        orderInfo: {
-            tableNumber: order.orderInfo.tableNumber,
-            isFrittiPrimaDellaPizza: order.orderInfo.isFrittiPrimaDellaPizza,
-            isSiDividonoLaPizza: order.orderInfo.isSiDividonoLaPizza,
-            slicedIn: order.orderInfo.slicedIn,
-            note: order.orderInfo.note,
-            numeroBambini: order.orderInfo.numeroBambini,
-            numeroAdulti: order.orderInfo.numeroAdulti
-        },
-        orderedItems: new Map(JSON.parse(JSON.stringify(Array.from(order.orderedItems)))),
-    });
+    const [orderCopy, setOrderCopy] = useState<Order>(getOrderObjectCopy(order, false));
 
     useEffect(() => {
 
-        console.log("miao",orderCopy.orderedItems)
+        console.log("miao", orderCopy.orderedItems)
 
     }, [orderCopy])
 
@@ -84,9 +72,13 @@ export function OrderSnippet({ order }: OrderSnippetProps) {
 
     }
 
-    function handleConsegnaOrdine(onChangeEvent: ChangeEvent<HTMLInputElement>, category: string, orderedItem: OrderedItem) {
+    function handleConsegnaOrdine(onChangeEvent: ChangeEvent<HTMLInputElement>, category: string, orderedItemIndex: number) {
 
-        console.log(orderCopy.orderedItems.has(category))
+        var orderedItemByCategoryMapDeepCopy = getOrderObjectCopy(orderCopy, true);
+
+        console.log(orderedItemByCategoryMapDeepCopy)
+
+
 
     }
 
@@ -142,7 +134,7 @@ export function OrderSnippet({ order }: OrderSnippetProps) {
                                     type="checkbox"
                                     id="consegnatoOrderedItem"
                                     checked={orderedItem.consegnato}
-                                    onChange={e => handleConsegnaOrdine(e, categoryWithOrderedItems.categoria, orderedItem)}
+                                    onChange={e => handleConsegnaOrdine(e, categoryWithOrderedItems.categoria, j)}
                                 />
                                 <label htmlFor="consegnatoOrderedItem">Consegnato</label>
                             </div>

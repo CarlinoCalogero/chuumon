@@ -1,5 +1,7 @@
 import { CategoriaConIngredientiCheLaDefiniscono } from "@/types/CategoriaConIngredientiCheLaDefiniscono";
+import { Order } from "@/types/Order";
 import { OrderedItem } from "@/types/OrderedItem";
+import { OrderedItemByCategoryMap } from "@/types/OrderedItemByCategoryMap";
 
 export const DATABASE_INFO = "database.db";
 
@@ -98,4 +100,35 @@ export function addMenuItemToStringKeyAndOrderedItemArrayValueMap(map: Map<strin
         map.set(key, [value])
     }
 
+}
+
+export function getOrderObjectCopy(orderObject: Order, isObjectAUseStateObject: boolean) {
+
+    var orderCopy: Order = {
+        numeroOrdineProgressivoGiornaliero: orderObject.numeroOrdineProgressivoGiornaliero,
+        dateAndTime: orderObject.dateAndTime,
+        orderInfo: {
+            tableNumber: orderObject.orderInfo.tableNumber,
+            isFrittiPrimaDellaPizza: orderObject.orderInfo.isFrittiPrimaDellaPizza,
+            isSiDividonoLaPizza: orderObject.orderInfo.isSiDividonoLaPizza,
+            slicedIn: orderObject.orderInfo.slicedIn,
+            note: orderObject.orderInfo.note,
+            numeroBambini: orderObject.orderInfo.numeroBambini,
+            numeroAdulti: orderObject.orderInfo.numeroAdulti
+        },
+        orderedItems: getOrderedItemByCategoryMapDeepCopy(orderObject.orderedItems, isObjectAUseStateObject),
+    }
+
+    return orderCopy;
+
+}
+
+function getOrderedItemByCategoryMapDeepCopy(orderedItemByCategoryMap: OrderedItemByCategoryMap, isObjectAUseStateObject: boolean) {
+    // don't know the reason why but if we're copyng an useState then the second method won't work
+    // if we're copying a variable and not an useState then the first method won't work
+
+    if (isObjectAUseStateObject) // the map was inside a useState
+        return new Map(JSON.parse(JSON.stringify(Array.from(orderedItemByCategoryMap)))) as OrderedItemByCategoryMap;
+    else // the map was inside a variable
+        return new Map(Object.entries(orderedItemByCategoryMap))
 }

@@ -38,7 +38,7 @@ export default function ViewOrder() {
     <div className={styles.outerDiv}>
 
       {
-        orders.map((order, i) => <OrderSnippet key={"orderSnippet_" + i} order={order} />)
+        orders.map((order, i) => <OrderSnippet key={"orderSnippet_" + i}  orderNumber={i} order={order} />)
       }
 
     </div>
