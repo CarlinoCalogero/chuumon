@@ -231,3 +231,9 @@ export function putIngredientsTogether(ingredientsArray: string[]) {
     return returnText;
 
 }
+
+export function getPercentage(totalItems: number, iterestedItems: number) {
+
+    // 100 : totalItems = x : iterestedItems
+    return (100 * iterestedItems) / totalItems;
+}

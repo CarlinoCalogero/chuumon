@@ -1,4 +1,4 @@
-import { COPERTO_COSTA_EURO, getArrayFromOrderedItemsByCategoriesObject, getObjectDeepCopy, putIngredientsTogether } from '@/lib/utils';
+import { COPERTO_COSTA_EURO, getArrayFromOrderedItemsByCategoriesObject, getObjectDeepCopy, getPercentage, putIngredientsTogether } from '@/lib/utils';
 import styles from './OrderSnippet.module.css'
 import { Order } from '@/types/Order';
 import { ChangeEvent, useEffect, useState } from 'react';
@@ -9,15 +9,23 @@ interface OrderSnippetProps {
     updateConsegnato: any
 }
 
+type DivFillArguments = {
+    totalNumberOfOrderedItems: number,
+    numberOfConsegnati: number,
+}
+
 export function OrderSnippet({ order, updateConsegnato }: OrderSnippetProps) {
 
     const [orderCopy, setOrderCopy] = useState<Order>(getObjectDeepCopy(order));
     const [orderedItemsByCategoriesArray, setOrderedItemsByCategoriesArray] = useState<OrderedItemsByCategoriesArray>([]);
+    const [divFillArguments, setDivFillArguments] = useState<DivFillArguments>(countNumberOfConsegnati());
 
     useEffect(() => {
 
         console.log("orderCopy", orderCopy)
         setOrderedItemsByCategoriesArray(getArrayFromOrderedItemsByCategoriesObject(orderCopy.orderedItems))
+        setDivFillArguments(countNumberOfConsegnati());
+        console.log(divFillArguments)
 
     }, [orderCopy])
 
@@ -76,8 +84,41 @@ export function OrderSnippet({ order, updateConsegnato }: OrderSnippetProps) {
 
     }
 
+    function countNumberOfConsegnati() {
+
+        let newDivFillArguments: DivFillArguments = {
+            totalNumberOfOrderedItems: 0,
+            numberOfConsegnati: 0,
+        }
+
+        for (const [category, orderedItems] of Object.entries(orderCopy.orderedItems)) {
+
+            orderedItems.orderedItems.forEach(orderedItem => {
+
+                newDivFillArguments.totalNumberOfOrderedItems = newDivFillArguments.totalNumberOfOrderedItems + 1;
+
+                if (orderedItem.consegnato)
+                    newDivFillArguments.numberOfConsegnati = newDivFillArguments.numberOfConsegnati + 1;
+
+
+
+            });
+
+        }
+
+        return newDivFillArguments;
+
+    }
+
     return (
-        <div className={styles.outerDiv}>
+        <div
+            className={styles.outerDiv}
+            style={
+                {
+                    background: `${divFillArguments.numberOfConsegnati == 0 ? "white" : `linear-gradient(to top, lightgoldenrodyellow ${getPercentage(divFillArguments.totalNumberOfOrderedItems, divFillArguments.numberOfConsegnati)}%, white ${getPercentage(divFillArguments.totalNumberOfOrderedItems, divFillArguments.totalNumberOfOrderedItems - divFillArguments.numberOfConsegnati)}%)`}`
+                }
+            }
+        >
 
             <div className={styles.numeroComandaETavolo}>
                 <span>Comanda n° {orderCopy.numeroOrdineProgressivoGiornaliero}</span>
