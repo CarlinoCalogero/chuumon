@@ -117,8 +117,9 @@ export function addIngredientToMenuItemWithIngredients(menuItemsWithIngredients:
 
 export function addMenuItemInCategory(categoriesWithMenuItems: CategoriesWithMenuItems, menuItemsAndOneIngredient: MenuItemsAndOneIngredient) {
 
-    if (menuItemsAndOneIngredient.categoria in categoriesWithMenuItems && !categoriesWithMenuItems[menuItemsAndOneIngredient.categoria].includes(menuItemsAndOneIngredient.menuItem)) {
-        categoriesWithMenuItems[menuItemsAndOneIngredient.categoria].push(menuItemsAndOneIngredient.menuItem)
+    if (menuItemsAndOneIngredient.categoria in categoriesWithMenuItems) {
+        if (!categoriesWithMenuItems[menuItemsAndOneIngredient.categoria].includes(menuItemsAndOneIngredient.menuItem))
+            categoriesWithMenuItems[menuItemsAndOneIngredient.categoria].push(menuItemsAndOneIngredient.menuItem)
     } else {
         categoriesWithMenuItems[menuItemsAndOneIngredient.categoria] = [menuItemsAndOneIngredient.menuItem];
     }
@@ -130,9 +131,11 @@ export function addOrderedItemToOrderedItemByCategoriesObject(orderedItemsByCate
     if (orderedItem.menuItemCategory == null || orderedItem.menuItem == null)
         return;
 
-    if (orderedItem.menuItemCategory in orderedItemsByCategories && !orderedItemsByCategories[orderedItem.menuItemCategory].insertedOrderedItemsNames.includes(orderedItem.menuItem)) {
-        orderedItemsByCategories[orderedItem.menuItemCategory].insertedOrderedItemsNames.push(orderedItem.menuItem);
-        orderedItemsByCategories[orderedItem.menuItemCategory].orderedItems.push(orderedItem);
+    if (orderedItem.menuItemCategory in orderedItemsByCategories) {
+        if (!orderedItemsByCategories[orderedItem.menuItemCategory].insertedOrderedItemsNames.includes(orderedItem.menuItem)) {
+            orderedItemsByCategories[orderedItem.menuItemCategory].insertedOrderedItemsNames.push(orderedItem.menuItem);
+            orderedItemsByCategories[orderedItem.menuItemCategory].orderedItems.push(orderedItem);
+        }
     } else {
         orderedItemsByCategories[orderedItem.menuItemCategory] = {
             insertedOrderedItemsNames: [orderedItem.menuItem],
