@@ -5,7 +5,7 @@ import { useState, useEffect, ChangeEvent, MouseEvent } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { UnitaDiMisuraDatabaseTableRow } from '@/types/UnitaDiMisuraDatabaseTableRow';
 import { OrderedItem } from '@/types/OrderedItem';
-import { CALZONI, CATEGORIE_CREA, CATEGORIE_CREA_ARRAY, CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO, FARINE_SPECIALI, OGNI_INGREDIENTE_AGGIUNTO_COSTA_EURO, PINSE_ROMANE, PIZZE_BIANCHE, PIZZE_CATEGORIES, PIZZE_ROSSE, UNITA_DI_MISURA, checkIfMenuItemCanBeSlicedUp, checkIfMenuItemIsAPizza, getCategoriesAndMenuItemsObjectFromCategoriesWithMenuItemsObject, getArrayFromOrderedItemsByCategoriesObject, getObjectDeepCopy, getMenuItemPriceFromMenuItemsWithIngredientsObject, getMenuItemIngredientsFromMenuItemsWithIngredientsObject, getMenuItemCategoryFromMenuItemsWithIngredientsObject, addOrderedItemToOrderedItemByCategoriesObject, getMenuItemsFromCategoryFromCategoriesWithMenuItemsObject, SLICED_IN_OPTIONS_ARRAY } from '@/lib/utils';
+import { CALZONI, CATEGORIE_CREA, CATEGORIE_CREA_ARRAY, CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO, FARINE_SPECIALI, OGNI_INGREDIENTE_AGGIUNTO_COSTA_EURO, PINSE_ROMANE, PIZZE_BIANCHE, PIZZE_CATEGORIES, PIZZE_ROSSE, UNITA_DI_MISURA, checkIfMenuItemCanBeSlicedUp, checkIfMenuItemIsAPizza, getCategoriesAndMenuItemsObjectFromCategoriesWithMenuItemsObject, getArrayFromOrderedItemsByCategoriesObject, getObjectDeepCopy, getMenuItemPriceFromMenuItemsWithIngredientsObject, getMenuItemIngredientsFromMenuItemsWithIngredientsObject, getMenuItemCategoryFromMenuItemsWithIngredientsObject, addOrderedItemToOrderedItemByCategoriesObject, getMenuItemsFromCategoryFromCategoriesWithMenuItemsObject, SLICED_IN_OPTIONS_ARRAY, putIngredientsTogether, CREATED_MENU_ITEM_SUFFIX, EDITED_MENU_ITEM_SUFFIX } from '@/lib/utils';
 import { TableOrderInfo } from '@/types/TableOrderInfo';
 import { IngredienteDatabaseTableRow } from '@/types/IngredienteDatabaseTableRow';
 import { CategoriaConIngredientiCheLaDefiniscono } from '@/types/CategoriaConIngredientiCheLaDefiniscono';
@@ -445,7 +445,7 @@ export default function Order() {
 
     // isWasMenuItemCreated
     if (isWasCreaButtonPressed) {
-      orderedItemCopy.menuItem = `${selectedCreaCategory.toUpperCase()} Personalizzato`
+      orderedItemCopy.menuItem = `${selectedCreaCategory.toUpperCase()} ${CREATED_MENU_ITEM_SUFFIX}`
       orderedItemCopy.isWasMenuItemCreated = true;
     } else {
       orderedItemCopy.isWasMenuItemCreated = false;
@@ -454,7 +454,7 @@ export default function Order() {
     // isWereIngredientsModified
     if (orderedItemCopy.isWereIngredientsModified) {
       if (!orderedItemCopy.isWasMenuItemCreated)
-        orderedItemCopy.menuItem = `${orderedItemCopy.menuItem} Modificato`
+        orderedItemCopy.menuItem = `${orderedItemCopy.menuItem} ${EDITED_MENU_ITEM_SUFFIX}`
     }
 
     // unitOfMeasure
@@ -848,47 +848,41 @@ export default function Order() {
             key={"orderedItemByCategory_" + i}
           >
 
-            <h2>{orderedItemByCategory.categoria}</h2>
+            <h2>{orderedItemByCategory.categoria.toUpperCase()}</h2>
 
-            <div className={styles.outerDiv}>
+            <div
+              className={styles.orderedItemsInCategoryDiv}
+            >
               {
-                orderedItemByCategory.orderedItems.map((orderedItem, j) => <div key={"orderedItem_" + j + "_inCategory_" + i}>
-                  <span>{orderedItem.numberOf} {orderedItem.menuItem} {orderedItem.unitOfMeasure} {orderedItem.slicedIn != null && `tagliata in ${orderedItem.slicedIn}`}</span>
+                orderedItemByCategory.orderedItems.map((orderedItem, j) => <div
+                  key={"orderedItem_" + j + "_inCategory_" + i}
+                  className={styles.orderedItemDiv}
+                >
+
+                  <b>{orderedItem.numberOf} {orderedItem.unitOfMeasure?.toUpperCase()} - {orderedItem.menuItem?.toUpperCase()}</b>
+
+                  {
+                    orderedItem.slicedIn != null &&
+                    <span>Tagliata in {orderedItem.slicedIn}</span>
+                  }
+
                   {
                     orderedItem.ingredients.length != 0 &&
-                    <div>
-                      <span>Ingredienti:</span>
-                      {
-                        orderedItem.ingredients.map((ingredient, i) => <div key={"orderedItemModifiedIngredient_" + ingredient + i}>{ingredient}</div>)
-                      }
+                    <div className={styles.ingredientsDiv}>
+                      <span><strong>Ingredienti:</strong> {putIngredientsTogether(orderedItem.ingredients)}</span>
                       {
                         orderedItem.removedIngredients.length != 0 &&
-                        <div>
-                          <span>Ingredienti tolti:</span>
-                          {
-                            orderedItem.removedIngredients.map((removedIngredient, i) => <div key={"orderedItemRemovedIngredient_" + removedIngredient + i}>{removedIngredient}</div>)
-                          }
-                        </div>
+                        <span><strong>Ingredienti tolti:</strong> {putIngredientsTogether(orderedItem.removedIngredients)}</span>
                       }
                       {
                         orderedItem.addedIngredients.length != 0 &&
-                        <div>
-                          <span>Ingredienti aggiunti:</span>
-                          {
-                            orderedItem.addedIngredients.map((newIngredient, i) => <div key={"orderedItemNewIngredient_" + newIngredient + i}>{newIngredient}</div>)
-                          }
-                        </div>
+                        <span><strong>Ingredienti aggiunti:</strong> {putIngredientsTogether(orderedItem.addedIngredients)}</span>
                       }
                     </div>
                   }
                   {
                     orderedItem.intolleranzaA.length != 0 &&
-                    <div>
-                      <strong>Intollerante a:</strong>
-                      {
-                        orderedItem.intolleranzaA.map((intolleranza, i) => <div key={"intolleranteA_" + intolleranza + i}>{intolleranza}</div>)
-                      }
-                    </div>
+                    <span><strong>Intollerante a:</strong> {putIngredientsTogether(orderedItem.intolleranzaA)}</span>
                   }
                 </div>)
               }

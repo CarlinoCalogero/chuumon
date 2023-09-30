@@ -155,86 +155,90 @@ export function OrderSnippet({ order, updateConsegnato }: OrderSnippetProps) {
 
                     <h3>{categoryWithOrderedItems.categoria.toUpperCase()}</h3>
 
-                    {
-                        categoryWithOrderedItems.orderedItems.map((orderedItem, j) => <div key={"categoryWithOrderedItems_" + i + "_orderedItem_" + j}>
+                    <div className={styles.orderedItemsInCategoryDiv}>
 
-                            <div className={styles.orderedItemHeader}>
+                        {
+                            categoryWithOrderedItems.orderedItems.map((orderedItem, j) => <div key={"categoryWithOrderedItems_" + i + "_orderedItem_" + j}>
 
-                                <input
-                                    type="checkbox"
-                                    id="consegnatoOrderedItem"
-                                    checked={orderedItem.consegnato}
-                                    onChange={e => handleConsegnaOrdine(e, categoryWithOrderedItems.categoria, j)}
-                                />
-                                <label htmlFor="consegnatoOrderedItem">Consegnato</label>
+                                <div className={styles.orderedItemHeader}>
 
-                                {
-                                    orderedItem.slicedIn != null &&
-                                    <div>
+                                    <input
+                                        type="checkbox"
+                                        id="consegnatoOrderedItem"
+                                        checked={orderedItem.consegnato}
+                                        onChange={e => handleConsegnaOrdine(e, categoryWithOrderedItems.categoria, j)}
+                                    />
+                                    <label htmlFor="consegnatoOrderedItem">Consegnato</label>
+
+                                    {
+                                        orderedItem.slicedIn != null &&
+                                        <div>
+                                            {
+                                                orderedItem.consegnato ?
+                                                    <s>
+                                                        <span className={styles.noNewLineText}>Tagliata in {orderedItem.slicedIn}</span>
+                                                    </s>
+                                                    :
+                                                    <span className={styles.noNewLineText}>Tagliata in {orderedItem.slicedIn}</span>
+                                            }
+                                        </div>
+                                    }
+
+                                </div>
+
+                                <div className={styles.orderedItemInnerDiv}>
+
+                                    <div className={styles.orderedItemInfo}>
+
                                         {
                                             orderedItem.consegnato ?
                                                 <s>
-                                                    <span className={styles.noNewLineText}>Tagliata in {orderedItem.slicedIn}</span>
+                                                    <b>{`${orderedItem.numberOf} ${orderedItem.unitOfMeasure?.toUpperCase()} - ${orderedItem.menuItem?.split("_")[0].toUpperCase()}`}</b>
                                                 </s>
                                                 :
-                                                <span className={styles.noNewLineText}>Tagliata in {orderedItem.slicedIn}</span>
+                                                <b>{`${orderedItem.numberOf} ${orderedItem.unitOfMeasure?.toUpperCase()} - ${orderedItem.menuItem?.split("_")[0].toUpperCase()}`}</b>
+                                        }
+
+
+                                        {
+                                            orderedItem.ingredients.length != 0 &&
+                                            <div>
+                                                {
+                                                    orderedItem.consegnato ?
+                                                        <s>
+                                                            <span>{putIngredientsTogether(orderedItem.ingredients)}</span>
+                                                        </s>
+                                                        :
+                                                        <span>{putIngredientsTogether(orderedItem.ingredients)}</span>
+                                                }
+                                            </div>
+
+                                        }
+                                        {
+                                            orderedItem.intolleranzaA.length != 0 &&
+                                            <div>
+                                                {
+                                                    orderedItem.consegnato ?
+                                                        <s>
+                                                            <span><b>Intolleranza:</b> {putIngredientsTogether(orderedItem.intolleranzaA)}</span>
+                                                        </s>
+                                                        :
+                                                        <span><b>Intolleranza:</b> {putIngredientsTogether(orderedItem.intolleranzaA)}</span>
+                                                }
+                                            </div>
                                         }
                                     </div>
-                                }
 
-                            </div>
-
-                            <div className={styles.orderedItemInnerDiv}>
-
-                                <div className={styles.orderedItemInfo}>
-
-                                    {
-                                        orderedItem.consegnato ?
-                                            <s>
-                                                <b>{`${orderedItem.numberOf} ${orderedItem.unitOfMeasure?.toUpperCase()} - ${orderedItem.menuItem?.split("_")[0].toUpperCase()}`}</b>
-                                            </s>
-                                            :
-                                            <b>{`${orderedItem.numberOf} ${orderedItem.unitOfMeasure?.toUpperCase()} - ${orderedItem.menuItem?.split("_")[0].toUpperCase()}`}</b>
-                                    }
+                                    <span className={styles.noNewLineText}>€ {orderedItem.price}</span>
 
 
-                                    {
-                                        orderedItem.ingredients.length != 0 &&
-                                        <div>
-                                            {
-                                                orderedItem.consegnato ?
-                                                    <s>
-                                                        <span>{putIngredientsTogether(orderedItem.ingredients)}</span>
-                                                    </s>
-                                                    :
-                                                    <span>{putIngredientsTogether(orderedItem.ingredients)}</span>
-                                            }
-                                        </div>
-
-                                    }
-                                    {
-                                        orderedItem.intolleranzaA.length != 0 &&
-                                        <div>
-                                            {
-                                                orderedItem.consegnato ?
-                                                    <s>
-                                                        <span><b>Intolleranza:</b> {putIngredientsTogether(orderedItem.intolleranzaA)}</span>
-                                                    </s>
-                                                    :
-                                                    <span><b>Intolleranza:</b> {putIngredientsTogether(orderedItem.intolleranzaA)}</span>
-                                            }
-                                        </div>
-                                    }
                                 </div>
 
-                                <span className={styles.noNewLineText}>€ {orderedItem.price}</span>
 
+                            </div>)
+                        }
 
-                            </div>
-
-
-                        </div>)
-                    }
+                    </div>
 
                 </div>)
 

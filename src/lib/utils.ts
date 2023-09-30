@@ -57,6 +57,10 @@ export const COPERTO_COSTA_EURO = {
 
 export const DATABASE_STRING_SEPARATOR = "_";
 
+export const CREATED_MENU_ITEM_SUFFIX = "FUORI MENU"
+
+export const EDITED_MENU_ITEM_SUFFIX = "CON MODIFICHE"
+
 export function removeNumbersFromArray(array: number[], items: number[]) {
 
     if (array.length == 0)

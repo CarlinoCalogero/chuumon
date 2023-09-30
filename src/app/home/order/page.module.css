@@ -4,9 +4,25 @@
   max-width: 50vw;
 }
 
+.orderedItemsInCategoryDiv {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
 .addItemToOrderDiv {
   display: flex;
   flex-direction: column;
   max-width: 50vw;
   padding: 2rem;
+}
+
+.orderedItemDiv {
+  display: flex;
+  flex-direction: column;
+}
+
+.ingredientsDiv {
+  display: flex;
+  flex-direction: column;
 }
