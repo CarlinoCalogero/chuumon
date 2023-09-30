@@ -298,6 +298,7 @@ var semaphore = 0;
                                                     nome_unita_di_misura VARCHAR(50) NOT NULL,
                                                     consegnato BOOLEAN NOT NULL,
                                                     CONSTRAINT unique_contiene UNIQUE (id_ordinazione , id_menu_item),
+                                                    CONSTRAINT unique_contiene_not_in_menu UNIQUE (id_ordinazione , id_menu_item_not_in_menu),
                                                     CONSTRAINT contiene_ordinazione FOREIGN KEY (id_ordinazione)
                                                         REFERENCES ordinazione (id)
                                                         ON DELETE CASCADE ON UPDATE CASCADE,

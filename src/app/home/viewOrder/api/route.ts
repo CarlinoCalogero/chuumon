@@ -9,6 +9,7 @@ import { TableOrderInfo } from "@/types/TableOrderInfo";
 import { OrderedItemByCategories } from "@/types/OrderedItemByCategories";
 import { Order } from "@/types/Order";
 import { ArgumentsUsedForUpdatingConsegnatoInAnOrder } from "@/types/ArgumentsUsedForUpdatingConsegnatoInAnOrder";
+import { DatabaseRowId } from "@/types/DatabaseRowId";
 
 type OrdinazioneDatabaseTableRowWithRowId = {
     rowid: number,
@@ -234,15 +235,39 @@ export async function POST(request: Request, response: Response) {
         argumentsUsedForUpdatingConsegnatoInAnOrder = data;
     })
 
-    console.log(argumentsUsedForUpdatingConsegnatoInAnOrder)
+    // Check if the database instance has been initialized
+    if (!db) {
+        // If the database instance is not initialized, open the database connection
+        db = await open({
+            filename: `./${DATABASE_INFO}`, // Specify the database file path
+            driver: sqlite3.Database, // Specify the database driver (sqlite3 in this case)
+        });
+    }
 
-    if (db != null) {
+    if (db != null && argumentsUsedForUpdatingConsegnatoInAnOrder.orderedItem != null) {
 
         const stmt = await db.prepare('SELECT rowid, numero_tavolo FROM ordinazione WHERE numero_ordinazione_progressivo_giornaliero=?');
         await stmt.bind({ 1: argumentsUsedForUpdatingConsegnatoInAnOrder.numeroOrdineProgressivoGiornaliero })
         const ordinazioneRowIdAndTableNumber: OrdinazioneRowIdAndTableNumber | undefined = await stmt.get()
 
-        console.log(ordinazioneRowIdAndTableNumber);
+        // menu item was created
+        if (argumentsUsedForUpdatingConsegnatoInAnOrder.orderedItem.isWasMenuItemCreated || argumentsUsedForUpdatingConsegnatoInAnOrder.orderedItem.isWereIngredientsModified) {
+
+            const stmt2 = await db.prepare('SELECT rowid FROM menu_item_not_in_menu WHERE nome=?');
+            await stmt2.bind({ 1: argumentsUsedForUpdatingConsegnatoInAnOrder.orderedItem.menuItem })
+            const menuItemNotInMenuID: DatabaseRowId = await stmt2.get()
+
+            const result = await db.run("UPDATE contiene SET consegnato=? WHERE id_ordinazione=? AND id_menu_item_not_in_menu=?", [argumentsUsedForUpdatingConsegnatoInAnOrder.consegnato, ordinazioneRowIdAndTableNumber, menuItemNotInMenuID])
+
+        } else { // menu item was not created
+
+            const stmt3 = await db.prepare('SELECT rowid FROM menu_item WHERE nome=?');
+            await stmt3.bind({ 1: argumentsUsedForUpdatingConsegnatoInAnOrder.orderedItem.menuItem })
+            const menuItemID: DatabaseRowId = await stmt3.get()
+
+            const result = await db.run("UPDATE contiene SET consegnato=? WHERE id_ordinazione=? AND id_menu_item=?", [argumentsUsedForUpdatingConsegnatoInAnOrder.consegnato, ordinazioneRowIdAndTableNumber?.rowid, menuItemID?.rowid])
+
+        }
 
     }
 
