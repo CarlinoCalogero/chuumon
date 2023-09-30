@@ -1,4 +1,4 @@
-import { COPERTO_COSTA_EURO, getOrderObjectCopy } from '@/lib/utils';
+import { COPERTO_COSTA_EURO, getOrderObjectCopy, getOrderedItemByCategoryMapDeepCopy } from '@/lib/utils';
 import styles from './OrderSnippet.module.css'
 import { Order } from '@/types/Order';
 import { ChangeEvent, useEffect, useState } from 'react';
@@ -13,10 +13,12 @@ interface OrderSnippetProps {
 export function OrderSnippet({ orderNumber, order }: OrderSnippetProps) {
 
     const [orderCopy, setOrderCopy] = useState<Order>(getOrderObjectCopy(order, false));
+    const [ordersArray, setOrdersArray] = useState<OrderedItemsByCategoriesArray>([]);
 
     useEffect(() => {
 
-        console.log("miao", orderCopy.orderedItems)
+        console.log(orderCopy.orderedItems)
+        setOrdersArray(getArrayFromMap())
 
     }, [orderCopy])
 
@@ -27,7 +29,7 @@ export function OrderSnippet({ orderNumber, order }: OrderSnippetProps) {
 
         var bill = 0;
 
-        getArrayFromMap().forEach(categoryWithOrderedItems => {
+        ordersArray.forEach(categoryWithOrderedItems => {
 
             categoryWithOrderedItems.orderedItem.forEach(orderedItem => {
 
@@ -48,11 +50,11 @@ export function OrderSnippet({ orderNumber, order }: OrderSnippetProps) {
 
         var coperto = 0;
 
-        if (order.orderInfo.numeroAdulti != null)
-            coperto = coperto + (order.orderInfo.numeroAdulti * COPERTO_COSTA_EURO.adulti);
+        if (orderCopy.orderInfo.numeroAdulti != null)
+            coperto = coperto + (orderCopy.orderInfo.numeroAdulti * COPERTO_COSTA_EURO.adulti);
 
-        if (order.orderInfo.numeroBambini != null)
-            coperto = coperto + (order.orderInfo.numeroBambini * COPERTO_COSTA_EURO.bambini);
+        if (orderCopy.orderInfo.numeroBambini != null)
+            coperto = coperto + (orderCopy.orderInfo.numeroBambini * COPERTO_COSTA_EURO.bambini);
 
         return coperto;
     }
@@ -61,7 +63,7 @@ export function OrderSnippet({ orderNumber, order }: OrderSnippetProps) {
 
         var array: OrderedItemsByCategoriesArray = [];
 
-        for (let [key, value] of Object.entries(order.orderedItems)) {
+        for (let [key, value] of orderCopy.orderedItems.entries()) {
             array.push({
                 categoria: key,
                 orderedItem: value
@@ -74,9 +76,22 @@ export function OrderSnippet({ orderNumber, order }: OrderSnippetProps) {
 
     function handleConsegnaOrdine(onChangeEvent: ChangeEvent<HTMLInputElement>, category: string, orderedItemIndex: number) {
 
-        var orderedItemByCategoryMapDeepCopy = getOrderObjectCopy(orderCopy, true);
+        var orderedItemByCategoryMapDeepCopy = getOrderedItemByCategoryMapDeepCopy(orderCopy.orderedItems, true);
 
-        console.log(orderedItemByCategoryMapDeepCopy)
+        if (orderedItemByCategoryMapDeepCopy.has(category)) {
+            var categoryWithOrderedItems = JSON.parse(JSON.stringify(orderedItemByCategoryMapDeepCopy.get(category))) as OrderedItem[] | undefined;
+
+            if (categoryWithOrderedItems != undefined) {
+                categoryWithOrderedItems[orderedItemIndex].consegnato = !categoryWithOrderedItems[orderedItemIndex].consegnato;
+                orderedItemByCategoryMapDeepCopy.set(category, categoryWithOrderedItems);
+            }
+
+            var dummyOrder = getOrderObjectCopy(orderCopy, true);
+            dummyOrder.orderedItems = orderedItemByCategoryMapDeepCopy;
+
+            setOrderCopy(dummyOrder)
+
+        }
 
 
 
@@ -86,29 +101,29 @@ export function OrderSnippet({ orderNumber, order }: OrderSnippetProps) {
         <div className={styles.outerDiv}>
 
             <div className={styles.numeroComandaETavolo}>
-                <span>Comanda n° {order.numeroOrdineProgressivoGiornaliero}</span>
-                <span>Tavolo {order.orderInfo.tableNumber}</span>
+                <span>Comanda n° {orderCopy.numeroOrdineProgressivoGiornaliero}</span>
+                <span>Tavolo {orderCopy.orderInfo.tableNumber}</span>
             </div>
 
-            <span>Il {new Date(order.dateAndTime).toLocaleDateString()} {new Date(order.dateAndTime).toLocaleTimeString()}</span>
+            <span>Il {new Date(orderCopy.dateAndTime).toLocaleDateString()} {new Date(orderCopy.dateAndTime).toLocaleTimeString()}</span>
 
             <hr className={styles.line} />
 
             <div className={styles.infoComanda}>
-                <span>Fritti prima della pizza: {order.orderInfo.isFrittiPrimaDellaPizza ? "Si" : "No"}</span>
-                <span>Si dividono la pizza: {order.orderInfo.isSiDividonoLaPizza ? "Si" : "No"}</span>
+                <span>Fritti prima della pizza: {orderCopy.orderInfo.isFrittiPrimaDellaPizza ? "Si" : "No"}</span>
+                <span>Si dividono la pizza: {orderCopy.orderInfo.isSiDividonoLaPizza ? "Si" : "No"}</span>
                 {
-                    order.orderInfo.isSiDividonoLaPizza == true &&
-                    <span>Pizze tagliate in: {order.orderInfo.slicedIn}</span>
+                    orderCopy.orderInfo.isSiDividonoLaPizza == true &&
+                    <span>Pizze tagliate in: {orderCopy.orderInfo.slicedIn}</span>
                 }
-                <span>Adulti: {order.orderInfo.numeroAdulti}</span>
+                <span>Adulti: {orderCopy.orderInfo.numeroAdulti}</span>
                 {
-                    order.orderInfo.numeroBambini != null &&
-                    <span>Bambini: {order.orderInfo.numeroBambini}</span>
+                    orderCopy.orderInfo.numeroBambini != null &&
+                    <span>Bambini: {orderCopy.orderInfo.numeroBambini}</span>
                 }
                 {
-                    order.orderInfo.note != null &&
-                    <span>Note: {order.orderInfo.note}</span>
+                    orderCopy.orderInfo.note != null &&
+                    <span>Note: {orderCopy.orderInfo.note}</span>
                 }
             </div>
 
@@ -116,7 +131,7 @@ export function OrderSnippet({ orderNumber, order }: OrderSnippetProps) {
 
             {
 
-                getArrayFromMap().map((categoryWithOrderedItems, i) => <div key={"categoryWithOrderedItems_" + i}>
+                ordersArray.map((categoryWithOrderedItems, i) => <div key={"categoryWithOrderedItems_" + i}>
 
                     <h3>{categoryWithOrderedItems.categoria.toUpperCase()}</h3>
 
@@ -174,17 +189,17 @@ export function OrderSnippet({ orderNumber, order }: OrderSnippetProps) {
                     <span>€{coperto}</span>
                 </div>
                 {
-                    order.orderInfo.numeroAdulti != null &&
+                    orderCopy.orderInfo.numeroAdulti != null &&
                     <div className={styles.copertoDetails}>
                         <span>Adulti</span>
-                        <span>{COPERTO_COSTA_EURO.adulti}x€{order.orderInfo.numeroAdulti}</span>
+                        <span>{COPERTO_COSTA_EURO.adulti}x€{orderCopy.orderInfo.numeroAdulti}</span>
                     </div>
                 }
                 {
-                    order.orderInfo.numeroBambini != null &&
+                    orderCopy.orderInfo.numeroBambini != null &&
                     <div>
                         <span>Bambini</span>
-                        <span>{COPERTO_COSTA_EURO.bambini}x€{order.orderInfo.numeroBambini}</span>
+                        <span>{COPERTO_COSTA_EURO.bambini}x€{orderCopy.orderInfo.numeroBambini}</span>
                     </div>
                 }
             </div>

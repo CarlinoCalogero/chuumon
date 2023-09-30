@@ -123,12 +123,12 @@ export function getOrderObjectCopy(orderObject: Order, isObjectAUseStateObject: 
 
 }
 
-function getOrderedItemByCategoryMapDeepCopy(orderedItemByCategoryMap: OrderedItemByCategoryMap, isObjectAUseStateObject: boolean) {
+export function getOrderedItemByCategoryMapDeepCopy(orderedItemByCategoryMap: OrderedItemByCategoryMap, isObjectAUseStateObject: boolean) {
     // don't know the reason why but if we're copyng an useState then the second method won't work
     // if we're copying a variable and not an useState then the first method won't work
 
     if (isObjectAUseStateObject) // the map was inside a useState
         return new Map(JSON.parse(JSON.stringify(Array.from(orderedItemByCategoryMap)))) as OrderedItemByCategoryMap;
     else // the map was inside a variable
-        return new Map(Object.entries(orderedItemByCategoryMap))
+        return new Map(Object.entries(orderedItemByCategoryMap)) as OrderedItemByCategoryMap;
 }
