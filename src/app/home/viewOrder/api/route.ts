@@ -8,6 +8,7 @@ import { MenuItemNotInMenuDatabaseTableRow } from "@/types/MenuItemNotInMenuData
 import { TableOrderInfo } from "@/types/TableOrderInfo";
 import { OrderedItemByCategories } from "@/types/OrderedItemByCategories";
 import { Order } from "@/types/Order";
+import { ArgumentsUsedForUpdatingConsegnatoInAnOrder } from "@/types/ArgumentsUsedForUpdatingConsegnatoInAnOrder";
 
 type OrdinazioneDatabaseTableRowWithRowId = {
     rowid: number,
@@ -20,6 +21,11 @@ type OrdinazioneDatabaseTableRowWithRowId = {
     pizze_divise_in: number | null,
     numero_bambini: number | null,
     numero_adulti: number
+}
+
+type OrdinazioneRowIdAndTableNumber = {
+    rowid: number,
+    numero_tavolo: number
 }
 
 // Let's initialize it as null initially, and we will assign the actual database instance later.
@@ -210,6 +216,38 @@ export async function GET() {
 
     // Return the items as a JSON response with status 200
     return new Response(JSON.stringify(ordersArray), {
+        headers: { "Content-Type": "application/json" },
+        status: 200,
+    });
+}
+
+// Define the GET request handler function
+export async function POST(request: Request, response: Response) {
+
+    let argumentsUsedForUpdatingConsegnatoInAnOrder: ArgumentsUsedForUpdatingConsegnatoInAnOrder = {
+        numeroOrdineProgressivoGiornaliero: -1,
+        orderedItem: null,
+        consegnato: false,
+    }
+
+    await request.json().then((data) => {
+        argumentsUsedForUpdatingConsegnatoInAnOrder = data;
+    })
+
+    console.log(argumentsUsedForUpdatingConsegnatoInAnOrder)
+
+    if (db != null) {
+
+        const stmt = await db.prepare('SELECT rowid, numero_tavolo FROM ordinazione WHERE numero_ordinazione_progressivo_giornaliero=?');
+        await stmt.bind({ 1: argumentsUsedForUpdatingConsegnatoInAnOrder.numeroOrdineProgressivoGiornaliero })
+        const ordinazioneRowIdAndTableNumber: OrdinazioneRowIdAndTableNumber | undefined = await stmt.get()
+
+        console.log(ordinazioneRowIdAndTableNumber);
+
+    }
+
+    // Return the items as a JSON response with status 200
+    return new Response(JSON.stringify("miao"), {
         headers: { "Content-Type": "application/json" },
         status: 200,
     });

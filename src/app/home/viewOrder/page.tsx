@@ -5,6 +5,8 @@ import styles from './page.module.css'
 import { useRouter } from 'next/navigation'
 import { Order } from '@/types/Order';
 import { OrderSnippet } from '@/components/OrderSnippet';
+import { OrderedItem } from '@/types/OrderedItem';
+import { ArgumentsUsedForUpdatingConsegnatoInAnOrder } from '@/types/ArgumentsUsedForUpdatingConsegnatoInAnOrder';
 
 export default function ViewOrder() {
 
@@ -32,12 +34,36 @@ export default function ViewOrder() {
     console.log(orders)
   }, [orders])
 
+  function updateConsegnato(order: Order, orderedItem: OrderedItem, consegnatoValue: boolean) {
+
+    let argumentsUsedForUpdatingConsegnatoInAnOrder: ArgumentsUsedForUpdatingConsegnatoInAnOrder = {
+      numeroOrdineProgressivoGiornaliero: order.numeroOrdineProgressivoGiornaliero,
+      orderedItem: orderedItem,
+      consegnato: consegnatoValue,
+    }
+
+    fetch("http://localhost:3000/home/viewOrder/api", {
+      method: "POST",
+      body: JSON.stringify(argumentsUsedForUpdatingConsegnatoInAnOrder),
+      headers: {
+        "Content-Type": "application/json", // Set the request headers to indicate JSON format
+      },
+    })
+      .then((res) => res.json()) // Parse the response data as JSON
+      .then((data) => {
+        console.log("response", data)
+        //router.push('/home');
+
+      }); // Update the state with the fetched data
+
+  }
+
   return (
 
     <div className={styles.outerDiv}>
 
       {
-        orders.map((order, i) => <OrderSnippet key={"orderSnippet_" + i}  orderNumber={i} order={order} />)
+        orders.map((order, i) => <OrderSnippet key={"orderSnippet_" + i} order={order} updateConsegnato={updateConsegnato} />)
       }
 
     </div>

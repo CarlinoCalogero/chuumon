@@ -47,6 +47,8 @@ export const UNITA_DI_MISURA = {
     pezzi: "pezzi"
 }
 
+export const SLICED_IN_OPTIONS_ARRAY = [2, 4, 6, 8]
+
 export const OGNI_INGREDIENTE_AGGIUNTO_COSTA_EURO = 1;
 export const COPERTO_COSTA_EURO = {
     adulti: 1,

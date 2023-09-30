@@ -5,7 +5,7 @@ import { useState, useEffect, ChangeEvent, MouseEvent } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { UnitaDiMisuraDatabaseTableRow } from '@/types/UnitaDiMisuraDatabaseTableRow';
 import { OrderedItem } from '@/types/OrderedItem';
-import { CALZONI, CATEGORIE_CREA, CATEGORIE_CREA_ARRAY, CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO, FARINE_SPECIALI, OGNI_INGREDIENTE_AGGIUNTO_COSTA_EURO, PINSE_ROMANE, PIZZE_BIANCHE, PIZZE_CATEGORIES, PIZZE_ROSSE, UNITA_DI_MISURA, checkIfMenuItemCanBeSlicedUp, checkIfMenuItemIsAPizza, getCategoriesAndMenuItemsObjectFromCategoriesWithMenuItemsObject, getArrayFromOrderedItemsByCategoriesObject, getObjectDeepCopy, getMenuItemPriceFromMenuItemsWithIngredientsObject, getMenuItemIngredientsFromMenuItemsWithIngredientsObject, getMenuItemCategoryFromMenuItemsWithIngredientsObject, addOrderedItemToOrderedItemByCategoriesObject, getMenuItemsFromCategoryFromCategoriesWithMenuItemsObject } from '@/lib/utils';
+import { CALZONI, CATEGORIE_CREA, CATEGORIE_CREA_ARRAY, CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO, FARINE_SPECIALI, OGNI_INGREDIENTE_AGGIUNTO_COSTA_EURO, PINSE_ROMANE, PIZZE_BIANCHE, PIZZE_CATEGORIES, PIZZE_ROSSE, UNITA_DI_MISURA, checkIfMenuItemCanBeSlicedUp, checkIfMenuItemIsAPizza, getCategoriesAndMenuItemsObjectFromCategoriesWithMenuItemsObject, getArrayFromOrderedItemsByCategoriesObject, getObjectDeepCopy, getMenuItemPriceFromMenuItemsWithIngredientsObject, getMenuItemIngredientsFromMenuItemsWithIngredientsObject, getMenuItemCategoryFromMenuItemsWithIngredientsObject, addOrderedItemToOrderedItemByCategoriesObject, getMenuItemsFromCategoryFromCategoriesWithMenuItemsObject, SLICED_IN_OPTIONS_ARRAY } from '@/lib/utils';
 import { TableOrderInfo } from '@/types/TableOrderInfo';
 import { IngredienteDatabaseTableRow } from '@/types/IngredienteDatabaseTableRow';
 import { CategoriaConIngredientiCheLaDefiniscono } from '@/types/CategoriaConIngredientiCheLaDefiniscono';
@@ -84,8 +84,6 @@ export default function Order() {
   const [addedIngredient, setAddedIngredient] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedCreaCategory, setSelectedCreaCategory] = useState<string>('');
-
-  var slicedInOptionsArray = [2, 4, 6, 8]
 
   useEffect(() => {
     console.log("runs one time only");
@@ -650,7 +648,7 @@ export default function Order() {
             >
               <option value='' disabled></option>,
               {
-                slicedInOptionsArray.map((option, i) => <option key={"slicedIn1_" + i} value={option}>{option}</option>,)
+                SLICED_IN_OPTIONS_ARRAY.map((option, i) => <option key={"slicedIn1_" + i} value={option}>{option}</option>,)
               }
             </select>
           </div>
@@ -806,7 +804,7 @@ export default function Order() {
             >
               <option value='' disabled></option>,
               {
-                slicedInOptionsArray.map((option, i) => <option key={"slicedIn2_" + i} value={option}>{option}</option>,)
+                SLICED_IN_OPTIONS_ARRAY.map((option, i) => <option key={"slicedIn2_" + i} value={option}>{option}</option>,)
               }
             </select>
           </div>

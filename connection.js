@@ -2,6 +2,10 @@ const sqlite3 = require("sqlite3").verbose();
 const bcrypt = require('bcrypt');
 const fs = require('fs');
 
+const SLICED_IN_OPTIONS_ARRAY = [2, 4, 6, 8] // same as in utils.ts file
+
+let errorID = 0;
+
 var menu = JSON.parse(fs.readFileSync('./src/content/menu.json'));
 
 console.log(menu);
@@ -11,8 +15,9 @@ const db = new sqlite3.Database(
     `./database.db`,
     sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,
     (err) => {
+        errorID++;
         if (err) {
-            return console.error(err.message);
+            return console.error(`errorID: ${errorID} ->`, err.message);
         }
         console.log("Connected to the SQlite database.");
     }
@@ -40,14 +45,16 @@ var semaphore = 0;
             password VARCHAR(50) NOT NULL
         )`,
             (err) => {
+                errorID++;
                 if (err) {
-                    return console.error(err.message);
+                    return console.error(`errorID: ${errorID} ->`, err.message);
                 }
 
                 // Clear the existing data in the products table
                 db.run(`DELETE FROM utenti`, (err) => {
+                    errorID++;
                     if (err) {
-                        return console.error(err.message);
+                        return console.error(`errorID: ${errorID} ->`, err.message);
                     }
 
                     // Insert new data into the products table
@@ -83,14 +90,16 @@ var semaphore = 0;
             CONSTRAINT unique_tavolo UNIQUE (tableNumber)
         )`,
             (err) => {
+                errorID++;
                 if (err) {
-                    return console.error(err.message);
+                    return console.error(`errorID: ${errorID} ->`, err.message);
                 }
 
                 // Clear the existing data in the products table
                 db.run(`DELETE FROM tavolo`, (err) => {
+                    errorID++;
                     if (err) {
-                        return console.error(err.message);
+                        return console.error(`errorID: ${errorID} ->`, err.message);
                     }
 
                     // Insert new data into the products table
@@ -155,8 +164,9 @@ var semaphore = 0;
                 CONSTRAINT nome_unita_di_misura PRIMARY KEY (nome)
             )`,
             (err) => {
+                errorID++;
                 if (err) {
-                    return console.error(err.message);
+                    return console.error(`errorID: ${errorID} ->`, err.message);
                 }
 
                 const insertSql = `INSERT INTO unita_di_misura(nome) VALUES (?)`;
@@ -178,8 +188,9 @@ var semaphore = 0;
                 CONSTRAINT menu_item_not_in_menu_categoria FOREIGN KEY (nome_categoria) REFERENCES categoria (nome) ON DELETE RESTRICT ON UPDATE CASCADE
             )`,
             (err) => {
+                errorID++;
                 if (err) {
-                    return console.error(err.message);
+                    return console.error(`errorID: ${errorID} ->`, err.message);
                 }
             });
 
@@ -195,8 +206,9 @@ var semaphore = 0;
                 CONSTRAINT menu_item_categoria FOREIGN KEY (nome_categoria) REFERENCES categoria (nome) ON DELETE RESTRICT ON UPDATE CASCADE
             )`,
             (err) => {
+                errorID++;
                 if (err) {
-                    return console.error(err.message);
+                    return console.error(`errorID: ${errorID} ->`, err.message);
                 }
 
                 db.serialize(() => {
@@ -213,8 +225,9 @@ var semaphore = 0;
                             CONSTRAINT compone_menu_item_not_in_menu FOREIGN KEY (id_menu_item_not_in_menu) REFERENCES menu_item_not_in_menu (id) ON DELETE CASCADE ON UPDATE CASCADE
                         )`,
                         (err) => {
+                            errorID++;
                             if (err) {
-                                return console.error(err.message);
+                                return console.error(`errorID: ${errorID} ->`, err.message);
                             }
                         });
 
@@ -230,8 +243,9 @@ var semaphore = 0;
                             CONSTRAINT compone_menu_item FOREIGN KEY (id_menu_item) REFERENCES menu_item (id) ON DELETE CASCADE ON UPDATE CASCADE
                         )`,
                         (err) => {
+                            errorID++;
                             if (err) {
-                                return console.error(err.message);
+                                return console.error(`errorID: ${errorID} ->`, err.message);
                             }
 
                             db.serialize(() => {
@@ -239,6 +253,15 @@ var semaphore = 0;
                                 //****** ORDINAZIONE ******//
                                 db.run(`drop table if exists ordinazione`);
                                 // Create tables table if it doesn't exist
+
+                                var checkSlicedPizza = ""
+
+                                for (let count = 0; count < SLICED_IN_OPTIONS_ARRAY; count++) {
+
+                                    checkSlicedPizza = `${checkSlicedPizza} OR pizze_divise_in = ${SLICED_IN_OPTIONS_ARRAY[count]}`
+
+                                }
+
                                 db.run(
                                     `CREATE TABLE ordinazione (
                                         numero_tavolo INTEGER UNSIGNED NOT NULL,
@@ -251,11 +274,13 @@ var semaphore = 0;
                                         numero_bambini INTEGER UNSIGNED,
                                         numero_adulti INTEGER UNSIGNED NOT NULL,
                                         CONSTRAINT unique_ordinazione UNIQUE (numero_tavolo , data_e_ora),
-                                        CHECK (pizze_divise_in IS NULL OR pizze_divise_in = 4 OR pizze_divise_in = 6 OR pizze_divise_in = 8)
+                                        CONSTRAINT unique_numero_ordinazione_progressivo_giornaliero UNIQUE (numero_ordinazione_progressivo_giornaliero),
+                                        CHECK (pizze_divise_in IS NULL ${checkSlicedPizza})
                                     )`,
                                     (err) => {
+                                        errorID++;
                                         if (err) {
-                                            return console.error(err.message);
+                                            return console.error(`errorID: ${errorID} ->`, err.message);
                                         }
 
                                         db.serialize(() => {
@@ -287,8 +312,9 @@ var semaphore = 0;
                                                         ON DELETE RESTRICT ON UPDATE CASCADE
                                                 )`,
                                                 (err) => {
+                                                    errorID++;
                                                     if (err) {
-                                                        return console.error(err.message);
+                                                        return console.error(`errorID: ${errorID} ->`, err.message);
                                                     }
 
                                                     db.serialize(() => {
@@ -305,8 +331,9 @@ var semaphore = 0;
                                                                 CONSTRAINT intolleranza_ingrediente FOREIGN KEY (id_ingrediente) REFERENCES ingrediente (id) ON DELETE RESTRICT ON UPDATE CASCADE
                                                             )`,
                                                             (err) => {
+                                                                errorID++;
                                                                 if (err) {
-                                                                    return console.error(err.message);
+                                                                    return console.error(`errorID: ${errorID} ->`, err.message);
                                                                 }
 
                                                                 //add menu here
@@ -348,8 +375,9 @@ function checkIfFinished() {
 function closeDb() {
     //   Close the database connection after all insertions are done
     db.close((err) => {
+        errorID++;
         if (err) {
-            return console.error(err.message);
+            return console.error(`errorID: ${errorID} ->`, err.message);
         }
         console.log("Closed the database connection.");
     });
@@ -365,8 +393,9 @@ async function hashPassword(password) {
 
 function insertIntoDatabase(insertSql, value) {
     db.run(insertSql, value, function (err) {
+        errorID++;
         if (err) {
-            return console.error(err.message);
+            return console.error(`errorID: ${errorID} ->`, err.message);
         }
         const id = this.lastID; // get the id of the last inserted row
         console.log(`Rows inserted, ID ${id}`);
@@ -380,8 +409,9 @@ function insertCategoriaIntoDataBase(menuEntry) {
     var categoryName = menuEntry.categoryName;
 
     db.run("INSERT INTO categoria(nome) VALUES (?)", categoryName.toLowerCase(), function (err) {
+        errorID++;
         if (err) {
-            return console.error(err.message);
+            return console.error(`errorID: ${errorID} ->`, err.message);
         }
         const id = this.lastID; // get the id of the last inserted row
         console.log(`Rows inserted to \"categoria\" table, ID ${id}`);
@@ -416,8 +446,9 @@ function insertCategoryEntryIntoDataBase(categoryName, categoryEntry) {
 function insertMenuEntryIntoDataBase(categoryEntryName, categoryEntryPrice, categoryName, categoryEntryDescription) {
 
     db.run("INSERT INTO menu_item(nome, prezzo, nome_categoria) VALUES (?, ?, ?)", [categoryEntryName.toLowerCase(), Number(categoryEntryPrice.replace("€", "")), categoryName.toLowerCase()], function (err) {
+        errorID++;
         if (err) {
-            return console.error(err.message);
+            return console.error(`errorID: ${errorID} ->`, err.message);
         }
         const id = this.lastID; // get the id of the last inserted row
         console.log(`Rows inserted to \"menu_item\" table, ID ${id}`);
@@ -442,13 +473,15 @@ function addIngredientToDataBase(ingredient, menuEntryID) {
 
     db.run("INSERT INTO ingrediente(nome) VALUES (?)", ingredient, function (err) {
 
+        errorID++;
         if (err) {
 
             // ingredient already exists
 
             db.get('SELECT rowid FROM ingrediente WHERE nome = ?', ingredient, (err, row) => {
+                errorID++;
                 if (err) {
-                    return console.error(err.message);
+                    return console.error(`errorID: ${errorID} ->`, err.message);
                 }
                 addComponeToDataBase(row.rowid, menuEntryID)
             });
@@ -471,8 +504,9 @@ function addIngredientToDataBase(ingredient, menuEntryID) {
 function addComponeToDataBase(ingredientID, menuEntryID) {
 
     db.run("INSERT INTO compone(id_ingrediente, id_menu_item) VALUES (?, ?)", [Number(ingredientID), Number(menuEntryID)], function (err) {
+        errorID++;
         if (err) {
-            return console.error(err.message);
+            return console.error(`errorID: ${errorID} ->`, err.message);
         }
         const id = this.lastID; // get the id of the last inserted row
         console.log(`Rows inserted to \"compone\", ID ${id}`);

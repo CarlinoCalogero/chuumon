@@ -3,14 +3,13 @@ import styles from './OrderSnippet.module.css'
 import { Order } from '@/types/Order';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { OrderedItemsByCategoriesArray } from '@/types/OrderedItemsByCategoriesArray';
-import { OrderedItem } from '@/types/OrderedItem';
 
 interface OrderSnippetProps {
-    orderNumber: number,
-    order: Order
+    order: Order,
+    updateConsegnato: any
 }
 
-export function OrderSnippet({ orderNumber, order }: OrderSnippetProps) {
+export function OrderSnippet({ order, updateConsegnato }: OrderSnippetProps) {
 
     const [orderCopy, setOrderCopy] = useState<Order>(getObjectDeepCopy(order));
     const [orderedItemsByCategoriesArray, setOrderedItemsByCategoriesArray] = useState<OrderedItemsByCategoriesArray>([]);
@@ -62,11 +61,15 @@ export function OrderSnippet({ orderNumber, order }: OrderSnippetProps) {
 
     function handleConsegnaOrdine(onChangeEvent: ChangeEvent<HTMLInputElement>, category: string, orderedItemIndex: number) {
 
-        var dummyOrder = getObjectDeepCopy(orderCopy) as Order;
-        dummyOrder.orderedItems[category].orderedItems[orderedItemIndex].consegnato = !dummyOrder.orderedItems[category].orderedItems[orderedItemIndex].consegnato;
+        let dummyOrder = getObjectDeepCopy(orderCopy) as Order;
+        let newConsegnatoValue = !dummyOrder.orderedItems[category].orderedItems[orderedItemIndex].consegnato;
+        let orderedItem = dummyOrder.orderedItems[category].orderedItems[orderedItemIndex];
+
+        orderedItem.consegnato = newConsegnatoValue;
 
         setOrderCopy(dummyOrder)
 
+        updateConsegnato(dummyOrder, orderedItem, newConsegnatoValue)
 
     }
 
