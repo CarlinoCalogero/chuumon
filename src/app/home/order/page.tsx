@@ -345,10 +345,17 @@ export default function Order() {
       return orderedItemCopy.menuItemCategory;
     }
 
-    categoriaConIngredientiCheLaDefiniscono.ingredientiCheDefinisconoLaCategoria.forEach(ingredient => {
-      if (orderedItemCopy.ingredients.includes(ingredient))
+    for (let count = 0; count < categoriaConIngredientiCheLaDefiniscono.ingredientiCheDefinisconoLaCategoria.length; count++) {
+      let ingredient = categoriaConIngredientiCheLaDefiniscono.ingredientiCheDefinisconoLaCategoria[count];
+
+      console.log(orderedItemCopy.ingredients, ingredient)
+      if (orderedItemCopy.ingredients.includes(ingredient)) {
+        console.log("papavero", ingredient, categoriaConIngredientiCheLaDefiniscono.nomeCategoria)
         return categoriaConIngredientiCheLaDefiniscono.nomeCategoria;
-    });
+      }
+    }
+
+    console.log("porcello")
 
     return null;
 
@@ -374,13 +381,28 @@ export default function Order() {
     // menuItemCategory
     if (orderedItemCopy.menuItemCategory == null) {
       if (isWasCreaButtonPressed) {
-        if (selectedCreaCategory.toUpperCase() == CATEGORIE_CREA.pizza) {
+        if (selectedCreaCategory.toUpperCase() == CATEGORIE_CREA.pizza.toUpperCase()) {
 
-          orderedItemCopy.menuItemCategory = tryCategory(orderedItemCopy, FARINE_SPECIALI);
-          orderedItemCopy.menuItemCategory = tryCategory(orderedItemCopy, PINSE_ROMANE);
+          let newCategory: null | string = null;
+
+          newCategory = tryCategory(orderedItemCopy, FARINE_SPECIALI);
+
+          if (newCategory == null)
+            newCategory = tryCategory(orderedItemCopy, PINSE_ROMANE);
+
           //non invertire l'ordine di pizze rosse e pizze bianche altrimenti una pizza rossa può risultare essere di categoria "PIZZE_BIANCHE"
-          orderedItemCopy.menuItemCategory = tryCategory(orderedItemCopy, PIZZE_ROSSE);
-          orderedItemCopy.menuItemCategory = tryCategory(orderedItemCopy, PIZZE_BIANCHE);
+
+          if (newCategory == null)
+            newCategory = tryCategory(orderedItemCopy, PIZZE_ROSSE);
+
+          if (newCategory == null)
+            newCategory = tryCategory(orderedItemCopy, PIZZE_BIANCHE);
+
+          // if nothing matches
+          if (newCategory == null)
+            newCategory = PIZZE_BIANCHE.nomeCategoria
+
+          orderedItemCopy.menuItemCategory = newCategory;
 
         } else {
           orderedItemCopy.menuItemCategory = CALZONI.nomeCategoria;
@@ -494,6 +516,9 @@ export default function Order() {
 
     // reset creaButton
     setIsWasCreaButtonPressed(false);
+
+    // reset selectedCreaCategory
+    setSelectedCreaCategory("")
 
   }
 
