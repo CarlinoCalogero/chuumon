@@ -65,6 +65,9 @@ export function OrderSnippet({ order, updateConsegnato }: OrderSnippetProps) {
         let newConsegnatoValue = !dummyOrder.orderedItems[category].orderedItems[orderedItemIndex].consegnato;
         let orderedItem = dummyOrder.orderedItems[category].orderedItems[orderedItemIndex];
 
+        if (!window.confirm(`${orderedItem.consegnato ? "Confermi di segnare come non consegnato" : "Confermi di aver consegnato"} "${orderedItem.numberOf} ${orderedItem.unitOfMeasure} ${orderedItem.menuItem}"?`))
+            return;
+
         orderedItem.consegnato = newConsegnatoValue;
 
         setOrderCopy(dummyOrder)
@@ -118,7 +121,16 @@ export function OrderSnippet({ order, updateConsegnato }: OrderSnippetProps) {
 
                                 {
                                     orderedItem.slicedIn != null &&
-                                    <span className={styles.noNewLineText}>Tagliata in {orderedItem.slicedIn}</span>
+                                    <div>
+                                        {
+                                            orderedItem.consegnato ?
+                                                <s>
+                                                    <span className={styles.noNewLineText}>Tagliata in {orderedItem.slicedIn}</span>
+                                                </s>
+                                                :
+                                                <span className={styles.noNewLineText}>Tagliata in {orderedItem.slicedIn}</span>
+                                        }
+                                    </div>
                                 }
 
                                 <input
@@ -133,14 +145,43 @@ export function OrderSnippet({ order, updateConsegnato }: OrderSnippetProps) {
                             <div className={styles.orderedItemInnerDiv}>
 
                                 <div className={styles.orderedItemInfo}>
-                                    <b>{`${orderedItem.numberOf} ${orderedItem.unitOfMeasure?.toUpperCase()} - ${orderedItem.menuItem?.split("_")[0].toUpperCase()}`}</b>
+
+                                    {
+                                        orderedItem.consegnato ?
+                                            <s>
+                                                <b>{`${orderedItem.numberOf} ${orderedItem.unitOfMeasure?.toUpperCase()} - ${orderedItem.menuItem?.split("_")[0].toUpperCase()}`}</b>
+                                            </s>
+                                            :
+                                            <b>{`${orderedItem.numberOf} ${orderedItem.unitOfMeasure?.toUpperCase()} - ${orderedItem.menuItem?.split("_")[0].toUpperCase()}`}</b>
+                                    }
+
+
                                     {
                                         orderedItem.ingredients.length != 0 &&
-                                        <span>{orderedItem.ingredients.toString()}</span>
+                                        <div>
+                                            {
+                                                orderedItem.consegnato ?
+                                                    <s>
+                                                        <span>{orderedItem.ingredients.toString()}</span>
+                                                    </s>
+                                                    :
+                                                    <span>{orderedItem.ingredients.toString()}</span>
+                                            }
+                                        </div>
+
                                     }
                                     {
                                         orderedItem.intolleranzaA.length != 0 &&
-                                        <span><b>Intolleranza:</b> {orderedItem.intolleranzaA.toString()}</span>
+                                        <div>
+                                            {
+                                                orderedItem.consegnato ?
+                                                    <s>
+                                                        <span><b>Intolleranza:</b> {orderedItem.intolleranzaA.toString()}</span>
+                                                    </s>
+                                                    :
+                                                    <span><b>Intolleranza:</b> {orderedItem.intolleranzaA.toString()}</span>
+                                            }
+                                        </div>
                                     }
                                 </div>
 
