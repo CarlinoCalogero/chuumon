@@ -256,7 +256,7 @@ var semaphore = 0;
 
                                 var checkSlicedPizza = ""
 
-                                for (let count = 0; count < SLICED_IN_OPTIONS_ARRAY; count++) {
+                                for (let count = 0; count < SLICED_IN_OPTIONS_ARRAY.length; count++) {
 
                                     checkSlicedPizza = `${checkSlicedPizza} OR pizze_divise_in = ${SLICED_IN_OPTIONS_ARRAY[count]}`
 
@@ -268,7 +268,6 @@ var semaphore = 0;
                                         data_e_ora DATETIME NOT NULL,
                                         pick_up_time DATETIME,
                                         note varchar(250),
-                                        is_take_away BOOLEAN NOT NULL,
                                         is_si_dividono_le_pizze BOOLEAN NOT NULL,
                                         is_fritti_prima_della_pizza BOOLEAN NOT NULL,
                                         numero_ordinazione_progressivo_giornaliero INTEGER UNSIGNED NOT NULL,

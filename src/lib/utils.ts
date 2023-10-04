@@ -256,8 +256,9 @@ export function getPercentage(totalItems: number, iterestedItems: number) {
 }
 
 export function getTimeAsString(inputDate: Date = new Date()) {
+    let date = new Date(inputDate)
     // if no date is specified gets current Date
-    return normalizeNumber(inputDate.getHours()) + ":" + normalizeNumber(inputDate.getMinutes())
+    return normalizeNumber(date.getHours()) + ":" + normalizeNumber(date.getMinutes())
 }
 
 export function normalizeNumber(inputNumber: number) {
