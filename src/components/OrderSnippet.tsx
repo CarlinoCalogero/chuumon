@@ -141,6 +141,7 @@ export function OrderSnippet({ order, updateConsegnato }: OrderSnippetProps) {
                     orderCopy.orderInfo.isTakeAway && orderCopy.orderInfo.pickUpTime != null ?
                         <div className={styles.takeAwayInfo}>
                             <span>Asporto {getTimeAsString(orderCopy.orderInfo.pickUpTime)}</span>
+                            <span>{orderCopy.orderInfo.nomeOrdinazione}</span>
                             <span>Consegna in <strong>{getSameDayTimeDifference(new Date(), orderCopy.orderInfo.pickUpTime)}</strong></span>
                         </div>
                         :

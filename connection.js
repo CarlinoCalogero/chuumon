@@ -267,6 +267,7 @@ var semaphore = 0;
                                         numero_tavolo INTEGER UNSIGNED,
                                         data_e_ora DATETIME NOT NULL,
                                         pick_up_time DATETIME,
+                                        nome_ordinazione varchar(250),
                                         note varchar(250),
                                         is_si_dividono_le_pizze BOOLEAN NOT NULL,
                                         is_fritti_prima_della_pizza BOOLEAN NOT NULL,

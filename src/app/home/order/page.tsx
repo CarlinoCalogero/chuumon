@@ -52,6 +52,7 @@ export default function Order() {
   const [tableOrderInfo, setTableOrderInfo] = useState<TableOrderInfo>({
     tableNumber: Number(searchParams.get('tableNumber')),
     isTakeAway: Number(searchParams.get('tableNumber')) == TAKE_AWAY_ORDER_SECTION_NUMBER_TRIGGER ? true : false,
+    nomeOrdinazione: null,
     isFrittiPrimaDellaPizza: Number(searchParams.get('tableNumber')) == TAKE_AWAY_ORDER_SECTION_NUMBER_TRIGGER ? false : true,
     isSiDividonoLaPizza: false,
     slicedIn: null,
@@ -146,6 +147,15 @@ export default function Order() {
       addIngredient: inputs.addIngredient
     }
     return inputsCopy;
+  }
+
+  function handleNomeOrdinazioneChange(onChangeEvent: ChangeEvent<HTMLInputElement>) {
+
+    let tableOrderInfoCopy = getObjectDeepCopy(tableOrderInfo) as TableOrderInfo;
+    tableOrderInfoCopy.nomeOrdinazione = onChangeEvent.target.value;
+
+    setTableOrderInfo(tableOrderInfoCopy)
+
   }
 
   function handlePickUpTimeChange(onChangeEvent: ChangeEvent<HTMLInputElement>) {
@@ -640,6 +650,12 @@ export default function Order() {
       tableOrderInfoCopy.tableNumber = null;
     }
 
+    //nomeOrdinazione Check
+    if (tableOrderInfoCopy.isTakeAway && tableOrderInfoCopy.nomeOrdinazione == null) {
+      console.log("nomeOrdinazione is null")
+      return;
+    }
+
     //pickUpTime Check
     if (tableOrderInfoCopy.isTakeAway && tableOrderInfoCopy.pickUpTime == null) {
       console.log("pick-up time is null")
@@ -700,17 +716,32 @@ export default function Order() {
       {
         tableOrderInfo.isTakeAway &&
         <div>
-          <label htmlFor='pickUpTime'>Pick up time:</label>
 
-          <input
-            type="time"
-            id="pickUpTime"
-            name="appt"
-            value={tableOrderInfo.pickUpTime == null ? "" : getTimeAsString(tableOrderInfo.pickUpTime)}
-            min={getTimeAsString()}
-            max={MAX_TAKE_AWAY_ORDER_TIME}
-            onChange={(e) => handlePickUpTimeChange(e)}
-          />
+          <div>
+            <label htmlFor='orderName'>Nome Ordinazione:</label>
+
+            <input
+              type="text"
+              id="orderName"
+              name="orderName"
+              value={tableOrderInfo.nomeOrdinazione == null ? "" : tableOrderInfo.nomeOrdinazione}
+              onChange={(e) => handleNomeOrdinazioneChange(e)}
+            />
+          </div>
+
+          <div>
+            <label htmlFor='pickUpTime'>Pick up time:</label>
+
+            <input
+              type="time"
+              id="pickUpTime"
+              name="appt"
+              value={tableOrderInfo.pickUpTime == null ? "" : getTimeAsString(tableOrderInfo.pickUpTime)}
+              min={getTimeAsString()}
+              max={MAX_TAKE_AWAY_ORDER_TIME}
+              onChange={(e) => handlePickUpTimeChange(e)}
+            />
+          </div>
         </div>
       }
 
