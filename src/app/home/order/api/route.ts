@@ -63,9 +63,11 @@ export async function POST(request: Request, response: Response) {
         dateAndTime: new Date(),
         tableOrderInfo: {
             tableNumber: -1,
+            isTakeAway: false,
             isFrittiPrimaDellaPizza: false,
             isSiDividonoLaPizza: false,
             slicedIn: null,
+            pickUpTime: null,
             note: null,
             numeroBambini: null,
             numeroAdulti: null
@@ -97,7 +99,7 @@ export async function POST(request: Request, response: Response) {
     }
 
 
-    await db.run("INSERT INTO ordinazione(numero_tavolo, data_e_ora, note, is_si_dividono_le_pizze, is_fritti_prima_della_pizza, numero_ordinazione_progressivo_giornaliero, pizze_divise_in, numero_bambini, numero_adulti)  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)", [tableOrder.tableOrderInfo.tableNumber, tableOrder.dateAndTime, tableOrder.tableOrderInfo.note, tableOrder.tableOrderInfo.isSiDividonoLaPizza, tableOrder.tableOrderInfo.isFrittiPrimaDellaPizza, nuovoNumeroProgressivoGiornaliero, tableOrder.tableOrderInfo.slicedIn, tableOrder.tableOrderInfo.numeroBambini, tableOrder.tableOrderInfo.numeroAdulti]);
+    await db.run("INSERT INTO ordinazione(numero_tavolo, data_e_ora, pick_up_time, note, is_take_away, is_si_dividono_le_pizze, is_fritti_prima_della_pizza, numero_ordinazione_progressivo_giornaliero, pizze_divise_in, numero_bambini, numero_adulti)  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [tableOrder.tableOrderInfo.tableNumber, tableOrder.dateAndTime, tableOrder.tableOrderInfo.pickUpTime, tableOrder.tableOrderInfo.note, tableOrder.tableOrderInfo.isTakeAway, tableOrder.tableOrderInfo.isSiDividonoLaPizza, tableOrder.tableOrderInfo.isFrittiPrimaDellaPizza, nuovoNumeroProgressivoGiornaliero, tableOrder.tableOrderInfo.slicedIn, tableOrder.tableOrderInfo.numeroBambini, tableOrder.tableOrderInfo.numeroAdulti]);
 
     // get ordinazioneLastId
     const ordinazioneLastId: DatabaseRowId = await db.get('SELECT last_insert_rowid() as rowid')

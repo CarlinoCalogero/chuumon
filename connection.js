@@ -264,9 +264,11 @@ var semaphore = 0;
 
                                 db.run(
                                     `CREATE TABLE ordinazione (
-                                        numero_tavolo INTEGER UNSIGNED NOT NULL,
+                                        numero_tavolo INTEGER UNSIGNED,
                                         data_e_ora DATETIME NOT NULL,
+                                        pick_up_time DATETIME,
                                         note varchar(250),
+                                        is_take_away BOOLEAN NOT NULL,
                                         is_si_dividono_le_pizze BOOLEAN NOT NULL,
                                         is_fritti_prima_della_pizza BOOLEAN NOT NULL,
                                         numero_ordinazione_progressivo_giornaliero INTEGER UNSIGNED NOT NULL,

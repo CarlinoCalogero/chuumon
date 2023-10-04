@@ -5,7 +5,7 @@ import { useState, useEffect, ChangeEvent, MouseEvent } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { UnitaDiMisuraDatabaseTableRow } from '@/types/UnitaDiMisuraDatabaseTableRow';
 import { OrderedItem } from '@/types/OrderedItem';
-import { CALZONI, CATEGORIE_CREA, CATEGORIE_CREA_ARRAY, CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO, FARINE_SPECIALI, OGNI_INGREDIENTE_AGGIUNTO_COSTA_EURO, PINSE_ROMANE, PIZZE_BIANCHE, PIZZE_CATEGORIES, PIZZE_ROSSE, UNITA_DI_MISURA, checkIfMenuItemCanBeSlicedUp, checkIfMenuItemIsAPizza, getCategoriesAndMenuItemsObjectFromCategoriesWithMenuItemsObject, getArrayFromOrderedItemsByCategoriesObject, getObjectDeepCopy, getMenuItemPriceFromMenuItemsWithIngredientsObject, getMenuItemIngredientsFromMenuItemsWithIngredientsObject, getMenuItemCategoryFromMenuItemsWithIngredientsObject, addOrderedItemToOrderedItemByCategoriesObject, getMenuItemsFromCategoryFromCategoriesWithMenuItemsObject, SLICED_IN_OPTIONS_ARRAY, putIngredientsTogether, CREATED_MENU_ITEM_SUFFIX, EDITED_MENU_ITEM_SUFFIX, TAKE_AWAY_ORDER_SECTION_NUMBER_TRIGGER, getCurrentTimeString, MAX_TAKE_AWAY_ORDER_TIME } from '@/lib/utils';
+import { CALZONI, CATEGORIE_CREA, CATEGORIE_CREA_ARRAY, CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO, FARINE_SPECIALI, OGNI_INGREDIENTE_AGGIUNTO_COSTA_EURO, PINSE_ROMANE, PIZZE_BIANCHE, PIZZE_CATEGORIES, PIZZE_ROSSE, UNITA_DI_MISURA, checkIfMenuItemCanBeSlicedUp, checkIfMenuItemIsAPizza, getCategoriesAndMenuItemsObjectFromCategoriesWithMenuItemsObject, getArrayFromOrderedItemsByCategoriesObject, getObjectDeepCopy, getMenuItemPriceFromMenuItemsWithIngredientsObject, getMenuItemIngredientsFromMenuItemsWithIngredientsObject, getMenuItemCategoryFromMenuItemsWithIngredientsObject, addOrderedItemToOrderedItemByCategoriesObject, getMenuItemsFromCategoryFromCategoriesWithMenuItemsObject, SLICED_IN_OPTIONS_ARRAY, putIngredientsTogether, CREATED_MENU_ITEM_SUFFIX, EDITED_MENU_ITEM_SUFFIX, TAKE_AWAY_ORDER_SECTION_NUMBER_TRIGGER, getTimeAsString, MAX_TAKE_AWAY_ORDER_TIME, convertHHMMStringTimeFormatToDateObject } from '@/lib/utils';
 import { TableOrderInfo } from '@/types/TableOrderInfo';
 import { IngredienteDatabaseTableRow } from '@/types/IngredienteDatabaseTableRow';
 import { CategoriaConIngredientiCheLaDefiniscono } from '@/types/CategoriaConIngredientiCheLaDefiniscono';
@@ -52,7 +52,7 @@ export default function Order() {
   const [tableOrderInfo, setTableOrderInfo] = useState<TableOrderInfo>({
     tableNumber: Number(searchParams.get('tableNumber')),
     isTakeAway: Number(searchParams.get('tableNumber')) == TAKE_AWAY_ORDER_SECTION_NUMBER_TRIGGER ? true : false,
-    isFrittiPrimaDellaPizza: true,
+    isFrittiPrimaDellaPizza: Number(searchParams.get('tableNumber')) == TAKE_AWAY_ORDER_SECTION_NUMBER_TRIGGER ? false : true,
     isSiDividonoLaPizza: false,
     slicedIn: null,
     pickUpTime: null,
@@ -150,14 +150,14 @@ export default function Order() {
 
   function handlePickUpTimeChange(onChangeEvent: ChangeEvent<HTMLInputElement>) {
 
-    if (!onChangeEvent.target.checkValidity()){
+    if (!onChangeEvent.target.checkValidity()) {
       onChangeEvent.target.value = "";
-      window.alert(`Please insert a time between ${getCurrentTimeString()} and ${MAX_TAKE_AWAY_ORDER_TIME}`)
+      window.alert(`Please insert a time between ${getTimeAsString()} and ${MAX_TAKE_AWAY_ORDER_TIME}`)
       return;
     }
 
     let tableOrderInfoCopy = getObjectDeepCopy(tableOrderInfo) as TableOrderInfo;
-    tableOrderInfoCopy.pickUpTime = onChangeEvent.target.value;
+    tableOrderInfoCopy.pickUpTime = convertHHMMStringTimeFormatToDateObject(onChangeEvent.target.value);
 
     setTableOrderInfo(tableOrderInfoCopy)
 
@@ -246,6 +246,9 @@ export default function Order() {
   function handleUnitOfMeasurementChange(onChangeEvent: ChangeEvent<HTMLSelectElement>) {
     var orderedItemCopy = getObjectDeepCopy(orderedItem) as OrderedItem;
     orderedItemCopy.unitOfMeasure = onChangeEvent.target.value;
+    if (tableOrderInfo.slicedIn != null && (orderedItemCopy.isCanMenuItemBeSlicedUp || (orderedItemCopy.unitOfMeasure.toUpperCase() != UNITA_DI_MISURA.pezzi.toUpperCase())))
+      orderedItemCopy.slicedIn = tableOrderInfo.slicedIn;
+
     setOrderedItem(orderedItemCopy)
   }
 
@@ -484,16 +487,18 @@ export default function Order() {
 
     // slicedIn
     if (orderedItemCopy.slicedIn == null) {
-      if (orderedItemCopy.isMenuItemAPizza) {
+      if (tableOrderInfo.slicedIn == null && !tableOrderInfo.isSiDividonoLaPizza) {
+        if (orderedItemCopy.isMenuItemAPizza) {
 
-        if (orderedItemCopy.unitOfMeasure?.toUpperCase() == UNITA_DI_MISURA.intera.toUpperCase()) {
+          if (orderedItemCopy.unitOfMeasure?.toUpperCase() == UNITA_DI_MISURA.intera.toUpperCase()) {
+            console.log("slicedIn is null")
+            return;
+          }
+        }
+        if (orderedItemCopy.isCanMenuItemBeSlicedUp) {
           console.log("slicedIn is null")
           return;
         }
-      }
-      if (orderedItemCopy.isCanMenuItemBeSlicedUp) {
-        console.log("slicedIn is null")
-        return;
       }
     }
 
@@ -626,16 +631,47 @@ export default function Order() {
     setSelectedCreaCategory(creaCategory)
   }
 
-  function placeAnOrder() {
+  function checkTableOrderInfoFieldsAndGetCopy() {
 
-    if (tableOrderInfo.numeroAdulti == null) {
-      console.log("numero adulti is null")
+    let tableOrderInfoCopy = getObjectDeepCopy(tableOrderInfo) as TableOrderInfo;
+
+    //isTakeAway consistency Check
+    if (tableOrderInfoCopy.isTakeAway && tableOrderInfoCopy.tableNumber != null) {
+      tableOrderInfoCopy.tableNumber = null;
+    }
+
+    //pickUpTime Check
+    if (tableOrderInfoCopy.isTakeAway && tableOrderInfoCopy.pickUpTime == null) {
+      console.log("pick-up time is null")
       return;
     }
 
+    //numero adulti check
+    if (tableOrderInfoCopy.numeroAdulti == null) {
+      if (tableOrderInfoCopy.isTakeAway) {
+        tableOrderInfoCopy.numeroAdulti = 0;
+      } else {
+        console.log("numero adulti is null")
+        return;
+      }
+    }
+
+    return tableOrderInfoCopy;
+
+  }
+
+  function placeAnOrder() {
+
+    // check fields and get a Copy
+    var tableOrderInfoCopy = checkTableOrderInfoFieldsAndGetCopy();
+
+    // if true  one or more mandatory fields are empty
+    if (tableOrderInfoCopy == undefined)
+      return;
+
     var tableOrder: TableOrder = {
       dateAndTime: new Date(),
-      tableOrderInfo: tableOrderInfo,
+      tableOrderInfo: tableOrderInfoCopy,
       orderedItemsByCategoriesArray: orderedItemsByCategoryArray
     }
 
@@ -670,8 +706,8 @@ export default function Order() {
             type="time"
             id="pickUpTime"
             name="appt"
-            value={tableOrderInfo.pickUpTime == null ? "" : tableOrderInfo.pickUpTime}
-            min={getCurrentTimeString()}
+            value={tableOrderInfo.pickUpTime == null ? "" : getTimeAsString(tableOrderInfo.pickUpTime)}
+            min={getTimeAsString()}
             max={MAX_TAKE_AWAY_ORDER_TIME}
             onChange={(e) => handlePickUpTimeChange(e)}
           />
@@ -681,16 +717,19 @@ export default function Order() {
       {
         !tableOrderInfo.isTakeAway &&
         <div>
-          <div>
-            <input
-              type="checkbox"
-              id="frittiPrimaDellaPizzaCheckbox"
-              checked={tableOrderInfo.isFrittiPrimaDellaPizza}
-              onChange={e => handleIsFrittiPrimaDellaPizzaChange(e)}
-            />
-            <label htmlFor="frittiPrimaDellaPizzaCheckbox">Fritti Prima della Pizza</label>
-          </div>
+          <input
+            type="checkbox"
+            id="frittiPrimaDellaPizzaCheckbox"
+            checked={tableOrderInfo.isFrittiPrimaDellaPizza}
+            onChange={e => handleIsFrittiPrimaDellaPizzaChange(e)}
+          />
+          <label htmlFor="frittiPrimaDellaPizzaCheckbox">Fritti Prima della Pizza</label>
+        </div>
+      }
 
+      <div>
+        {
+          !tableOrderInfo.isTakeAway &&
           <div>
             <input
               type="checkbox"
@@ -699,23 +738,29 @@ export default function Order() {
               onChange={e => handleIsSiDividonoLapizzaChange(e)}
             />
             <label htmlFor="siDividonoLePizzeCheckbox">Si dividono la pizza</label>
-
-            {
-              tableOrderInfo.isSiDividonoLaPizza &&
-              <div>
-                <label>Sliced in</label>
-                <select
-                  value={tableOrderInfo.slicedIn != null ? tableOrderInfo.slicedIn : ''}
-                  onChange={e => handleSlicedInTableOrderInfoChange(e)}
-                >
-                  <option value='' disabled></option>,
-                  {
-                    SLICED_IN_OPTIONS_ARRAY.map((option, i) => <option key={"slicedIn1_" + i} value={option}>{option}</option>,)
-                  }
-                </select>
-              </div>
-            }
           </div>
+        }
+
+        {
+          (tableOrderInfo.isSiDividonoLaPizza || tableOrderInfo.isTakeAway) &&
+          <div>
+            <label>Sliced in</label>
+            <select
+              value={tableOrderInfo.slicedIn != null ? tableOrderInfo.slicedIn : ''}
+              onChange={e => handleSlicedInTableOrderInfoChange(e)}
+            >
+              <option value='' disabled></option>,
+              {
+                SLICED_IN_OPTIONS_ARRAY.map((option, i) => <option key={"slicedIn1_" + i} value={option}>{option}</option>,)
+              }
+            </select>
+          </div>
+        }
+      </div>
+
+      {
+        !tableOrderInfo.isTakeAway &&
+        <div>
 
           <div>
             <input
@@ -860,7 +905,7 @@ export default function Order() {
         }
 
         {
-          ((orderedItem.isMenuItemAPizza && (orderedItem.unitOfMeasure != null && orderedItem.unitOfMeasure.toUpperCase() != UNITA_DI_MISURA.pezzi.toUpperCase())) || orderedItem.isCanMenuItemBeSlicedUp) && !tableOrderInfo.isSiDividonoLaPizza &&
+          ((orderedItem.isMenuItemAPizza && (orderedItem.unitOfMeasure != null && orderedItem.unitOfMeasure.toUpperCase() != UNITA_DI_MISURA.pezzi.toUpperCase())) || orderedItem.isCanMenuItemBeSlicedUp) &&
           <div>
             <label>Sliced in</label>
             <select

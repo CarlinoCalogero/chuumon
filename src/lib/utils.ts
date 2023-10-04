@@ -255,14 +255,25 @@ export function getPercentage(totalItems: number, iterestedItems: number) {
     return (100 * iterestedItems) / totalItems;
 }
 
-export function getCurrentTimeString() {
-    let currentDate = new Date();
-    return normalizeNumber(currentDate.getHours()) + ":" + normalizeNumber(currentDate.getMinutes())
+export function getTimeAsString(inputDate: Date = new Date()) {
+    // if no date is specified gets current Date
+    return normalizeNumber(inputDate.getHours()) + ":" + normalizeNumber(inputDate.getMinutes())
 }
 
 export function normalizeNumber(inputNumber: number) {
     if (inputNumber > -1 && inputNumber < 10)
         return '0' + inputNumber
-
     return inputNumber
+}
+
+export function convertHHMMStringTimeFormatToDateObject(inputStringDate: string) {
+    let timeArray = inputStringDate.split(":");
+
+    if (timeArray.length != 2)
+        return null;
+
+    let returnDate = new Date();
+    returnDate.setHours(Number(timeArray[0]))
+    returnDate.setMinutes(Number(timeArray[1]))
+    return returnDate;
 }
