@@ -1,4 +1,4 @@
-import { COPERTO_COSTA_EURO, getArrayFromOrderedItemsByCategoriesObject, getObjectDeepCopy, getPercentage, putIngredientsTogether } from '@/lib/utils';
+import { COPERTO_COSTA_EURO, getArrayFromOrderedItemsByCategoriesObject, getSameDayTimeDifference, getObjectDeepCopy, getPercentage, getTimeAsString, putIngredientsTogether } from '@/lib/utils';
 import styles from './OrderSnippet.module.css'
 import { Order } from '@/types/Order';
 import { ChangeEvent, useEffect, useState } from 'react';
@@ -31,6 +31,17 @@ export function OrderSnippet({ order, updateConsegnato }: OrderSnippetProps) {
 
     const coperto = computeCoperto();
     const bill = computeBill();
+
+    useEffect(() => {
+
+        const minutes = 5;
+
+        // reloads page every tot minutes
+        setTimeout(() => {
+            window.location.reload();
+        }, minutes * 60 * 1000) // in milliseconds
+
+    }, [])
 
     function computeBill() {
 
@@ -121,33 +132,48 @@ export function OrderSnippet({ order, updateConsegnato }: OrderSnippetProps) {
         >
 
             <div className={styles.numeroComandaETavolo}>
-                <span>Comanda n° {orderCopy.numeroOrdineProgressivoGiornaliero}</span>
-                <span>Tavolo {orderCopy.orderInfo.tableNumber}</span>
-            </div>
+                <div className={styles.comandaInfo}>
+                    <span>Comanda n° {orderCopy.numeroOrdineProgressivoGiornaliero}</span>
+                    <span>del {new Date(orderCopy.dateAndTime).toLocaleDateString()} ore {getTimeAsString(orderCopy.dateAndTime)}</span>
+                </div>
 
-            <span>Il {new Date(orderCopy.dateAndTime).toLocaleDateString()} {new Date(orderCopy.dateAndTime).toLocaleTimeString()}</span>
-
-            <hr className={styles.line} />
-
-            <div className={styles.infoComanda}>
-                <span>Fritti prima della pizza: {orderCopy.orderInfo.isFrittiPrimaDellaPizza ? "Si" : "No"}</span>
-                <span>Si dividono la pizza: {orderCopy.orderInfo.isSiDividonoLaPizza ? "Si" : "No"}</span>
                 {
-                    orderCopy.orderInfo.isSiDividonoLaPizza == true &&
-                    <span>Pizze tagliate in: {orderCopy.orderInfo.slicedIn}</span>
-                }
-                <span>Adulti: {orderCopy.orderInfo.numeroAdulti}</span>
-                {
-                    orderCopy.orderInfo.numeroBambini != null &&
-                    <span>Bambini: {orderCopy.orderInfo.numeroBambini}</span>
-                }
-                {
-                    orderCopy.orderInfo.note != null &&
-                    <span>Note: {orderCopy.orderInfo.note}</span>
+                    orderCopy.orderInfo.isTakeAway && orderCopy.orderInfo.pickUpTime != null ?
+                        <div className={styles.takeAwayInfo}>
+                            <span>Asporto {getTimeAsString(orderCopy.orderInfo.pickUpTime)}</span>
+                            <span>Consegna in <strong>{getSameDayTimeDifference(new Date(), orderCopy.orderInfo.pickUpTime)}</strong></span>
+                        </div>
+                        :
+                        <span>Tavolo {orderCopy.orderInfo.tableNumber}</span>
                 }
             </div>
 
             <hr className={styles.line} />
+
+            {
+                !orderCopy.orderInfo.isTakeAway &&
+                <div>
+                    <div className={styles.infoComanda}>
+                        <span>Fritti prima della pizza: {orderCopy.orderInfo.isFrittiPrimaDellaPizza ? "Si" : "No"}</span>
+                        <span>Si dividono la pizza: {orderCopy.orderInfo.isSiDividonoLaPizza ? "Si" : "No"}</span>
+                        {
+                            orderCopy.orderInfo.isSiDividonoLaPizza == true &&
+                            <span>Pizze tagliate in: {orderCopy.orderInfo.slicedIn}</span>
+                        }
+                        <span>Adulti: {orderCopy.orderInfo.numeroAdulti}</span>
+                        {
+                            orderCopy.orderInfo.numeroBambini != null &&
+                            <span>Bambini: {orderCopy.orderInfo.numeroBambini}</span>
+                        }
+                        {
+                            orderCopy.orderInfo.note != null &&
+                            <span>Note: {orderCopy.orderInfo.note}</span>
+                        }
+                    </div>
+
+                    <hr className={styles.line} />
+                </div>
+            }
 
             {
 
@@ -246,28 +272,34 @@ export function OrderSnippet({ order, updateConsegnato }: OrderSnippetProps) {
 
             <hr className={styles.line} />
 
-            <div className={styles.coperto}>
-                <div className={styles.copertoHeader}>
-                    <span>Coperto:</span>
-                    <span>€{coperto}</span>
+            {
+                !orderCopy.orderInfo.isTakeAway &&
+                <div>
+                    <div className={styles.coperto}>
+                        <div className={styles.copertoHeader}>
+                            <span>Coperto:</span>
+                            <span>€{coperto}</span>
+                        </div>
+                        {
+                            orderCopy.orderInfo.numeroAdulti != null &&
+                            <div className={styles.copertoDetails}>
+                                <span>Adulti</span>
+                                <span>{COPERTO_COSTA_EURO.adulti}x€{orderCopy.orderInfo.numeroAdulti}</span>
+                            </div>
+                        }
+                        {
+                            orderCopy.orderInfo.numeroBambini != null &&
+                            <div>
+                                <span>Bambini</span>
+                                <span>{COPERTO_COSTA_EURO.bambini}x€{orderCopy.orderInfo.numeroBambini}</span>
+                            </div>
+                        }
+                    </div>
+                    <hr className={styles.line} />
                 </div>
-                {
-                    orderCopy.orderInfo.numeroAdulti != null &&
-                    <div className={styles.copertoDetails}>
-                        <span>Adulti</span>
-                        <span>{COPERTO_COSTA_EURO.adulti}x€{orderCopy.orderInfo.numeroAdulti}</span>
-                    </div>
-                }
-                {
-                    orderCopy.orderInfo.numeroBambini != null &&
-                    <div>
-                        <span>Bambini</span>
-                        <span>{COPERTO_COSTA_EURO.bambini}x€{orderCopy.orderInfo.numeroBambini}</span>
-                    </div>
-                }
-            </div>
+            }
 
-            <hr className={styles.line} />
+
 
             <div className={styles.bill}>
                 <h2>Totale:</h2>

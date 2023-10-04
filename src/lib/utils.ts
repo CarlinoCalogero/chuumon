@@ -8,6 +8,7 @@ import { OrderedItem } from "@/types/OrderedItem";
 import { OrderedItemByCategories } from "@/types/OrderedItemByCategories";
 import { OrderedItemsByCategoriesArray } from "@/types/OrderedItemsByCategoriesArray";
 import { CategoriesAndMenuItems } from "@/types/CategoriesAndMenuItems";
+import { HoursAndMinutesInSeconds } from "@/types/HoursAndMinutesInSeconds";
 
 export const DATABASE_INFO = "database.db";
 
@@ -277,4 +278,51 @@ export function convertHHMMStringTimeFormatToDateObject(inputStringDate: string)
     returnDate.setHours(Number(timeArray[0]))
     returnDate.setMinutes(Number(timeArray[1]))
     return returnDate;
+}
+
+export function getSameDayTimeDifference(inputPastDate: Date, inputFutureDate: Date) {
+
+    console.log(inputPastDate.toTimeString())
+
+    let pastDate = new Date(inputPastDate);
+    let futureDate = new Date(inputFutureDate);
+
+    // if not the same day do nothing
+    if ((pastDate.getFullYear() != futureDate.getFullYear()) && (pastDate.getMonth() != futureDate.getMonth()) && (pastDate.getDay() != futureDate.getDay()))
+        return "";
+
+    let pastDateInSeconds = getSecondsFromTimeDate(pastDate);
+    let futureDateInSeconds = getSecondsFromTimeDate(futureDate);
+
+    let minutes = futureDateInSeconds.minutes - pastDateInSeconds.minutes;
+    if ((futureDateInSeconds.hours > pastDateInSeconds.hours) && minutes < 0)
+        minutes = minutes * -1
+
+    let differenceBetweenDatesInSeconds = {
+        hours: futureDateInSeconds.hours - pastDateInSeconds.hours,
+        minutes: minutes
+    };
+
+    return fromSecondsToHoursAndMinutes(differenceBetweenDatesInSeconds)
+}
+
+export function getSecondsFromTimeDate(inputDate: Date) {
+    let date = new Date(inputDate);
+    let hoursAndMinutesInSeconds: HoursAndMinutesInSeconds = {
+        hours: date.getHours() * 3600,
+        minutes: date.getMinutes() * 60
+    }
+    return hoursAndMinutesInSeconds;
+}
+
+export function fromSecondsToHoursAndMinutes(dateInSeconds: HoursAndMinutesInSeconds) {
+    let hours = dateInSeconds.hours / 3600
+    let minutes = dateInSeconds.minutes / 60;
+    if (hours < 0 || minutes < 0) {
+        hours = hours * -1;
+        minutes = minutes * -1;
+        return "-" + hours + "h" + minutes + "min"
+    }
+
+    return hours + "h" + minutes + "min"
 }

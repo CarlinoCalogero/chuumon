@@ -15,6 +15,7 @@ type OrdinazioneDatabaseTableRowWithRowId = {
     rowid: number,
     numero_tavolo: number,
     data_e_ora: Date,
+    pick_up_time: Date | null,
     note: string | null,
     is_si_dividono_le_pizze: boolean,
     is_fritti_prima_della_pizza: boolean,
@@ -202,9 +203,11 @@ export async function GET() {
             dateAndTime: order.data_e_ora,
             orderInfo: {
                 tableNumber: order.numero_tavolo,
+                isTakeAway: order.numero_tavolo == null ? true : false,
                 isFrittiPrimaDellaPizza: order.is_fritti_prima_della_pizza,
                 isSiDividonoLaPizza: order.is_si_dividono_le_pizze,
                 slicedIn: order.pizze_divise_in,
+                pickUpTime: order.pick_up_time,
                 note: order.note,
                 numeroBambini: order.numero_bambini,
                 numeroAdulti: order.numero_adulti

@@ -7,6 +7,17 @@
     max-width: 40vw;
 }
 
+.comandaInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.takeAwayInfo {
+    display: flex;
+    flex-direction: column;
+    text-align: right;
+}
+
 .numeroComandaETavolo {
     display: flex;
     justify-content: space-between;
