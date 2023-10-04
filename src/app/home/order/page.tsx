@@ -5,7 +5,7 @@ import { useState, useEffect, ChangeEvent, MouseEvent } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { UnitaDiMisuraDatabaseTableRow } from '@/types/UnitaDiMisuraDatabaseTableRow';
 import { OrderedItem } from '@/types/OrderedItem';
-import { CALZONI, CATEGORIE_CREA, CATEGORIE_CREA_ARRAY, CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO, FARINE_SPECIALI, OGNI_INGREDIENTE_AGGIUNTO_COSTA_EURO, PINSE_ROMANE, PIZZE_BIANCHE, PIZZE_CATEGORIES, PIZZE_ROSSE, UNITA_DI_MISURA, checkIfMenuItemCanBeSlicedUp, checkIfMenuItemIsAPizza, getCategoriesAndMenuItemsObjectFromCategoriesWithMenuItemsObject, getArrayFromOrderedItemsByCategoriesObject, getObjectDeepCopy, getMenuItemPriceFromMenuItemsWithIngredientsObject, getMenuItemIngredientsFromMenuItemsWithIngredientsObject, getMenuItemCategoryFromMenuItemsWithIngredientsObject, addOrderedItemToOrderedItemByCategoriesObject, getMenuItemsFromCategoryFromCategoriesWithMenuItemsObject, SLICED_IN_OPTIONS_ARRAY, putIngredientsTogether, CREATED_MENU_ITEM_SUFFIX, EDITED_MENU_ITEM_SUFFIX } from '@/lib/utils';
+import { CALZONI, CATEGORIE_CREA, CATEGORIE_CREA_ARRAY, CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO, FARINE_SPECIALI, OGNI_INGREDIENTE_AGGIUNTO_COSTA_EURO, PINSE_ROMANE, PIZZE_BIANCHE, PIZZE_CATEGORIES, PIZZE_ROSSE, UNITA_DI_MISURA, checkIfMenuItemCanBeSlicedUp, checkIfMenuItemIsAPizza, getCategoriesAndMenuItemsObjectFromCategoriesWithMenuItemsObject, getArrayFromOrderedItemsByCategoriesObject, getObjectDeepCopy, getMenuItemPriceFromMenuItemsWithIngredientsObject, getMenuItemIngredientsFromMenuItemsWithIngredientsObject, getMenuItemCategoryFromMenuItemsWithIngredientsObject, addOrderedItemToOrderedItemByCategoriesObject, getMenuItemsFromCategoryFromCategoriesWithMenuItemsObject, SLICED_IN_OPTIONS_ARRAY, putIngredientsTogether, CREATED_MENU_ITEM_SUFFIX, EDITED_MENU_ITEM_SUFFIX, TAKE_AWAY_ORDER_SECTION_NUMBER_TRIGGER, getCurrentTimeString, MAX_TAKE_AWAY_ORDER_TIME } from '@/lib/utils';
 import { TableOrderInfo } from '@/types/TableOrderInfo';
 import { IngredienteDatabaseTableRow } from '@/types/IngredienteDatabaseTableRow';
 import { CategoriaConIngredientiCheLaDefiniscono } from '@/types/CategoriaConIngredientiCheLaDefiniscono';
@@ -51,9 +51,11 @@ export default function Order() {
 
   const [tableOrderInfo, setTableOrderInfo] = useState<TableOrderInfo>({
     tableNumber: Number(searchParams.get('tableNumber')),
+    isTakeAway: Number(searchParams.get('tableNumber')) == TAKE_AWAY_ORDER_SECTION_NUMBER_TRIGGER ? true : false,
     isFrittiPrimaDellaPizza: true,
     isSiDividonoLaPizza: false,
     slicedIn: null,
+    pickUpTime: null,
     note: null,
     numeroBambini: null,
     numeroAdulti: null
@@ -144,6 +146,21 @@ export default function Order() {
       addIngredient: inputs.addIngredient
     }
     return inputsCopy;
+  }
+
+  function handlePickUpTimeChange(onChangeEvent: ChangeEvent<HTMLInputElement>) {
+
+    if (!onChangeEvent.target.checkValidity()){
+      onChangeEvent.target.value = "";
+      window.alert(`Please insert a time between ${getCurrentTimeString()} and ${MAX_TAKE_AWAY_ORDER_TIME}`)
+      return;
+    }
+
+    let tableOrderInfoCopy = getObjectDeepCopy(tableOrderInfo) as TableOrderInfo;
+    tableOrderInfoCopy.pickUpTime = onChangeEvent.target.value;
+
+    setTableOrderInfo(tableOrderInfoCopy)
+
   }
 
   function handleMenuItemChange(onChangeEvent: ChangeEvent<HTMLInputElement>) {
@@ -644,59 +661,81 @@ export default function Order() {
 
     <div className={styles.outerDiv}>
 
-      <div>
-        <input
-          type="checkbox"
-          id="frittiPrimaDellaPizzaCheckbox"
-          checked={tableOrderInfo.isFrittiPrimaDellaPizza}
-          onChange={e => handleIsFrittiPrimaDellaPizzaChange(e)}
-        />
-        <label htmlFor="frittiPrimaDellaPizzaCheckbox">Fritti Prima della Pizza</label>
-      </div>
+      {
+        tableOrderInfo.isTakeAway &&
+        <div>
+          <label htmlFor='pickUpTime'>Pick up time:</label>
 
-      <div>
-        <input
-          type="checkbox"
-          id="siDividonoLePizzeCheckbox"
-          checked={tableOrderInfo.isSiDividonoLaPizza}
-          onChange={e => handleIsSiDividonoLapizzaChange(e)}
-        />
-        <label htmlFor="siDividonoLePizzeCheckbox">Si dividono la pizza</label>
+          <input
+            type="time"
+            id="pickUpTime"
+            name="appt"
+            value={tableOrderInfo.pickUpTime == null ? "" : tableOrderInfo.pickUpTime}
+            min={getCurrentTimeString()}
+            max={MAX_TAKE_AWAY_ORDER_TIME}
+            onChange={(e) => handlePickUpTimeChange(e)}
+          />
+        </div>
+      }
 
-        {
-          tableOrderInfo.isSiDividonoLaPizza &&
+      {
+        !tableOrderInfo.isTakeAway &&
+        <div>
           <div>
-            <label>Sliced in</label>
-            <select
-              value={tableOrderInfo.slicedIn != null ? tableOrderInfo.slicedIn : ''}
-              onChange={e => handleSlicedInTableOrderInfoChange(e)}
-            >
-              <option value='' disabled></option>,
-              {
-                SLICED_IN_OPTIONS_ARRAY.map((option, i) => <option key={"slicedIn1_" + i} value={option}>{option}</option>,)
-              }
-            </select>
+            <input
+              type="checkbox"
+              id="frittiPrimaDellaPizzaCheckbox"
+              checked={tableOrderInfo.isFrittiPrimaDellaPizza}
+              onChange={e => handleIsFrittiPrimaDellaPizzaChange(e)}
+            />
+            <label htmlFor="frittiPrimaDellaPizzaCheckbox">Fritti Prima della Pizza</label>
           </div>
-        }
-      </div>
 
-      <div>
-        <input
-          type='number'
-          placeholder='Numero adulti'
-          min={0}
-          onChange={e => handleNumberoAdultiChange(e)}
-        />
-      </div>
+          <div>
+            <input
+              type="checkbox"
+              id="siDividonoLePizzeCheckbox"
+              checked={tableOrderInfo.isSiDividonoLaPizza}
+              onChange={e => handleIsSiDividonoLapizzaChange(e)}
+            />
+            <label htmlFor="siDividonoLePizzeCheckbox">Si dividono la pizza</label>
 
-      <div>
-        <input
-          type='number'
-          placeholder='Numero bambini'
-          min={0}
-          onChange={e => handleNumberoBambiniChange(e)}
-        />
-      </div>
+            {
+              tableOrderInfo.isSiDividonoLaPizza &&
+              <div>
+                <label>Sliced in</label>
+                <select
+                  value={tableOrderInfo.slicedIn != null ? tableOrderInfo.slicedIn : ''}
+                  onChange={e => handleSlicedInTableOrderInfoChange(e)}
+                >
+                  <option value='' disabled></option>,
+                  {
+                    SLICED_IN_OPTIONS_ARRAY.map((option, i) => <option key={"slicedIn1_" + i} value={option}>{option}</option>,)
+                  }
+                </select>
+              </div>
+            }
+          </div>
+
+          <div>
+            <input
+              type='number'
+              placeholder='Numero adulti'
+              min={0}
+              onChange={e => handleNumberoAdultiChange(e)}
+            />
+          </div>
+
+          <div>
+            <input
+              type='number'
+              placeholder='Numero bambini'
+              min={0}
+              onChange={e => handleNumberoBambiniChange(e)}
+            />
+          </div>
+        </div>
+      }
 
       <div>
         <textarea

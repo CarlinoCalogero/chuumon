@@ -4,7 +4,7 @@ import { useState, useEffect, ChangeEvent, DragEvent, MouseEvent, useCallback } 
 import styles from './page.module.css'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Tables } from '@/components/Tables';
-import { SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS, removeNumbersFromArray } from '@/lib/utils';
+import { SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS, TAKE_AWAY_ORDER_SECTION_NUMBER_TRIGGER, removeNumbersFromArray } from '@/lib/utils';
 import { Sala } from '@/types/Sala';
 import { Table } from '@/types/Table';
 import { AppearingButton } from '@/components/AppearingButton';
@@ -57,6 +57,8 @@ export default function Home() {
   return (
 
     <div>
+
+      <button onClick={() => router.push("/home/order" + '?' + createQueryString('tableNumber', TAKE_AWAY_ORDER_SECTION_NUMBER_TRIGGER + ''))}>Take away order</button>
 
       {
         tablesArray.map((table, i) => <Tables

@@ -61,6 +61,10 @@ export const CREATED_MENU_ITEM_SUFFIX = "FUORI MENU"
 
 export const EDITED_MENU_ITEM_SUFFIX = "CON MODIFICHE"
 
+export const TAKE_AWAY_ORDER_SECTION_NUMBER_TRIGGER = -1;
+
+export const MAX_TAKE_AWAY_ORDER_TIME = "23:59"
+
 export function removeNumbersFromArray(array: number[], items: number[]) {
 
     if (array.length == 0)
@@ -249,4 +253,16 @@ export function getPercentage(totalItems: number, iterestedItems: number) {
 
     // 100 : totalItems = x : iterestedItems
     return (100 * iterestedItems) / totalItems;
+}
+
+export function getCurrentTimeString() {
+    let currentDate = new Date();
+    return normalizeNumber(currentDate.getHours()) + ":" + normalizeNumber(currentDate.getMinutes())
+}
+
+export function normalizeNumber(inputNumber: number) {
+    if (inputNumber > -1 && inputNumber < 10)
+        return '0' + inputNumber
+
+    return inputNumber
 }
