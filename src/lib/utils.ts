@@ -282,14 +282,12 @@ export function convertHHMMStringTimeFormatToDateObject(inputStringDate: string)
 
 export function getSameDayTimeDifference(inputPastDate: Date, inputFutureDate: Date) {
 
-    console.log(inputPastDate.toTimeString())
-
     let pastDate = new Date(inputPastDate);
     let futureDate = new Date(inputFutureDate);
 
     // if not the same day do nothing
-    if ((pastDate.getFullYear() != futureDate.getFullYear()) && (pastDate.getMonth() != futureDate.getMonth()) && (pastDate.getDay() != futureDate.getDay()))
-        return "";
+    if (!((pastDate.getFullYear() == futureDate.getFullYear()) && (pastDate.getMonth() == futureDate.getMonth()) && (pastDate.getDay() == futureDate.getDay())))
+        return "Ordine Vecchio";
 
     let pastDateInSeconds = getSecondsFromTimeDate(pastDate);
     let futureDateInSeconds = getSecondsFromTimeDate(futureDate);
