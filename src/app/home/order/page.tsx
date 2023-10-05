@@ -713,245 +713,259 @@ export default function Order() {
 
     <div className={styles.outerDiv}>
 
-      {
-        tableOrderInfo.isTakeAway &&
-        <div>
+      <div className={styles.orderTitleDiv}>
+        <h1>TAVOLO {tableOrderInfo.tableNumber}</h1>
+      </div>
 
-          <div>
-            <label htmlFor='orderName'>Nome Ordinazione:</label>
+      <div className={styles.sectionDiv}>
+        <h3 className={styles.thiPageH3}>Info</h3>
+      </div>
+
+      <hr className={styles.line} />
+
+      <div className={styles.tableInfo}>
+
+        {
+          tableOrderInfo.isTakeAway &&
+          <div className={styles.tableInfoNomeConsegnaEOrario}>
 
             <input
               type="text"
-              id="orderName"
-              name="orderName"
+              placeholder='Nome Ordinazione'
+              autoCorrect='off'
               value={tableOrderInfo.nomeOrdinazione == null ? "" : tableOrderInfo.nomeOrdinazione}
               onChange={(e) => handleNomeOrdinazioneChange(e)}
             />
+
+            <div>
+              <span>Orario di consegna: </span>
+              <input
+                type="time"
+                value={tableOrderInfo.pickUpTime == null ? "" : getTimeAsString(tableOrderInfo.pickUpTime)}
+                min={getTimeAsString()}
+                max={MAX_TAKE_AWAY_ORDER_TIME}
+                onChange={(e) => handlePickUpTimeChange(e)}
+              />
+            </div>
+
           </div>
+        }
 
-          <div>
-            <label htmlFor='pickUpTime'>Pick up time:</label>
+        <div className={styles.checkBoxes}>
+          {
+            !tableOrderInfo.isTakeAway &&
+            <div>
+              <input
+                type="checkbox"
+                checked={tableOrderInfo.isFrittiPrimaDellaPizza}
+                onChange={e => handleIsFrittiPrimaDellaPizzaChange(e)}
+              />
+              <span>Fritti Prima della Pizza</span>
+            </div>
+          }
 
-            <input
-              type="time"
-              id="pickUpTime"
-              name="appt"
-              value={tableOrderInfo.pickUpTime == null ? "" : getTimeAsString(tableOrderInfo.pickUpTime)}
-              min={getTimeAsString()}
-              max={MAX_TAKE_AWAY_ORDER_TIME}
-              onChange={(e) => handlePickUpTimeChange(e)}
-            />
+          <div className={styles.slicedInOuterDiv}>
+            {
+              !tableOrderInfo.isTakeAway &&
+              <div>
+                <input
+                  type="checkbox"
+                  checked={tableOrderInfo.isSiDividonoLaPizza}
+                  onChange={e => handleIsSiDividonoLapizzaChange(e)}
+                />
+                <span>Si dividono la pizza</span>
+              </div>
+            }
+
+            {
+              (tableOrderInfo.isSiDividonoLaPizza || tableOrderInfo.isTakeAway) &&
+              <div className={styles.slicedInDiv}>
+                <label>Pizza divisa in</label>
+                <select
+                  value={tableOrderInfo.slicedIn != null ? tableOrderInfo.slicedIn : ''}
+                  onChange={e => handleSlicedInTableOrderInfoChange(e)}
+                >
+                  <option value='' disabled></option>,
+                  {
+                    SLICED_IN_OPTIONS_ARRAY.map((option, i) => <option key={"slicedIn1_" + i} value={option}>{option}</option>,)
+                  }
+                </select>
+                <label>pezzi</label>
+              </div>
+            }
           </div>
         </div>
-      }
 
-      {
-        !tableOrderInfo.isTakeAway &&
-        <div>
-          <input
-            type="checkbox"
-            id="frittiPrimaDellaPizzaCheckbox"
-            checked={tableOrderInfo.isFrittiPrimaDellaPizza}
-            onChange={e => handleIsFrittiPrimaDellaPizzaChange(e)}
-          />
-          <label htmlFor="frittiPrimaDellaPizzaCheckbox">Fritti Prima della Pizza</label>
-        </div>
-      }
-
-      <div>
         {
           !tableOrderInfo.isTakeAway &&
-          <div>
-            <input
-              type="checkbox"
-              id="siDividonoLePizzeCheckbox"
-              checked={tableOrderInfo.isSiDividonoLaPizza}
-              onChange={e => handleIsSiDividonoLapizzaChange(e)}
-            />
-            <label htmlFor="siDividonoLePizzeCheckbox">Si dividono la pizza</label>
-          </div>
-        }
+          <div className={styles.numeroAdultiEBambini}>
 
-        {
-          (tableOrderInfo.isSiDividonoLaPizza || tableOrderInfo.isTakeAway) &&
-          <div>
-            <label>Sliced in</label>
-            <select
-              value={tableOrderInfo.slicedIn != null ? tableOrderInfo.slicedIn : ''}
-              onChange={e => handleSlicedInTableOrderInfoChange(e)}
-            >
-              <option value='' disabled></option>,
-              {
-                SLICED_IN_OPTIONS_ARRAY.map((option, i) => <option key={"slicedIn1_" + i} value={option}>{option}</option>,)
-              }
-            </select>
-          </div>
-        }
-      </div>
-
-      {
-        !tableOrderInfo.isTakeAway &&
-        <div>
-
-          <div>
             <input
               type='number'
               placeholder='Numero adulti'
               min={0}
               onChange={e => handleNumberoAdultiChange(e)}
             />
-          </div>
 
-          <div>
             <input
               type='number'
               placeholder='Numero bambini'
               min={0}
               onChange={e => handleNumberoBambiniChange(e)}
             />
-          </div>
-        </div>
-      }
 
-      <div>
+          </div>
+        }
+
+
         <textarea
           value={tableOrderInfo.note == null ? '' : tableOrderInfo.note}
           onChange={e => handleNoteTextAreaChange(e)}
+          placeholder='Note aggiuntive'
         />
+
       </div>
 
-      <div>
-        <button onClick={e => creaButtonWasPressed(e)}>Crea</button>
+      <div className={styles.sectionDiv}>
+        <h3 className={styles.thiPageH3}>Ordina</h3>
+      </div>
+
+      <div className={styles.ordina}>
+
+        <div>
+          <button onClick={e => creaButtonWasPressed(e)}>Crea</button>
+          {
+            isWasCreaButtonPressed &&
+            <div>
+              <label>Selezione categoria:</label>
+              <select
+                value={selectedCreaCategory}
+                onChange={e => handleSelectedCreaCategory(e)}
+              >
+                <option value='' disabled></option>,
+                {
+                  CATEGORIE_CREA_ARRAY.map((creaCategory, i) => <option key={"creaCategory_" + creaCategory + i} value={creaCategory}>{creaCategory}</option>,)
+                }
+              </select>
+            </div>
+          }
+        </div>
+
         {
-          isWasCreaButtonPressed &&
-          <div>
-            <label>Selezione categoria:</label>
-            <select
-              value={selectedCreaCategory}
-              onChange={e => handleSelectedCreaCategory(e)}
-            >
-              <option value='' disabled></option>,
+          (isInsertingMenuItemWithSearch == null || isInsertingMenuItemWithSearch) && !isWasCreaButtonPressed &&
+          <div className={styles.addItemToOrderDiv}>
+            <input
+              type='search'
+              placeholder='Menu Item'
+              list='menu-items-list'
+              onChange={e => handleMenuItemChange(e)}
+            />
+
+            <datalist id="menu-items-list">
               {
-                CATEGORIE_CREA_ARRAY.map((creaCategory, i) => <option key={"creaCategory_" + creaCategory + i} value={creaCategory}>{creaCategory}</option>,)
+                categoriesAndMenuItems.menuItems.map((menuItem, i) => <option key={"orderPage_" + menuItem + i} value={menuItem}></option>)
               }
-            </select>
+            </datalist>
+
           </div>
         }
-      </div>
 
-      {
-        (isInsertingMenuItemWithSearch == null || isInsertingMenuItemWithSearch) && !isWasCreaButtonPressed &&
+        {
+          (isInsertingMenuItemWithSearch == null || !isInsertingMenuItemWithSearch) && !isWasCreaButtonPressed &&
+          <div className={styles.addItemToOrderDiv}>
+            <select
+              value={selectedCategory}
+              onChange={e => handleSelectCategoryChange(e)}
+            >
+              <option value='' ></option>
+              {
+                categoriesAndMenuItems.categories.map((category, i) => <option key={"orderPage_" + category + i} value={category}>{category}</option>)
+              }
+            </select>
+
+            {
+              selectedCategory != '' &&
+              <select
+                value={orderedItem.menuItem != null ? orderedItem.menuItem : ''}
+                onChange={e => handleSelectMenuItemChange(e)}
+              >
+                <option value='' disabled></option>
+                {
+                  getMenuItemsFromCategoryFromCategoriesWithMenuItemsObject(categoriesWithMenuItems, selectedCategory).map((menuItemInThisCategory, i) => <option key={"orderPage_menuItemInThisCategory" + i} value={menuItemInThisCategory}>{menuItemInThisCategory}</option>)
+                }
+              </select>
+            }
+
+          </div>
+        }
+
+        {
+          (orderedItem.ingredients.length != 0 || isWasCreaButtonPressed) &&
+          <div>
+            {
+              orderedItem.ingredients.map((ingredient, i) => <div key={"ingredient_" + ingredient + i}>
+                <span>{ingredient}</span>
+                <button onClick={e => removeIngredientFromOrderedItem(e, ingredient)}>X</button>
+              </div>)
+            }
+            <input
+              type='search'
+              placeholder='Aggiungi Ingrediente'
+              list='ingredients-list'
+              value={addedIngredient}
+              onChange={e => addIngredientToOrderedItem(e)}
+            />
+
+            <datalist id="ingredients-list">
+              {
+                ingredientiArray.map((ingredient, i) => <option key={"orderPage_" + ingredient.nome + i} value={ingredient.nome}></option>)
+              }
+            </datalist>
+            <button onClick={addIngredient}>Add Ingredient</button>
+          </div>
+        }
+
         <div className={styles.addItemToOrderDiv}>
+
           <input
-            type='search'
-            placeholder='Menu Item'
-            list='menu-items-list'
-            onChange={e => handleMenuItemChange(e)}
+            type='number'
+            placeholder='Number of'
+            min={1}
+            onChange={e => handleNumberOfChange(e)}
           />
 
-          <datalist id="menu-items-list">
-            {
-              categoriesAndMenuItems.menuItems.map((menuItem, i) => <option key={"orderPage_" + menuItem + i} value={menuItem}></option>)
-            }
-          </datalist>
-
-        </div>
-      }
-
-      {
-        (isInsertingMenuItemWithSearch == null || !isInsertingMenuItemWithSearch) && !isWasCreaButtonPressed &&
-        <div className={styles.addItemToOrderDiv}>
-          <select
-            value={selectedCategory}
-            onChange={e => handleSelectCategoryChange(e)}
-          >
-            <option value='' ></option>
-            {
-              categoriesAndMenuItems.categories.map((category, i) => <option key={"orderPage_" + category + i} value={category}>{category}</option>)
-            }
-          </select>
-
           {
-            selectedCategory != '' &&
-            <select
-              value={orderedItem.menuItem != null ? orderedItem.menuItem : ''}
-              onChange={e => handleSelectMenuItemChange(e)}
+            orderedItem.isMenuItemAPizza &&
+            < select
+              value={orderedItem.unitOfMeasure != null ? orderedItem.unitOfMeasure : ''}
+              onChange={e => handleUnitOfMeasurementChange(e)}
             >
               <option value='' disabled></option>
               {
-                getMenuItemsFromCategoryFromCategoriesWithMenuItemsObject(categoriesWithMenuItems, selectedCategory).map((menuItemInThisCategory, i) => <option key={"orderPage_menuItemInThisCategory" + i} value={menuItemInThisCategory}>{menuItemInThisCategory}</option>)
+                unitaDiMisuraArray.map((unitaDiMisura, i) => <option key={"orderPage_" + unitaDiMisura.nome + i} value={unitaDiMisura.nome}>{unitaDiMisura.nome}</option>)
               }
             </select>
           }
 
-        </div>
-      }
-
-      {
-        (orderedItem.ingredients.length != 0 || isWasCreaButtonPressed) &&
-        <div>
           {
-            orderedItem.ingredients.map((ingredient, i) => <div key={"ingredient_" + ingredient + i}>
-              <span>{ingredient}</span>
-              <button onClick={e => removeIngredientFromOrderedItem(e, ingredient)}>X</button>
-            </div>)
+            ((orderedItem.isMenuItemAPizza && (orderedItem.unitOfMeasure != null && orderedItem.unitOfMeasure.toUpperCase() != UNITA_DI_MISURA.pezzi.toUpperCase())) || orderedItem.isCanMenuItemBeSlicedUp) &&
+            <div>
+              <label>Sliced in</label>
+              <select
+                value={orderedItem.slicedIn != null ? orderedItem.slicedIn : ''}
+                onChange={e => handleSlicedInChange(e)}
+              >
+                <option value='' disabled></option>,
+                {
+                  SLICED_IN_OPTIONS_ARRAY.map((option, i) => <option key={"slicedIn2_" + i} value={option}>{option}</option>,)
+                }
+              </select>
+            </div>
           }
-          <input
-            type='search'
-            placeholder='Aggiungi Ingrediente'
-            list='ingredients-list'
-            value={addedIngredient}
-            onChange={e => addIngredientToOrderedItem(e)}
-          />
 
-          <datalist id="ingredients-list">
-            {
-              ingredientiArray.map((ingredient, i) => <option key={"orderPage_" + ingredient.nome + i} value={ingredient.nome}></option>)
-            }
-          </datalist>
-          <button onClick={addIngredient}>Add Ingredient</button>
+          <button onClick={() => addItem()}>Add Item</button>
+
         </div>
-      }
-
-      <div className={styles.addItemToOrderDiv}>
-
-        <input
-          type='number'
-          placeholder='Number of'
-          min={1}
-          onChange={e => handleNumberOfChange(e)}
-        />
-
-        {
-          orderedItem.isMenuItemAPizza &&
-          < select
-            value={orderedItem.unitOfMeasure != null ? orderedItem.unitOfMeasure : ''}
-            onChange={e => handleUnitOfMeasurementChange(e)}
-          >
-            <option value='' disabled></option>
-            {
-              unitaDiMisuraArray.map((unitaDiMisura, i) => <option key={"orderPage_" + unitaDiMisura.nome + i} value={unitaDiMisura.nome}>{unitaDiMisura.nome}</option>)
-            }
-          </select>
-        }
-
-        {
-          ((orderedItem.isMenuItemAPizza && (orderedItem.unitOfMeasure != null && orderedItem.unitOfMeasure.toUpperCase() != UNITA_DI_MISURA.pezzi.toUpperCase())) || orderedItem.isCanMenuItemBeSlicedUp) &&
-          <div>
-            <label>Sliced in</label>
-            <select
-              value={orderedItem.slicedIn != null ? orderedItem.slicedIn : ''}
-              onChange={e => handleSlicedInChange(e)}
-            >
-              <option value='' disabled></option>,
-              {
-                SLICED_IN_OPTIONS_ARRAY.map((option, i) => <option key={"slicedIn2_" + i} value={option}>{option}</option>,)
-              }
-            </select>
-          </div>
-        }
-
-        <button onClick={() => addItem()}>Add Item</button>
 
       </div>
 
