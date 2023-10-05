@@ -28,6 +28,13 @@ export default function ViewOrder() {
         setOrders(data);
       }); // Update the state with the fetched data
 
+    const minutes = 5;
+
+    // reloads page every tot minutes
+    setTimeout(() => {
+      window.location.reload();
+    }, minutes * 60 * 1000) // in milliseconds
+
   }, [])
 
   useEffect(() => {

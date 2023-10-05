@@ -32,17 +32,6 @@ export function OrderSnippet({ order, updateConsegnato }: OrderSnippetProps) {
     const coperto = computeCoperto();
     const bill = computeBill();
 
-    useEffect(() => {
-
-        const minutes = 5;
-
-        // reloads page every tot minutes
-        setTimeout(() => {
-            window.location.reload();
-        }, minutes * 60 * 1000) // in milliseconds
-
-    }, [])
-
     function computeBill() {
 
         var bill = 0;
