@@ -140,16 +140,24 @@ export function OrderSnippet({ order, updateConsegnato }: OrderSnippetProps) {
 
             <hr className={styles.line} />
 
-            {
-                !orderCopy.orderInfo.isTakeAway &&
-                <div>
+
+            <div>
+                {
+                    !orderCopy.orderInfo.isTakeAway &&
                     <div className={styles.infoComanda}>
                         <span>Fritti prima della pizza: {orderCopy.orderInfo.isFrittiPrimaDellaPizza ? "Si" : "No"}</span>
                         <span>Si dividono la pizza: {orderCopy.orderInfo.isSiDividonoLaPizza ? "Si" : "No"}</span>
-                        {
-                            orderCopy.orderInfo.isSiDividonoLaPizza == true &&
-                            <span>Pizze tagliate in: {orderCopy.orderInfo.slicedIn}</span>
-                        }
+                    </div>
+                }
+
+                {
+                    orderCopy.orderInfo.isSiDividonoLaPizza == true || (orderCopy.orderInfo.isTakeAway && orderCopy.orderInfo.slicedIn != null) &&
+                    <span>Pizze tagliate in: {orderCopy.orderInfo.slicedIn}</span>
+                }
+
+                {
+                    !orderCopy.orderInfo.isTakeAway &&
+                    <div className={styles.infoComanda}>
                         <span>Adulti: {orderCopy.orderInfo.numeroAdulti}</span>
                         {
                             orderCopy.orderInfo.numeroBambini != null &&
@@ -160,10 +168,11 @@ export function OrderSnippet({ order, updateConsegnato }: OrderSnippetProps) {
                             <span>Note: {orderCopy.orderInfo.note}</span>
                         }
                     </div>
+                }
+                
+            </div>
 
-                    <hr className={styles.line} />
-                </div>
-            }
+            <hr className={styles.line} />
 
             {
 
@@ -187,7 +196,7 @@ export function OrderSnippet({ order, updateConsegnato }: OrderSnippetProps) {
                                     <label htmlFor="consegnatoOrderedItem">Consegnato</label>
 
                                     {
-                                        orderedItem.slicedIn != null &&
+                                        orderedItem.slicedIn != null && orderedItem.slicedIn != order.orderInfo.slicedIn &&
                                         <div>
                                             {
                                                 orderedItem.consegnato ?
