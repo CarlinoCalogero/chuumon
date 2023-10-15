@@ -940,7 +940,7 @@ export default function Order() {
         }
 
         {
-          (orderedItem.menuItem != null && orderedItem.menuItem != '') || (isWasCreaButtonPressed && orderedItem.ingredients.length != 0) &&
+          ((orderedItem.menuItem != null && orderedItem.menuItem != '') || (isWasCreaButtonPressed && orderedItem.ingredients.length != 0)) &&
           <div className={styles.addItemToOrderDiv}>
 
             <input
