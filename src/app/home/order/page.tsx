@@ -112,6 +112,10 @@ export default function Order() {
   }, [menuItemsWithIngredients])
 
   useEffect(() => {
+    console.log("selectedCategory", selectedCategory)
+  }, [selectedCategory])
+
+  useEffect(() => {
     console.log("categoriesWithMenuItems", categoriesWithMenuItems)
     setCategoriesAndMenuItems(getCategoriesAndMenuItemsObjectFromCategoriesWithMenuItemsObject(categoriesWithMenuItems))
   }, [categoriesWithMenuItems])
@@ -841,24 +845,27 @@ export default function Order() {
 
         <div className={styles.typesOfOrdersDiv}>
 
-          <div className={styles.creaButtonDiv}>
-            <button onClick={e => creaButtonWasPressed(e)}>Crea</button>
-            {
-              isWasCreaButtonPressed &&
-              <div className={styles.selezionaCategoriaDiv}>
-                <label>Seleziona categoria:</label>
-                <select
-                  value={selectedCreaCategory}
-                  onChange={e => handleSelectedCreaCategory(e)}
-                >
-                  <option value='' disabled></option>,
-                  {
-                    CATEGORIE_CREA_ARRAY.map((creaCategory, i) => <option key={"creaCategory_" + creaCategory + i} value={creaCategory}>{creaCategory}</option>,)
-                  }
-                </select>
-              </div>
-            }
-          </div>
+          {
+            ((orderedItem.menuItem == null || orderedItem.menuItem == '') && selectedCategory == '') &&
+            <div className={styles.creaButtonDiv}>
+              <button onClick={e => creaButtonWasPressed(e)}>Crea</button>
+              {
+                isWasCreaButtonPressed &&
+                <div className={styles.selezionaCategoriaDiv}>
+                  <label>Seleziona categoria:</label>
+                  <select
+                    value={selectedCreaCategory}
+                    onChange={e => handleSelectedCreaCategory(e)}
+                  >
+                    <option value='' disabled></option>,
+                    {
+                      CATEGORIE_CREA_ARRAY.map((creaCategory, i) => <option key={"creaCategory_" + creaCategory + i} value={creaCategory}>{creaCategory}</option>,)
+                    }
+                  </select>
+                </div>
+              }
+            </div>
+          }
 
           {
             (isInsertingMenuItemWithSearch == null || isInsertingMenuItemWithSearch) && !isWasCreaButtonPressed &&
@@ -941,106 +948,125 @@ export default function Order() {
 
         {
           ((orderedItem.menuItem != null && orderedItem.menuItem != '') || (isWasCreaButtonPressed && orderedItem.ingredients.length != 0)) &&
-          <div className={styles.addItemToOrderDiv}>
+          <div className={styles.submitOrderDiv}>
 
-            <input
-              type='number'
-              placeholder='Number of'
-              min={1}
-              onChange={e => handleNumberOfChange(e)}
-            />
+            <div className={styles.numberOfSlicedInAddItemDiv}>
 
-            {
-              orderedItem.isMenuItemAPizza &&
-              < select
-                value={orderedItem.unitOfMeasure != null ? orderedItem.unitOfMeasure : ''}
-                onChange={e => handleUnitOfMeasurementChange(e)}
-              >
-                <option value='' disabled></option>
-                {
-                  unitaDiMisuraArray.map((unitaDiMisura, i) => <option key={"orderPage_" + unitaDiMisura.nome + i} value={unitaDiMisura.nome}>{unitaDiMisura.nome}</option>)
-                }
-              </select>
-            }
+              <input
+                type='number'
+                placeholder='Number of'
+                min={1}
+                onChange={e => handleNumberOfChange(e)}
+              />
 
-            {
-              ((orderedItem.isMenuItemAPizza && (orderedItem.unitOfMeasure != null && orderedItem.unitOfMeasure.toUpperCase() != UNITA_DI_MISURA.pezzi.toUpperCase())) || orderedItem.isCanMenuItemBeSlicedUp) &&
-              <div>
-                <label>Sliced in</label>
-                <select
-                  value={orderedItem.slicedIn != null ? orderedItem.slicedIn : ''}
-                  onChange={e => handleSlicedInChange(e)}
+              {
+                orderedItem.isMenuItemAPizza &&
+                < select
+                  value={orderedItem.unitOfMeasure != null ? orderedItem.unitOfMeasure : ''}
+                  onChange={e => handleUnitOfMeasurementChange(e)}
                 >
-                  <option value='' disabled></option>,
+                  <option value='' disabled></option>
                   {
-                    SLICED_IN_OPTIONS_ARRAY.map((option, i) => <option key={"slicedIn2_" + i} value={option}>{option}</option>,)
+                    unitaDiMisuraArray.map((unitaDiMisura, i) => <option key={"orderPage_" + unitaDiMisura.nome + i} value={unitaDiMisura.nome}>{unitaDiMisura.nome}</option>)
                   }
                 </select>
-              </div>
-            }
+              }
+
+              {
+                ((orderedItem.isMenuItemAPizza && (orderedItem.unitOfMeasure != null && orderedItem.unitOfMeasure.toUpperCase() != UNITA_DI_MISURA.pezzi.toUpperCase())) || orderedItem.isCanMenuItemBeSlicedUp) &&
+                <div className={styles.slicedInDiv}>
+                  <label>Sliced in</label>
+                  <select
+                    value={orderedItem.slicedIn != null ? orderedItem.slicedIn : ''}
+                    onChange={e => handleSlicedInChange(e)}
+                  >
+                    <option value='' disabled></option>,
+                    {
+                      SLICED_IN_OPTIONS_ARRAY.map((option, i) => <option key={"slicedIn2_" + i} value={option}>{option}</option>,)
+                    }
+                  </select>
+                </div>
+              }
+
+            </div>
 
             <button onClick={() => addItem()}>Add Item</button>
 
           </div>
         }
 
-
-
       </div>
 
-
       {
-        orderedItemsByCategoryArray.map((orderedItemByCategory, i) =>
-          orderedItemByCategory.orderedItems.length != 0 &&
-          <div
-            key={"orderedItemByCategory_" + i}
-          >
+        orderedItemsByCategoryArray.length != 0 &&
+        <div>
+          <div className={styles.sectionDiv}>
+            <h3 className={styles.thiPageH3}>Ordinati</h3>
+          </div>
 
-            <h2>{orderedItemByCategory.categoria.toUpperCase()}</h2>
+          <hr className={styles.line} />
 
-            <div
-              className={styles.orderedItemsInCategoryDiv}
-            >
-              {
-                orderedItemByCategory.orderedItems.map((orderedItem, j) => <div
-                  key={"orderedItem_" + j + "_inCategory_" + i}
-                  className={styles.orderedItemDiv}
+          {
+            orderedItemsByCategoryArray.map((orderedItemByCategory, i) =>
+              orderedItemByCategory.orderedItems.length != 0 &&
+              <div
+                key={"orderedItemByCategory_" + i}
+                className={styles.orderedItemsList}
+              >
+
+                <h2>{orderedItemByCategory.categoria.toUpperCase()}</h2>
+
+                <div
+                  className={styles.orderedItemsInCategoryDiv}
                 >
-
-                  <b>{orderedItem.numberOf} {orderedItem.unitOfMeasure?.toUpperCase()} - {orderedItem.menuItem?.toUpperCase()}</b>
-
                   {
-                    orderedItem.slicedIn != null &&
-                    <span>Tagliata in {orderedItem.slicedIn}</span>
-                  }
+                    orderedItemByCategory.orderedItems.map((orderedItem, j) => <div
+                      key={"orderedItem_" + j + "_inCategory_" + i}
+                      className={styles.orderedItemDiv}
+                    >
 
-                  {
-                    orderedItem.ingredients.length != 0 &&
-                    <div className={styles.ingredientsDiv}>
-                      <span><strong>Ingredienti:</strong> {putIngredientsTogether(orderedItem.ingredients)}</span>
+                      <b>{orderedItem.numberOf} {orderedItem.unitOfMeasure?.toUpperCase()} - {orderedItem.menuItem?.toUpperCase()}</b>
+
                       {
-                        orderedItem.removedIngredients.length != 0 &&
-                        <span><strong>Ingredienti tolti:</strong> {putIngredientsTogether(orderedItem.removedIngredients)}</span>
+                        orderedItem.slicedIn != null &&
+                        <span>Tagliata in {orderedItem.slicedIn}</span>
+                      }
+
+                      {
+                        orderedItem.ingredients.length != 0 &&
+                        <div className={styles.ingredientsDiv}>
+                          <span><strong>Ingredienti:</strong> {putIngredientsTogether(orderedItem.ingredients)}</span>
+                          {
+                            orderedItem.removedIngredients.length != 0 &&
+                            <span><strong>Ingredienti tolti:</strong> {putIngredientsTogether(orderedItem.removedIngredients)}</span>
+                          }
+                          {
+                            orderedItem.addedIngredients.length != 0 &&
+                            <span><strong>Ingredienti aggiunti:</strong> {putIngredientsTogether(orderedItem.addedIngredients)}</span>
+                          }
+                        </div>
                       }
                       {
-                        orderedItem.addedIngredients.length != 0 &&
-                        <span><strong>Ingredienti aggiunti:</strong> {putIngredientsTogether(orderedItem.addedIngredients)}</span>
+                        orderedItem.intolleranzaA.length != 0 &&
+                        <span><strong>Intollerante a:</strong> {putIngredientsTogether(orderedItem.intolleranzaA)}</span>
                       }
-                    </div>
+                    </div>)
                   }
-                  {
-                    orderedItem.intolleranzaA.length != 0 &&
-                    <span><strong>Intollerante a:</strong> {putIngredientsTogether(orderedItem.intolleranzaA)}</span>
-                  }
-                </div>)
-              }
-            </div>
-          </div>)
+                </div>
+              </div>)
+          }
+        </div>
       }
 
+      <div className={styles.buttonsDiv}>
 
-      <button onClick={placeAnOrder}>Order</button>
-      <button onClick={() => router.push("/home")}>Back</button>
+        {
+          orderedItemsByCategoryArray.length != 0 &&
+          <button onClick={placeAnOrder}>Order</button>
+        }
+
+        <button onClick={() => router.push("/home")}>Back</button>
+      </div>
 
     </div >
 
