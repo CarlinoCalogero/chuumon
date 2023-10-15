@@ -268,14 +268,19 @@ export default function Order() {
     var orderedItemCopy = getObjectDeepCopy(orderedItem) as OrderedItem;
     orderedItemCopy.menuItem = null;
     orderedItemCopy.menuItemCategory = onChangeEvent.target.value;
-    setOrderedItem(orderedItemCopy)
+
 
     // hide the other type of insert
     if (onChangeEvent.target.value == '') {
+      // clear ingredients
+      orderedItemCopy.ingredients = [];
+      orderedItemCopy.originalIngredients = [];
       setIsInsertingMenuItemWithSearch(null)
     } else {
       setIsInsertingMenuItemWithSearch(false);
     }
+
+    setOrderedItem(orderedItemCopy)
   }
 
   function handleSelectMenuItemChange(onChangeEvent: ChangeEvent<HTMLSelectElement>) {
@@ -830,142 +835,156 @@ export default function Order() {
         <h3 className={styles.thiPageH3}>Ordina</h3>
       </div>
 
+      <hr className={styles.line} />
+
       <div className={styles.ordina}>
 
-        <div>
-          <button onClick={e => creaButtonWasPressed(e)}>Crea</button>
+        <div className={styles.typesOfOrdersDiv}>
+
+          <div className={styles.creaButtonDiv}>
+            <button onClick={e => creaButtonWasPressed(e)}>Crea</button>
+            {
+              isWasCreaButtonPressed &&
+              <div className={styles.selezionaCategoriaDiv}>
+                <label>Seleziona categoria:</label>
+                <select
+                  value={selectedCreaCategory}
+                  onChange={e => handleSelectedCreaCategory(e)}
+                >
+                  <option value='' disabled></option>,
+                  {
+                    CATEGORIE_CREA_ARRAY.map((creaCategory, i) => <option key={"creaCategory_" + creaCategory + i} value={creaCategory}>{creaCategory}</option>,)
+                  }
+                </select>
+              </div>
+            }
+          </div>
+
           {
-            isWasCreaButtonPressed &&
-            <div>
-              <label>Selezione categoria:</label>
-              <select
-                value={selectedCreaCategory}
-                onChange={e => handleSelectedCreaCategory(e)}
-              >
-                <option value='' disabled></option>,
+            (isInsertingMenuItemWithSearch == null || isInsertingMenuItemWithSearch) && !isWasCreaButtonPressed &&
+            <div className={styles.menuItemDiv}>
+              <input
+                type='search'
+                placeholder='Menu Item'
+                list='menu-items-list'
+                onChange={e => handleMenuItemChange(e)}
+              />
+
+              <datalist id="menu-items-list">
                 {
-                  CATEGORIE_CREA_ARRAY.map((creaCategory, i) => <option key={"creaCategory_" + creaCategory + i} value={creaCategory}>{creaCategory}</option>,)
+                  categoriesAndMenuItems.menuItems.map((menuItem, i) => <option key={"orderPage_" + menuItem + i} value={menuItem}></option>)
                 }
-              </select>
+              </datalist>
+
             </div>
           }
-        </div>
 
-        {
-          (isInsertingMenuItemWithSearch == null || isInsertingMenuItemWithSearch) && !isWasCreaButtonPressed &&
-          <div className={styles.addItemToOrderDiv}>
-            <input
-              type='search'
-              placeholder='Menu Item'
-              list='menu-items-list'
-              onChange={e => handleMenuItemChange(e)}
-            />
-
-            <datalist id="menu-items-list">
-              {
-                categoriesAndMenuItems.menuItems.map((menuItem, i) => <option key={"orderPage_" + menuItem + i} value={menuItem}></option>)
-              }
-            </datalist>
-
-          </div>
-        }
-
-        {
-          (isInsertingMenuItemWithSearch == null || !isInsertingMenuItemWithSearch) && !isWasCreaButtonPressed &&
-          <div className={styles.addItemToOrderDiv}>
-            <select
-              value={selectedCategory}
-              onChange={e => handleSelectCategoryChange(e)}
-            >
-              <option value='' ></option>
-              {
-                categoriesAndMenuItems.categories.map((category, i) => <option key={"orderPage_" + category + i} value={category}>{category}</option>)
-              }
-            </select>
-
-            {
-              selectedCategory != '' &&
+          {
+            (isInsertingMenuItemWithSearch == null || !isInsertingMenuItemWithSearch) && !isWasCreaButtonPressed &&
+            <div className={styles.selezionaCategoria}>
               <select
-                value={orderedItem.menuItem != null ? orderedItem.menuItem : ''}
-                onChange={e => handleSelectMenuItemChange(e)}
+                value={selectedCategory}
+                onChange={e => handleSelectCategoryChange(e)}
               >
-                <option value='' disabled></option>
+                <option value='' ></option>
                 {
-                  getMenuItemsFromCategoryFromCategoriesWithMenuItemsObject(categoriesWithMenuItems, selectedCategory).map((menuItemInThisCategory, i) => <option key={"orderPage_menuItemInThisCategory" + i} value={menuItemInThisCategory}>{menuItemInThisCategory}</option>)
+                  categoriesAndMenuItems.categories.map((category, i) => <option key={"orderPage_" + category + i} value={category}>{category}</option>)
                 }
               </select>
-            }
 
-          </div>
-        }
+              {
+                selectedCategory != '' &&
+                <select
+                  value={orderedItem.menuItem != null ? orderedItem.menuItem : ''}
+                  onChange={e => handleSelectMenuItemChange(e)}
+                >
+                  <option value='' disabled></option>
+                  {
+                    getMenuItemsFromCategoryFromCategoriesWithMenuItemsObject(categoriesWithMenuItems, selectedCategory).map((menuItemInThisCategory, i) => <option key={"orderPage_menuItemInThisCategory" + i} value={menuItemInThisCategory}>{menuItemInThisCategory}</option>)
+                  }
+                </select>
+              }
+
+            </div>
+          }
+
+        </div>
 
         {
           (orderedItem.ingredients.length != 0 || isWasCreaButtonPressed) &&
           <div>
             {
-              orderedItem.ingredients.map((ingredient, i) => <div key={"ingredient_" + ingredient + i}>
-                <span>{ingredient}</span>
+              orderedItem.ingredients.map((ingredient, i) => <div key={"ingredient_" + ingredient + i} className={styles.listaIngredientiDiv}>
+                <span>{ingredient.toUpperCase()}</span>
                 <button onClick={e => removeIngredientFromOrderedItem(e, ingredient)}>X</button>
               </div>)
             }
-            <input
-              type='search'
-              placeholder='Aggiungi Ingrediente'
-              list='ingredients-list'
-              value={addedIngredient}
-              onChange={e => addIngredientToOrderedItem(e)}
-            />
+
+            <div className={styles.aggiungiIngredienteDiv}>
+              <input
+                type='search'
+                placeholder='Aggiungi Ingrediente'
+                list='ingredients-list'
+                value={addedIngredient}
+                onChange={e => addIngredientToOrderedItem(e)}
+              />
+              <button onClick={addIngredient}>Add Ingredient</button>
+            </div>
 
             <datalist id="ingredients-list">
               {
                 ingredientiArray.map((ingredient, i) => <option key={"orderPage_" + ingredient.nome + i} value={ingredient.nome}></option>)
               }
             </datalist>
-            <button onClick={addIngredient}>Add Ingredient</button>
           </div>
         }
 
-        <div className={styles.addItemToOrderDiv}>
+        {
+          (orderedItem.menuItem != null && orderedItem.menuItem != '') || (isWasCreaButtonPressed && orderedItem.ingredients.length != 0) &&
+          <div className={styles.addItemToOrderDiv}>
 
-          <input
-            type='number'
-            placeholder='Number of'
-            min={1}
-            onChange={e => handleNumberOfChange(e)}
-          />
+            <input
+              type='number'
+              placeholder='Number of'
+              min={1}
+              onChange={e => handleNumberOfChange(e)}
+            />
 
-          {
-            orderedItem.isMenuItemAPizza &&
-            < select
-              value={orderedItem.unitOfMeasure != null ? orderedItem.unitOfMeasure : ''}
-              onChange={e => handleUnitOfMeasurementChange(e)}
-            >
-              <option value='' disabled></option>
-              {
-                unitaDiMisuraArray.map((unitaDiMisura, i) => <option key={"orderPage_" + unitaDiMisura.nome + i} value={unitaDiMisura.nome}>{unitaDiMisura.nome}</option>)
-              }
-            </select>
-          }
-
-          {
-            ((orderedItem.isMenuItemAPizza && (orderedItem.unitOfMeasure != null && orderedItem.unitOfMeasure.toUpperCase() != UNITA_DI_MISURA.pezzi.toUpperCase())) || orderedItem.isCanMenuItemBeSlicedUp) &&
-            <div>
-              <label>Sliced in</label>
-              <select
-                value={orderedItem.slicedIn != null ? orderedItem.slicedIn : ''}
-                onChange={e => handleSlicedInChange(e)}
+            {
+              orderedItem.isMenuItemAPizza &&
+              < select
+                value={orderedItem.unitOfMeasure != null ? orderedItem.unitOfMeasure : ''}
+                onChange={e => handleUnitOfMeasurementChange(e)}
               >
-                <option value='' disabled></option>,
+                <option value='' disabled></option>
                 {
-                  SLICED_IN_OPTIONS_ARRAY.map((option, i) => <option key={"slicedIn2_" + i} value={option}>{option}</option>,)
+                  unitaDiMisuraArray.map((unitaDiMisura, i) => <option key={"orderPage_" + unitaDiMisura.nome + i} value={unitaDiMisura.nome}>{unitaDiMisura.nome}</option>)
                 }
               </select>
-            </div>
-          }
+            }
 
-          <button onClick={() => addItem()}>Add Item</button>
+            {
+              ((orderedItem.isMenuItemAPizza && (orderedItem.unitOfMeasure != null && orderedItem.unitOfMeasure.toUpperCase() != UNITA_DI_MISURA.pezzi.toUpperCase())) || orderedItem.isCanMenuItemBeSlicedUp) &&
+              <div>
+                <label>Sliced in</label>
+                <select
+                  value={orderedItem.slicedIn != null ? orderedItem.slicedIn : ''}
+                  onChange={e => handleSlicedInChange(e)}
+                >
+                  <option value='' disabled></option>,
+                  {
+                    SLICED_IN_OPTIONS_ARRAY.map((option, i) => <option key={"slicedIn2_" + i} value={option}>{option}</option>,)
+                  }
+                </select>
+              </div>
+            }
 
-        </div>
+            <button onClick={() => addItem()}>Add Item</button>
+
+          </div>
+        }
+
+
 
       </div>
 
