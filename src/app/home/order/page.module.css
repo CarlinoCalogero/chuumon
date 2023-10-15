@@ -3,7 +3,6 @@
   flex-direction: column;
   border: 0.1rem solid black;
   border-radius: 0.5rem;
-  margin: 5rem 15rem 0.5rem 15rem;
 }
 
 .orderTitleDiv {
@@ -111,15 +110,15 @@
   justify-content: space-between;
 }
 
-.numberOfSlicedInAddItemDiv>input{
+.numberOfSlicedInAddItemDiv>input {
   flex-grow: 1;
 }
 
-.numberOfSlicedInAddItemDiv>select{
+.numberOfSlicedInAddItemDiv>select {
   flex-grow: 2;
 }
 
-.numberOfSlicedInAddItemDiv>div{
+.numberOfSlicedInAddItemDiv>div {
   flex-grow: 3;
 }
 
@@ -160,7 +159,7 @@
   flex-grow: 2;
 }
 
-.submitOrderDiv{
+.submitOrderDiv {
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -170,4 +169,13 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+/* Responsive layout only for PC or wider screens */
+@media (min-width: 800px) {
+
+  .outerDiv {
+    margin: 5rem 15rem 0.5rem 15rem;
+  }
+
 }
