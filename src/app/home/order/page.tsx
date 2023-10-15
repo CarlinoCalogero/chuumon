@@ -87,6 +87,7 @@ export default function Order() {
   const [addedIngredient, setAddedIngredient] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedCreaCategory, setSelectedCreaCategory] = useState<string>('');
+  const [modificheCounter, setModificheCounter] = useState(1);
 
   useEffect(() => {
     console.log("runs one time only");
@@ -484,7 +485,7 @@ export default function Order() {
 
     // isWasMenuItemCreated
     if (isWasCreaButtonPressed) {
-      orderedItemCopy.menuItem = `${selectedCreaCategory.toUpperCase()} ${CREATED_MENU_ITEM_SUFFIX}`
+      orderedItemCopy.menuItem = `${selectedCreaCategory.toUpperCase()} ${CREATED_MENU_ITEM_SUFFIX} (${modificheCounter})`
       orderedItemCopy.isWasMenuItemCreated = true;
     } else {
       orderedItemCopy.isWasMenuItemCreated = false;
@@ -492,8 +493,10 @@ export default function Order() {
 
     // isWereIngredientsModified
     if (orderedItemCopy.isWereIngredientsModified) {
-      if (!orderedItemCopy.isWasMenuItemCreated)
-        orderedItemCopy.menuItem = `${orderedItemCopy.menuItem} ${EDITED_MENU_ITEM_SUFFIX}`
+      if (!orderedItemCopy.isWasMenuItemCreated) {
+        orderedItemCopy.menuItem = `${orderedItemCopy.menuItem} ${EDITED_MENU_ITEM_SUFFIX} (${modificheCounter})`
+      }
+
     }
 
     // unitOfMeasure
@@ -561,6 +564,10 @@ export default function Order() {
     // reset selectedCreaCategory
     setSelectedCreaCategory("")
 
+    // incrementModificheCounter
+    if (isWasCreaButtonPressed || orderedItemCopy.isWereIngredientsModified)
+      setModificheCounter(modificheCounter + 1)
+
   }
 
   function removeIngredientFromOrderedItem(onClikEvent: MouseEvent<HTMLButtonElement>, ingredientName: string) {
@@ -592,6 +599,7 @@ export default function Order() {
 
   function creaButtonWasPressed(onClickEvent: MouseEvent<HTMLButtonElement>) {
     setIsWasCreaButtonPressed(!isWasCreaButtonPressed);
+    setSelectedCreaCategory('')
 
     // reset
     resetFieldsAndOrderedItem();
