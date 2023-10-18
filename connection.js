@@ -77,6 +77,24 @@ var semaphore = 0;
             }
         );
 
+        //****** TOKENS ******//
+        db.run(`drop table if exists tokens`);
+        // Create tokens table if it doesn't exist
+        db.run(
+            `CREATE TABLE tokens (
+            userID INTEGER UNSIGNED NOT NULL,
+            token VARCHAR(255) NOT NULL,
+            CONSTRAINT unique_token UNIQUE (token),
+            CONSTRAINT userID_token FOREIGN KEY (userID) REFERENCES utenti (rowid) ON DELETE RESTRICT ON UPDATE CASCADE
+        )`,
+            (err) => {
+                errorID++;
+                if (err) {
+                    return console.error(`errorID: ${errorID} ->`, err.message);
+                }
+            }
+        );
+
         //****** TAVOLO ******//
         db.run(`drop table if exists tavolo`);
         // Create tables table if it doesn't exist
