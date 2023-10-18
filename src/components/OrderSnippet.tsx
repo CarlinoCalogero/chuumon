@@ -69,6 +69,9 @@ export function OrderSnippet({ order, updateConsegnato }: OrderSnippetProps) {
 
     function handleConsegnaOrdine(onChangeEvent: ChangeEvent<HTMLInputElement>, category: string, orderedItemIndex: number) {
 
+        if (updateConsegnato == null)
+            return
+
         let dummyOrder = getObjectDeepCopy(orderCopy) as Order;
         let newConsegnatoValue = !dummyOrder.orderedItems[category].orderedItems[orderedItemIndex].consegnato;
         let orderedItem = dummyOrder.orderedItems[category].orderedItems[orderedItemIndex];
@@ -169,7 +172,7 @@ export function OrderSnippet({ order, updateConsegnato }: OrderSnippetProps) {
                         }
                     </div>
                 }
-                
+
             </div>
 
             <hr className={styles.line} />
@@ -187,13 +190,18 @@ export function OrderSnippet({ order, updateConsegnato }: OrderSnippetProps) {
 
                                 <div className={styles.orderedItemHeader}>
 
-                                    <input
-                                        type="checkbox"
-                                        id="consegnatoOrderedItem"
-                                        checked={orderedItem.consegnato}
-                                        onChange={e => handleConsegnaOrdine(e, categoryWithOrderedItems.categoria, j)}
-                                    />
-                                    <label htmlFor="consegnatoOrderedItem">Consegnato</label>
+                                    {
+                                        updateConsegnato != null &&
+                                        <div>
+                                            <input
+                                                type="checkbox"
+                                                id="consegnatoOrderedItem"
+                                                checked={orderedItem.consegnato}
+                                                onChange={e => handleConsegnaOrdine(e, categoryWithOrderedItems.categoria, j)}
+                                            />
+                                            <label htmlFor="consegnatoOrderedItem">Consegnato</label>
+                                        </div>
+                                    }
 
                                     {
                                         orderedItem.slicedIn != null && orderedItem.slicedIn != order.orderInfo.slicedIn &&
