@@ -1,9 +1,11 @@
 import sqlite3 from "sqlite3";
 import { Database, open } from "sqlite";
 import { DATABASE_INFO } from "./utils";
+import { cookies } from 'next/headers'
 
 const MAX_INTEGER = 20;
 const DAYS_INTERVAL = 1;
+export const USER_TOKEN_COOKIE_NAME = "user_token_cookie";
 
 type TokensDatabaseTableRowWithRowID = {
     rowid: number,
@@ -62,4 +64,38 @@ export async function deleteAllTokensOlderThanSpecifiedDays(db: Database | null)
         }
 
     } while (date != undefined)
+}
+
+function getTokenCookie() {
+
+    const cookieStore = cookies();
+    let cookie = cookieStore.get(USER_TOKEN_COOKIE_NAME);
+    let token = ''
+    if (cookie != undefined)
+        token = cookie.value;
+
+    return token;
+
+}
+
+export async function getUserFromToken(db: Database | null) {
+
+    // Check if the database instance has been initialized
+    if (!db) {
+        // If the database instance is not initialized, open the database connection
+        db = await open({
+            filename: `./${DATABASE_INFO}`, // Specify the database file path
+            driver: sqlite3.Database, // Specify the database driver (sqlite3 in this case)
+        });
+    }
+
+    let token = getTokenCookie();
+
+    const user: { username: string } | undefined = await db.get('SELECT username from tokens as t join utenti as u on t.userID=u.rowid where t.token = ?', token)
+
+    let username = ''
+    if (user != undefined)
+        username = user.username;
+
+    return username;
 }

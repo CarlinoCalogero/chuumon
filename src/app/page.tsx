@@ -50,6 +50,23 @@ export default function Login() {
     setUser(userCopy);
   }
 
+  useEffect(() => {
+    console.log("runs one time only");
+
+    fetch("http://localhost:3000/api", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json", // Set the request headers to indicate JSON format
+      },
+    })
+      .then((res) => res.json()) // Parse the response data as JSON
+      .then((data) => {
+        if (data != '')
+          router.push('/home');
+      }); // Update the state with the fetched data
+
+  }, [])
+
   return (
     <div>
 
