@@ -66,7 +66,7 @@ export async function deleteAllTokensOlderThanSpecifiedDays(db: Database | null)
     } while (date != undefined)
 }
 
-function getTokenCookie() {
+function getUserTokenCookie() {
 
     const cookieStore = cookies();
     let cookie = cookieStore.get(USER_TOKEN_COOKIE_NAME);
@@ -89,7 +89,7 @@ export async function getUserFromToken(db: Database | null) {
         });
     }
 
-    let token = getTokenCookie();
+    let token = getUserTokenCookie();
 
     const user: { username: string } | undefined = await db.get('SELECT username from tokens as t join utenti as u on t.userID=u.rowid where t.token = ?', token)
 

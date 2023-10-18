@@ -7,11 +7,13 @@ import { Order } from '@/types/Order';
 import { OrderSnippet } from '@/components/OrderSnippet';
 import { OrderedItem } from '@/types/OrderedItem';
 import { ArgumentsUsedForUpdatingConsegnatoInAnOrder } from '@/types/ArgumentsUsedForUpdatingConsegnatoInAnOrder';
+import { USERS } from '@/lib/utils';
 
 export default function ViewOrder() {
 
   const router = useRouter();
 
+  const [user, setUser] = useState<string | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
@@ -24,8 +26,13 @@ export default function ViewOrder() {
       },
     })
       .then((res) => res.json()) // Parse the response data as JSON
-      .then((data: Order[]) => {
-        setOrders(data);
+      .then((data) => {
+        if (data.user == '') {
+          router.push('/');
+        } else {
+          setUser(data.user);
+          setOrders(data.ordersArray);
+        }
       }); // Update the state with the fetched data
 
     const minutes = 5;
@@ -40,6 +47,10 @@ export default function ViewOrder() {
   useEffect(() => {
     console.log(orders)
   }, [orders])
+
+  useEffect(() => {
+    console.log(user)
+  }, [user])
 
   function updateConsegnato(order: Order, orderedItem: OrderedItem, consegnatoValue: boolean) {
 
@@ -70,7 +81,15 @@ export default function ViewOrder() {
     <div className={styles.outerDiv}>
 
       {
-        orders.map((order, i) => <OrderSnippet key={"orderSnippet_" + i} order={order} updateConsegnato={updateConsegnato} />)
+        user != null && user != '' &&
+        <div>
+          {
+            user.toLocaleUpperCase() == USERS.admin.toLocaleUpperCase() ?
+              orders.map((order, i) => <OrderSnippet key={"orderSnippet_" + i} order={order} updateConsegnato={null} />)
+              :
+              orders.map((order, i) => <OrderSnippet key={"orderSnippet_" + i} order={order} updateConsegnato={updateConsegnato} />)
+          }
+        </div>
       }
 
     </div>

@@ -12,6 +12,11 @@ import { HoursAndMinutesInSeconds } from "@/types/HoursAndMinutesInSeconds";
 
 export const DATABASE_INFO = "database.db";
 
+export const USERS = {
+    admin: "admin",
+    user: "user"
+}
+
 export const SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS = 200;
 
 export const FARINE_SPECIALI: CategoriaConIngredientiCheLaDefiniscono = {
@@ -327,6 +332,6 @@ export function fromSecondsToHoursAndMinutes(dateInSeconds: HoursAndMinutesInSec
 
 export function convertJavaScriptDateTimeToSQLLiteDateTime(inputDate: Date = new Date()) {
     let returnDate = new Date(inputDate);
-    let tempDate = returnDate.toISOString().replace("T"," ");
+    let tempDate = returnDate.toISOString().replace("T", " ");
     return tempDate.substring(0, tempDate.indexOf("."));
 }

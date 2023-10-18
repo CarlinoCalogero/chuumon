@@ -10,6 +10,7 @@ import { OrderedItemByCategories } from "@/types/OrderedItemByCategories";
 import { Order } from "@/types/Order";
 import { ArgumentsUsedForUpdatingConsegnatoInAnOrder } from "@/types/ArgumentsUsedForUpdatingConsegnatoInAnOrder";
 import { DatabaseRowId } from "@/types/DatabaseRowId";
+import { getUserFromToken } from "@/lib/authentication";
 
 type OrdinazioneDatabaseTableRowWithRowId = {
     rowid: number,
@@ -46,182 +47,191 @@ export async function GET() {
         });
     }
 
-    const ordersFromDatabase = await db.all('SELECT rowid,* FROM ordinazione') as OrdinazioneDatabaseTableRowWithRowId[];
+    let user = await getUserFromToken(db);
+    let ordersArray: Order[] = [];
 
-    // console.log("orders", orders)
+    if (user != '') {
 
-    var ordersArray: Order[] = [];
+        const ordersFromDatabase = await db.all('SELECT rowid,* FROM ordinazione') as OrdinazioneDatabaseTableRowWithRowId[];
 
-    for (const order of ordersFromDatabase) {
+        // console.log("orders", orders)
 
-        var orderedItemsByCategories: OrderedItemByCategories = {};
+        for (const order of ordersFromDatabase) {
 
-        if (db != null) {
+            var orderedItemsByCategories: OrderedItemByCategories = {};
 
-            // Perform a database query to retrieve all items from the "items" table
-            // stmt is an instance of `sqlite#Statement`
-            // which is a wrapper around `sqlite3#Statement`
-            const stmt = await db.prepare('SELECT * FROM contiene WHERE id_ordinazione=?');
-            await stmt.bind({ 1: order.rowid })
-            const orderedItems: ContieneDatabaseTableRow[] = await stmt.all()
+            if (db != null) {
 
-            // console.log("orderedItems", orderedItems)
+                // Perform a database query to retrieve all items from the "items" table
+                // stmt is an instance of `sqlite#Statement`
+                // which is a wrapper around `sqlite3#Statement`
+                const stmt = await db.prepare('SELECT * FROM contiene WHERE id_ordinazione=?');
+                await stmt.bind({ 1: order.rowid })
+                const orderedItems: ContieneDatabaseTableRow[] = await stmt.all()
 
-            for (const orderedItem of orderedItems) {
+                // console.log("orderedItems", orderedItems)
 
-                if (db != null) {
+                for (const orderedItem of orderedItems) {
 
-                    var newOrderedItem: OrderedItem = {
-                        menuItem: null,
-                        menuItemCategory: null,
-                        price: null,
-                        originalIngredients: [],
-                        ingredients: [],
-                        removedIngredients: [],
-                        addedIngredients: [],
-                        intolleranzaA: [],
-                        isWasMenuItemCreated: false,
-                        isWereIngredientsModified: false,
-                        isMenuItemAPizza: false,
-                        isCanMenuItemBeSlicedUp: false,
-                        slicedIn: orderedItem.divisa_in,
-                        numberOf: orderedItem.quantita,
-                        unitOfMeasure: orderedItem.nome_unita_di_misura,
-                        consegnato: orderedItem.consegnato
-                    }
+                    if (db != null) {
 
-                    // it is a not created anew or modified menuItem
-                    if (orderedItem.id_menu_item != null) {
+                        var newOrderedItem: OrderedItem = {
+                            menuItem: null,
+                            menuItemCategory: null,
+                            price: null,
+                            originalIngredients: [],
+                            ingredients: [],
+                            removedIngredients: [],
+                            addedIngredients: [],
+                            intolleranzaA: [],
+                            isWasMenuItemCreated: false,
+                            isWereIngredientsModified: false,
+                            isMenuItemAPizza: false,
+                            isCanMenuItemBeSlicedUp: false,
+                            slicedIn: orderedItem.divisa_in,
+                            numberOf: orderedItem.quantita,
+                            unitOfMeasure: orderedItem.nome_unita_di_misura,
+                            consegnato: orderedItem.consegnato
+                        }
 
-                        // Perform a database query to retrieve all items from the "items" table
-                        // stmt is an instance of `sqlite#Statement`
-                        // which is a wrapper around `sqlite3#Statement`
-                        const stmt = await db.prepare('SELECT rowid,* FROM menu_item WHERE rowid=?');
-                        await stmt.bind({ 1: orderedItem.id_menu_item })
-                        const menuItem: MenuItemDatabaseTableRow | undefined = await stmt.get()
+                        // it is a not created anew or modified menuItem
+                        if (orderedItem.id_menu_item != null) {
 
-                        // console.log("menuItem", menuItem)
+                            // Perform a database query to retrieve all items from the "items" table
+                            // stmt is an instance of `sqlite#Statement`
+                            // which is a wrapper around `sqlite3#Statement`
+                            const stmt = await db.prepare('SELECT rowid,* FROM menu_item WHERE rowid=?');
+                            await stmt.bind({ 1: orderedItem.id_menu_item })
+                            const menuItem: MenuItemDatabaseTableRow | undefined = await stmt.get()
 
-                        if (menuItem != undefined) {
+                            // console.log("menuItem", menuItem)
 
-                            // get ingredients
+                            if (menuItem != undefined) {
 
-                            const stmt1 = await db.prepare('SELECT i.nome FROM compone as c join ingrediente as i on c.id_ingrediente=i.rowid where c.id_menu_item=?');
-                            await stmt1.bind({ 1: menuItem.rowid })
-                            const ingredientsArray: { nome: string }[] | undefined = await stmt1.all()
+                                // get ingredients
 
-                            // console.log("ingredientsArray", ingredientsArray)
+                                const stmt1 = await db.prepare('SELECT i.nome FROM compone as c join ingrediente as i on c.id_ingrediente=i.rowid where c.id_menu_item=?');
+                                await stmt1.bind({ 1: menuItem.rowid })
+                                const ingredientsArray: { nome: string }[] | undefined = await stmt1.all()
 
-                            if (ingredientsArray != undefined) {
+                                // console.log("ingredientsArray", ingredientsArray)
 
-                                ingredientsArray.forEach(ingredient => {
-                                    newOrderedItem.ingredients.push(ingredient.nome)
-                                });
+                                if (ingredientsArray != undefined) {
+
+                                    ingredientsArray.forEach(ingredient => {
+                                        newOrderedItem.ingredients.push(ingredient.nome)
+                                    });
+
+                                }
+
+                                // fill in fields
+                                newOrderedItem.menuItem = menuItem.nome;
+                                newOrderedItem.menuItemCategory = menuItem.nome_categoria;
+                                newOrderedItem.price = menuItem.prezzo
+                                newOrderedItem.isMenuItemAPizza = checkIfMenuItemIsAPizza(menuItem.nome_categoria);
+                                newOrderedItem.isCanMenuItemBeSlicedUp = checkIfMenuItemCanBeSlicedUp(menuItem.nome_categoria);
+
+                                addOrderedItemToOrderedItemByCategoriesObject(orderedItemsByCategories, newOrderedItem);
 
                             }
 
-                            // fill in fields
-                            newOrderedItem.menuItem = menuItem.nome;
-                            newOrderedItem.menuItemCategory = menuItem.nome_categoria;
-                            newOrderedItem.price = menuItem.prezzo
-                            newOrderedItem.isMenuItemAPizza = checkIfMenuItemIsAPizza(menuItem.nome_categoria);
-                            newOrderedItem.isCanMenuItemBeSlicedUp = checkIfMenuItemCanBeSlicedUp(menuItem.nome_categoria);
+                        }
 
-                            addOrderedItemToOrderedItemByCategoriesObject(orderedItemsByCategories, newOrderedItem);
+                        // it is a created anew or modified menuItem
+                        if (orderedItem.id_menu_item_not_in_menu != null) {
+
+                            // Perform a database query to retrieve all items from the "items" table
+                            // stmt is an instance of `sqlite#Statement`
+                            // which is a wrapper around `sqlite3#Statement`
+                            const stmt = await db.prepare('SELECT rowid,* FROM menu_item_not_in_menu WHERE rowid=?');
+                            await stmt.bind({ 1: orderedItem.id_menu_item_not_in_menu })
+                            const menuItemNotInMenu: MenuItemNotInMenuDatabaseTableRow | undefined = await stmt.get()
+
+                            // console.log("menuItemNotInMenu", menuItemNotInMenu)
+
+                            if (menuItemNotInMenu != undefined) {
+
+                                // get ingredients
+
+                                const stmt1 = await db.prepare('SELECT i.nome FROM compone_fuori_menu as c join ingrediente as i on c.id_ingrediente=i.rowid where c.id_menu_item_not_in_menu=?');
+                                await stmt1.bind({ 1: menuItemNotInMenu.rowid })
+                                const ingredientsArray: { nome: string }[] | undefined = await stmt1.all()
+
+                                // console.log("ingredientsArray", ingredientsArray)
+
+                                if (ingredientsArray != undefined) {
+
+                                    ingredientsArray.forEach(ingredient => {
+                                        newOrderedItem.ingredients.push(ingredient.nome)
+                                    });
+
+                                }
+
+                                // get intolleranze
+
+                                const stmt2 = await db.prepare('SELECT i.nome FROM intolleranza as c join ingrediente as i on c.id_ingrediente=i.rowid where c.id_menu_item_not_in_menu=?');
+                                await stmt2.bind({ 1: menuItemNotInMenu.rowid })
+                                const intolleranzaArray: { nome: string }[] | undefined = await stmt2.all()
+
+                                // console.log("ingredientsArray", ingredientsArray)
+
+                                if (intolleranzaArray != undefined) {
+
+                                    intolleranzaArray.forEach(ingredient => {
+                                        newOrderedItem.intolleranzaA.push(ingredient.nome)
+                                    });
+
+                                }
+
+                                // fill in fields
+                                newOrderedItem.menuItem = menuItemNotInMenu.nome;
+                                newOrderedItem.menuItemCategory = menuItemNotInMenu.nome_categoria;
+                                newOrderedItem.price = menuItemNotInMenu.prezzo;
+                                newOrderedItem.isMenuItemAPizza = checkIfMenuItemIsAPizza(menuItemNotInMenu.nome_categoria);
+                                newOrderedItem.isCanMenuItemBeSlicedUp = checkIfMenuItemCanBeSlicedUp(menuItemNotInMenu.nome_categoria);
+
+                                addOrderedItemToOrderedItemByCategoriesObject(orderedItemsByCategories, newOrderedItem);
+
+                            }
 
                         }
 
                     }
 
-                    // it is a created anew or modified menuItem
-                    if (orderedItem.id_menu_item_not_in_menu != null) {
+                };
 
-                        // Perform a database query to retrieve all items from the "items" table
-                        // stmt is an instance of `sqlite#Statement`
-                        // which is a wrapper around `sqlite3#Statement`
-                        const stmt = await db.prepare('SELECT rowid,* FROM menu_item_not_in_menu WHERE rowid=?');
-                        await stmt.bind({ 1: orderedItem.id_menu_item_not_in_menu })
-                        const menuItemNotInMenu: MenuItemNotInMenuDatabaseTableRow | undefined = await stmt.get()
+            }
 
-                        // console.log("menuItemNotInMenu", menuItemNotInMenu)
+            //add the order to the Array
+            ordersArray.push({
+                numeroOrdineProgressivoGiornaliero: order.numero_ordinazione_progressivo_giornaliero,
+                dateAndTime: order.data_e_ora,
+                orderInfo: {
+                    tableNumber: order.numero_tavolo,
+                    isTakeAway: order.numero_tavolo == null ? true : false,
+                    nomeOrdinazione: order.nome_ordinazione,
+                    isFrittiPrimaDellaPizza: order.is_fritti_prima_della_pizza,
+                    isSiDividonoLaPizza: order.is_si_dividono_le_pizze,
+                    slicedIn: order.pizze_divise_in,
+                    pickUpTime: order.pick_up_time,
+                    note: order.note,
+                    numeroBambini: order.numero_bambini,
+                    numeroAdulti: order.numero_adulti
+                },
+                orderedItems: orderedItemsByCategories,
+            })
 
-                        if (menuItemNotInMenu != undefined) {
+        };
 
-                            // get ingredients
+    }
 
-                            const stmt1 = await db.prepare('SELECT i.nome FROM compone_fuori_menu as c join ingrediente as i on c.id_ingrediente=i.rowid where c.id_menu_item_not_in_menu=?');
-                            await stmt1.bind({ 1: menuItemNotInMenu.rowid })
-                            const ingredientsArray: { nome: string }[] | undefined = await stmt1.all()
-
-                            // console.log("ingredientsArray", ingredientsArray)
-
-                            if (ingredientsArray != undefined) {
-
-                                ingredientsArray.forEach(ingredient => {
-                                    newOrderedItem.ingredients.push(ingredient.nome)
-                                });
-
-                            }
-
-                            // get intolleranze
-
-                            const stmt2 = await db.prepare('SELECT i.nome FROM intolleranza as c join ingrediente as i on c.id_ingrediente=i.rowid where c.id_menu_item_not_in_menu=?');
-                            await stmt2.bind({ 1: menuItemNotInMenu.rowid })
-                            const intolleranzaArray: { nome: string }[] | undefined = await stmt2.all()
-
-                            // console.log("ingredientsArray", ingredientsArray)
-
-                            if (intolleranzaArray != undefined) {
-
-                                intolleranzaArray.forEach(ingredient => {
-                                    newOrderedItem.intolleranzaA.push(ingredient.nome)
-                                });
-
-                            }
-
-                            // fill in fields
-                            newOrderedItem.menuItem = menuItemNotInMenu.nome;
-                            newOrderedItem.menuItemCategory = menuItemNotInMenu.nome_categoria;
-                            newOrderedItem.price = menuItemNotInMenu.prezzo;
-                            newOrderedItem.isMenuItemAPizza = checkIfMenuItemIsAPizza(menuItemNotInMenu.nome_categoria);
-                            newOrderedItem.isCanMenuItemBeSlicedUp = checkIfMenuItemCanBeSlicedUp(menuItemNotInMenu.nome_categoria);
-
-                            addOrderedItemToOrderedItemByCategoriesObject(orderedItemsByCategories, newOrderedItem);
-
-                        }
-
-                    }
-
-                }
-
-            };
-
-        }
-
-        //add the order to the Array
-        ordersArray.push({
-            numeroOrdineProgressivoGiornaliero: order.numero_ordinazione_progressivo_giornaliero,
-            dateAndTime: order.data_e_ora,
-            orderInfo: {
-                tableNumber: order.numero_tavolo,
-                isTakeAway: order.numero_tavolo == null ? true : false,
-                nomeOrdinazione: order.nome_ordinazione,
-                isFrittiPrimaDellaPizza: order.is_fritti_prima_della_pizza,
-                isSiDividonoLaPizza: order.is_si_dividono_le_pizze,
-                slicedIn: order.pizze_divise_in,
-                pickUpTime: order.pick_up_time,
-                note: order.note,
-                numeroBambini: order.numero_bambini,
-                numeroAdulti: order.numero_adulti
-            },
-            orderedItems: orderedItemsByCategories,
-        })
-
-    };
-
+    const resultItem = {
+        user: user,
+        ordersArray: ordersArray
+    }
 
     // Return the items as a JSON response with status 200
-    return new Response(JSON.stringify(ordersArray), {
+    return new Response(JSON.stringify(resultItem), {
         headers: { "Content-Type": "application/json" },
         status: 200,
     });
