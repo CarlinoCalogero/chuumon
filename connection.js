@@ -84,7 +84,9 @@ var semaphore = 0;
             `CREATE TABLE tokens (
             userID INTEGER UNSIGNED NOT NULL,
             token VARCHAR(255) NOT NULL,
+            data_e_ora DATETIME NOT NULL,
             CONSTRAINT unique_token UNIQUE (token),
+            CONSTRAINT unique_token_date UNIQUE (token, data_e_ora),
             CONSTRAINT userID_token FOREIGN KEY (userID) REFERENCES utenti (rowid) ON DELETE RESTRICT ON UPDATE CASCADE
         )`,
             (err) => {

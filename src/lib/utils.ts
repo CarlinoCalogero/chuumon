@@ -324,3 +324,9 @@ export function fromSecondsToHoursAndMinutes(dateInSeconds: HoursAndMinutesInSec
 
     return hours + "h" + minutes + "min"
 }
+
+export function convertJavaScriptDateTimeToSQLLiteDateTime(inputDate: Date = new Date()) {
+    let returnDate = new Date(inputDate);
+    let tempDate = returnDate.toISOString().replace("T"," ");
+    return tempDate.substring(0, tempDate.indexOf("."));
+}

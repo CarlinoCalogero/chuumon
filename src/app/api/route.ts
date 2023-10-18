@@ -1,9 +1,9 @@
 import sqlite3 from "sqlite3";
 import { open, Database } from "sqlite";
-import { DATABASE_INFO } from "@/lib/utils";
+import { DATABASE_INFO, convertJavaScriptDateTimeToSQLLiteDateTime } from "@/lib/utils";
 import { checkPassword } from "@/lib/encrypt";
 import { User } from "@/types/User";
-import { createToken } from "@/lib/authentication";
+import { createToken, deleteAllTokensOlderThanSpecifiedDays } from "@/lib/authentication";
 
 type UserWithRowId = {
     rowid: number,
@@ -34,6 +34,9 @@ export async function POST(request: Request, response: Response) {
             driver: sqlite3.Database, // Specify the database driver (sqlite3 in this case)
         });
     }
+
+    // removes old tokens
+    await deleteAllTokensOlderThanSpecifiedDays(db);
 
     // Perform a database query to retrieve all items from the "items" table
     // stmt is an instance of `sqlite#Statement`
@@ -77,7 +80,7 @@ export async function POST(request: Request, response: Response) {
 
         }
 
-        await db.run("INSERT INTO tokens(userID, token)  VALUES(?, ?)", [databaseUser?.rowid, token]);
+        await db.run("INSERT INTO tokens(userID, token, data_e_ora)  VALUES(?, ?, ?)", [databaseUser?.rowid, token, convertJavaScriptDateTimeToSQLLiteDateTime()]);
     }
 
     // Return the items as a JSON response with status 200
