@@ -74,6 +74,10 @@ const db = new sqlite3.Database(
                 top FLOAT NOT NULL,
                 left FLOAT NOT NULL,
                 rotate FLOAT NOT NULL,
+                ora TIME,
+                nome_prenotazione varchar(250),
+                numero_persone INTEGER UNSIGNED,
+                note varchar(250),
                 CONSTRAINT unique_tavolo UNIQUE (tableNumber)
             )`
         );
@@ -193,21 +197,6 @@ const db = new sqlite3.Database(
                 CONSTRAINT primary_key_compone PRIMARY KEY (id_ingrediente, id_menu_item),
                 CONSTRAINT compone_ingrediente FOREIGN KEY (id_ingrediente) REFERENCES ingrediente (id) ON DELETE RESTRICT ON UPDATE CASCADE,
                 CONSTRAINT compone_menu_item FOREIGN KEY (id_menu_item) REFERENCES menu_item (id) ON DELETE CASCADE ON UPDATE CASCADE
-            )`
-        );
-
-        //****** PRENOTAZIONE ******//
-        db.run(`drop table if exists prenotazione`);
-        // Create tables table if it doesn't exist
-        db.run(
-            `CREATE TABLE prenotazione (
-                numero_tavolo INTEGER UNSIGNED NOT NULL,
-                ora TIME NOT NULL,
-                nome_prenotazione varchar(250) NOT NULL,
-                numero_persone INTEGER UNSIGNED NOT NULL,
-                note varchar(250),
-                CONSTRAINT unique_prenotazione UNIQUE (numero_tavolo),
-                CONSTRAINT prenotazione_tavolo FOREIGN KEY (numero_tavolo) REFERENCES tavolo (id) ON DELETE CASCADE ON UPDATE CASCADE
             )`
         );
 

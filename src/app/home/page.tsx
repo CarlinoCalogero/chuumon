@@ -96,11 +96,7 @@ export default function Home() {
       {
         tablesArray.map((table, i) => <Tables
           key={"table" + i}
-          tableNumber={table.tableNumber}
-          numberOfMergedTables={table.numberOfMergedTables}
-          top={table.top}
-          left={table.left}
-          rotate={table.rotate}
+          table={table}
           isCanBeClicked={true}
           isCanBeDragged={false}
           isCanBeRotated={false}

@@ -71,7 +71,11 @@ export default function EditTables() {
       numberOfMergedTables: 1,
       top: table.top,
       left: table.left + ((table.numberOfMergedTables - 1) * SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS) + 50,
-      rotate: 0
+      rotate: 0,
+      ora: null,
+      nome_prenotazione: null,
+      numero_persone: null,
+      note: null
     }
 
     // add table
@@ -283,7 +287,11 @@ export default function EditTables() {
       numberOfMergedTables: 1,
       top: onClickEvent.clientY - (SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS / 2),
       left: onClickEvent.clientX - (SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS / 2),
-      rotate: 0
+      rotate: 0,
+      ora: null,
+      nome_prenotazione: null,
+      numero_persone: null,
+      note: null
     }
 
     setSala(addTables([newTable]));
@@ -345,11 +353,7 @@ export default function EditTables() {
       {
         sala.tables.map((table, i) => <Tables
           key={"table" + i}
-          tableNumber={table.tableNumber}
-          numberOfMergedTables={table.numberOfMergedTables}
-          top={table.top}
-          left={table.left}
-          rotate={table.rotate}
+          table={table}
           isCanBeClicked={true}
           isCanBeDragged={true}
           isCanBeRotated={isRotateTableModeOn}

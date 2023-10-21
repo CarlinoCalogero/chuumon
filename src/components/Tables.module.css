@@ -1,7 +1,10 @@
 .singleTable,
 .mergedTable,
+.bookedTable,
+.rotateBookedTable,
 .rotate,
-.resetRotate {
+.resetRotate,
+.resetRotateBookedTable {
     width: 200px;
     height: 200px;
     background-color: lightgray;
@@ -12,6 +15,17 @@
     position: absolute;
     cursor: move;
     z-index: 9;
+    border: 0.3rem solid rgba(255, 255, 255, 0);
+}
+
+.bookedTable,
+.rotateBookedTable,
+.resetRotateBookedTable {
+    background-color: lightcoral;
+}
+
+.bookedTable:hover {
+    border: 0.3rem solid rgb(243, 61, 61);
 }
 
 .singleTable:hover {
@@ -19,13 +33,22 @@
 }
 
 .mergedTable:hover {
-    border: 0.3rem solid #e35042b5;
+    border: 0.3rem solid #7edb26b5;
 }
 
-.rotate:hover {
+.rotate:hover,
+.rotateBookedTable:hover {
     border: 0.3rem solid #691a5fb5;
 }
 
-.resetRotate:hover {
+.resetRotate:hover,
+.resetRotateBookedTable:hover {
     border: 0.3rem solid #2216d1b5;
+}
+
+.bookedTableDiv {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }

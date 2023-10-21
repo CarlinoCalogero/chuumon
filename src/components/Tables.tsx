@@ -1,15 +1,11 @@
-import { SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS } from '@/lib/utils';
+import { SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS, getObjectDeepCopy, getTimeAsString } from '@/lib/utils';
 import styles from './Tables.module.css'
 import { DragEvent, MouseEvent, useEffect, useState } from 'react'
 import { Table } from '@/types/Table';
 import { RotateInfo } from '@/types/RotateInfo';
 
 interface TableProps {
-    tableNumber: number,
-    numberOfMergedTables: number,
-    top: number,
-    left: number,
-    rotate: number,
+    table: Table,
     isCanBeClicked: boolean,
     isCanBeDragged: boolean,
     isCanBeRotated: boolean,
@@ -21,17 +17,14 @@ interface TableProps {
     functionOnSaveRotation: null | any
 }
 
-export function Tables({ tableNumber, numberOfMergedTables, top, left, rotate, isCanBeClicked, isCanBeDragged, isCanBeRotated, isResetTableRotation, functionOnDrag, functionOnDragEnd, functionOnDrop, functionOnClick, functionOnSaveRotation }: TableProps) {
+export function Tables({ table, isCanBeClicked, isCanBeDragged, isCanBeRotated, isResetTableRotation, functionOnDrag, functionOnDragEnd, functionOnDrop, functionOnClick, functionOnSaveRotation }: TableProps) {
 
     function getCurrentTable(event: DragEvent<HTMLDivElement> | MouseEvent<HTMLDivElement> | MouseEvent<HTMLDivElement, globalThis.MouseEvent>) {
 
-        var currentTable: Table = {
-            tableNumber: tableNumber,
-            numberOfMergedTables: numberOfMergedTables,
-            top: event.clientY - (event.currentTarget.clientHeight / 2),
-            left: event.clientX - (event.currentTarget.clientWidth / 2),
-            rotate: Number(event.currentTarget.style.rotate.replace("deg", ""))
-        }
+        var currentTable: Table = getObjectDeepCopy(table);
+        currentTable.top = event.clientY - (event.currentTarget.clientHeight / 2);
+        currentTable.left = event.clientX - (event.currentTarget.clientWidth / 2);
+        currentTable.rotate = Number(event.currentTarget.style.rotate.replace("deg", ""));
 
         return currentTable;
     }
@@ -163,15 +156,38 @@ export function Tables({ tableNumber, numberOfMergedTables, top, left, rotate, i
         functionOnSaveRotation(getCurrentTable(onMouseUpEvent))
     }
 
+    function getTableClassName() {
+
+        if (isResetTableRotation && table.ora)
+            return styles.resetRotateBookedTable
+
+        if (isResetTableRotation)
+            return styles.resetRotate;
+
+        if (isCanBeRotated && table.ora)
+            return styles.rotateBookedTable;
+
+        if (isCanBeRotated)
+            return styles.rotate
+
+        if (table.numberOfMergedTables > 1)
+            return styles.mergedTable
+
+        if (table.ora != null)
+            return styles.bookedTable
+
+        return styles.singleTable;
+    }
+
     return (
         <div
-            className={isResetTableRotation ? styles.resetRotate : (isCanBeRotated ? styles.rotate : (numberOfMergedTables == 1 ? styles.singleTable : styles.mergedTable))}
+            className={getTableClassName()}
             style={
                 {
-                    width: SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS * numberOfMergedTables + 'px',
-                    top: top + "px",
-                    left: left + "px",
-                    rotate: rotate + "deg"
+                    width: SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS * table.numberOfMergedTables + 'px',
+                    top: table.top + "px",
+                    left: table.left + "px",
+                    rotate: table.rotate + "deg"
                 }
             }
             draggable={isCanBeDragged ? "true" : "false"}
@@ -186,13 +202,29 @@ export function Tables({ tableNumber, numberOfMergedTables, top, left, rotate, i
             onMouseMove={e => isCanBeRotated && handleOnMouseMove(e)}
             onMouseUp={e => isCanBeRotated && handleOnMouseUp(e)}
         >
-            <span
+            <div
                 style={
                     {
-                        rotate: -rotate + "deg"
+                        rotate: -table.rotate + "deg"
                     }
                 }
-            >Tavolo {tableNumber}</span>
-        </div>
+            >
+                <div className={styles.bookedTableDiv}>
+                    <span>Tavolo {table.tableNumber}</span>
+                    {
+                        table.ora != null &&
+                        <div className={styles.bookedTableDiv}>
+                            <span>{`Prenotato ${getTimeAsString(table.ora)}`}</span>
+                            <span>{`${table.numero_persone} persone`}</span>
+                            <span>{`Nome: ${table.nome_prenotazione}`}</span>
+                            {
+                                table.note != "" &&
+                                <span>{table.note}</span>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div >
     )
 }

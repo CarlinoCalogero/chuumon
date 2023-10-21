@@ -1,14 +1,6 @@
 import sqlite3 from "sqlite3";
 import { open, Database } from "sqlite";
-import { DATABASE_INFO, DATABASE_STRING_SEPARATOR, addIngredientToMenuItemWithIngredients, addMenuItemInCategory } from "@/lib/utils";
-import { MenuItemInfo } from "@/types/MenuItemInfo";
-import { UnitaDiMisuraDatabaseTableRow } from "@/types/UnitaDiMisuraDatabaseTableRow";
-import { IngredienteDatabaseTableRow } from "@/types/IngredienteDatabaseTableRow";
-import { TableOrder } from "@/types/TableOrder";
-import { DatabaseRowId } from "@/types/DatabaseRowId";
-import { MenuItemsWithIngredients } from "@/types/MenuItemsWithIngredients";
-import { CategoriesWithMenuItems } from "@/types/CategoriesWithMenuItems";
-import { MenuItemsAndOneIngredient } from "@/types/MenuItemsAndOneIngredient";
+import { DATABASE_INFO } from "@/lib/utils";
 import { TableBooking } from "@/types/TableBooking";
 
 // Let's initialize it as null initially, and we will assign the actual database instance later.
@@ -41,7 +33,7 @@ export async function POST(request: Request, response: Response) {
     }
 
 
-    await db.run("INSERT INTO prenotazione (numero_tavolo, ora, nome_prenotazione, numero_persone, note)  VALUES(?, ?, ?, ?, ?)", [tableBooking.tableNumber, tableBooking.time, tableBooking.name, tableBooking.numberOfPeoples, tableBooking.note]);
+    await db.run("UPDATE tavolo SET ora = ?, nome_prenotazione = ?, numero_persone = ?, note = ? WHERE tableNumber = ?", [tableBooking.time, tableBooking.name, tableBooking.numberOfPeoples, tableBooking.note, tableBooking.tableNumber]);
 
     // Return the items as a JSON response with status 200
     return new Response(JSON.stringify("miao"), {
