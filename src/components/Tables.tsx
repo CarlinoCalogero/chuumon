@@ -170,11 +170,11 @@ export function Tables({ table, isCanBeClicked, isCanBeDragged, isCanBeRotated, 
         if (isCanBeRotated)
             return styles.rotate
 
-        if (table.numberOfMergedTables > 1)
-            return styles.mergedTable
-
         if (table.ora != null)
             return styles.bookedTable
+
+        if (table.numberOfMergedTables > 1)
+            return styles.mergedTable
 
         return styles.singleTable;
     }
