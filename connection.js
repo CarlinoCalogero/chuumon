@@ -69,6 +69,8 @@ const db = new sqlite3.Database(
             `CREATE TABLE tavolo (
             tableNumber INTEGER UNSIGNED NOT NULL,
             numberOfMergedTables INTEGER UNSIGNED NOT NULL,
+            isPrenotato BOOLEAN NOT NULL,
+            orarioPrenotazione DATETIME,
             top FLOAT NOT NULL,
             left FLOAT NOT NULL,
             rotate FLOAT NOT NULL,
@@ -79,6 +81,8 @@ const db = new sqlite3.Database(
         const table1 = [
             1,
             1,
+            false,
+            null,
             159,
             91,
             0
@@ -87,6 +91,8 @@ const db = new sqlite3.Database(
         const table2 = [
             2,
             1,
+            false,
+            null,
             85,
             363,
             0
@@ -95,12 +101,14 @@ const db = new sqlite3.Database(
         const table3 = [
             3,
             2,
+            false,
+            null,
             291,
             457,
             -33.3916
         ]
 
-        insertSql = `INSERT INTO tavolo(tableNumber, numberOfMergedTables, top, left, rotate) values(?,?,?,?,?)`;
+        insertSql = `INSERT INTO tavolo(tableNumber, numberOfMergedTables, isPrenotato, orarioPrenotazione,top, left, rotate) values(?,?,?,?,?,?,?)`;
 
         db.run(insertSql, table1);
         db.run(insertSql, table2);
