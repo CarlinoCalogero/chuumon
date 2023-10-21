@@ -8,12 +8,28 @@ import { SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS, TAKE_AWAY_ORDER_SECTION_NUMBER_T
 import { Sala } from '@/types/Sala';
 import { Table } from '@/types/Table';
 import { AppearingButton } from '@/components/AppearingButton';
+import { Popup } from '@/components/Popup';
 
 export default function Home() {
 
   const router = useRouter();
 
+  const [show, setShow] = useState(false);
+
   const [tablesArray, setTablesArray] = useState<Table[]>([]);
+
+  const [clickedTable, setClickedTable] = useState<Table | null>(null);
+
+  const buttons = [
+    {
+      buttonText: "Place an order",
+      onClickFunction: placeAnOrder
+    },
+    {
+      buttonText: "Book table",
+      onClickFunction: bookTable
+    }
+  ]
 
   useEffect(() => {
     console.log(tablesArray)
@@ -49,9 +65,27 @@ export default function Home() {
     [searchParams]
   )
 
-  function placeAnOrder(table: Table) {
-    console.log("place an order")
-    router.push("/home/order" + '?' + createQueryString('tableNumber', table.tableNumber + ''))
+  function placeAnOrder() {
+    if (clickedTable == null)
+      return
+    router.push("/home/order" + '?' + createQueryString('tableNumber', clickedTable.tableNumber + ''))
+  }
+
+  function bookTable() {
+    if (clickedTable == null)
+      return
+    console.log("book Table #" + clickedTable.tableNumber)
+    //router.push("/home/order" + '?' + createQueryString('tableNumber', clickedTable.tableNumber + ''))
+  }
+
+  function openPopup(table: Table) {
+    setClickedTable(table);
+    setShow(true)
+  }
+
+  function closePopup() {
+    setClickedTable(null);
+    setShow(false);
   }
 
   return (
@@ -75,9 +109,14 @@ export default function Home() {
           functionOnDrag={null}
           functionOnDragEnd={null}
           functionOnDrop={null}
-          functionOnClick={placeAnOrder}
+          functionOnClick={openPopup}
           functionOnSaveRotation={null}
         />)
+      }
+
+      {
+        show &&
+        <Popup buttons={buttons} closePopupFunction={closePopup} />
       }
 
     </div>
