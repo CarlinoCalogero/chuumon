@@ -69,7 +69,7 @@ export const EDITED_MENU_ITEM_SUFFIX = "CON MODIFICHE"
 
 export const TAKE_AWAY_ORDER_SECTION_NUMBER_TRIGGER = -1;
 
-export const MAX_TAKE_AWAY_ORDER_TIME = "23:59"
+export const MAX_TAKE_AWAY_ORDER_TIME = "06:00"
 
 export function removeNumbersFromArray(array: number[], items: number[]) {
 

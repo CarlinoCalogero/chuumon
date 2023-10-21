@@ -74,8 +74,7 @@ export default function Home() {
   function bookTable() {
     if (clickedTable == null)
       return
-    console.log("book Table #" + clickedTable.tableNumber)
-    //router.push("/home/order" + '?' + createQueryString('tableNumber', clickedTable.tableNumber + ''))
+    router.push("/home/book" + '?' + createQueryString('tableNumber', clickedTable.tableNumber + ''))
   }
 
   function openPopup(table: Table) {

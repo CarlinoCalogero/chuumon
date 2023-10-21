@@ -1,0 +1,50 @@
+.outerDiv {
+  display: flex;
+  flex-direction: column;
+  border: 0.1rem solid black;
+  border-radius: 0.5rem;
+}
+
+.orderTitleDiv {
+  display: flex;
+  justify-content: center;
+}
+
+.tableInfo {
+  padding: 0 1rem 0 1rem;
+  margin: 1rem 0 2rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sectionDiv {
+  background: lightgray;
+  padding: 1rem 1rem 1rem 1rem;
+  margin-bottom: -0.5rem;
+}
+
+.line {
+  border-top: 0.11rem solid black;
+  width: 100%;
+}
+
+.thiPageH3 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.buttonsDiv {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Responsive layout only for PC or wider screens */
+@media (min-width: 800px) {
+
+  .outerDiv {
+    margin: 5rem 15rem 0.5rem 15rem;
+  }
+
+}
