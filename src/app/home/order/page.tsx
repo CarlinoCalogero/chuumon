@@ -15,6 +15,7 @@ import { MenuItemsWithIngredients } from '@/types/MenuItemsWithIngredients';
 import { CategoriesWithMenuItems } from '@/types/CategoriesWithMenuItems';
 import { OrderedItemByCategories } from '@/types/OrderedItemByCategories';
 import { CategoriesAndMenuItems } from '@/types/CategoriesAndMenuItems';
+import { Table } from '@/types/Table';
 
 type Inputs = {
   menuItem: EventTarget & HTMLInputElement | null,
@@ -28,7 +29,24 @@ export default function Order() {
 
   const searchParams = useSearchParams()
 
-  console.log(searchParams.get('tableNumber'))
+  let table: Table = {
+    tableNumber: -1,
+    numberOfMergedTables: -1,
+    top: -1,
+    left: -1,
+    rotate: -1,
+    ora: null,
+    nome_prenotazione: null,
+    numero_persone: null,
+    note: null
+  }
+
+  let params = searchParams.get('table');
+
+  if (params != null)
+    table = JSON.parse(params);
+
+  console.log("uffffff", table)
 
   const [menuItemsWithIngredients, setMenuItemsWithIngredients] = useState<MenuItemsWithIngredients>({});
   const [categoriesWithMenuItems, setCategoriesWithMenuItems] = useState<CategoriesWithMenuItems>({});
@@ -50,10 +68,10 @@ export default function Order() {
   const [isWasCreaButtonPressed, setIsWasCreaButtonPressed] = useState<boolean>(false);
 
   const [tableOrderInfo, setTableOrderInfo] = useState<TableOrderInfo>({
-    tableNumber: Number(searchParams.get('tableNumber')),
-    isTakeAway: Number(searchParams.get('tableNumber')) == TAKE_AWAY_ORDER_SECTION_NUMBER_TRIGGER ? true : false,
+    tableNumber: table.tableNumber,
+    isTakeAway: table.tableNumber == TAKE_AWAY_ORDER_SECTION_NUMBER_TRIGGER ? true : false,
     nomeOrdinazione: null,
-    isFrittiPrimaDellaPizza: Number(searchParams.get('tableNumber')) == TAKE_AWAY_ORDER_SECTION_NUMBER_TRIGGER ? false : true,
+    isFrittiPrimaDellaPizza: table.tableNumber == TAKE_AWAY_ORDER_SECTION_NUMBER_TRIGGER ? false : true,
     isSiDividonoLaPizza: false,
     slicedIn: null,
     pickUpTime: null,
@@ -728,13 +746,40 @@ export default function Order() {
 
   return (
 
-    <div className={styles.outerDiv}>
+    <div className={table.ora == null ? styles.outerDiv : styles.bookedTableOuterDiv}>
 
       <div className={styles.orderTitleDiv}>
-        <h1>TAVOLO {tableOrderInfo.tableNumber}</h1>
+        {
+          tableOrderInfo.tableNumber == TAKE_AWAY_ORDER_SECTION_NUMBER_TRIGGER ?
+            <h1>ORDINE DA ASPORTO</h1>
+            :
+            <h1>TAVOLO {tableOrderInfo.tableNumber}</h1>
+        }
       </div>
 
-      <div className={styles.sectionDiv}>
+      {
+        table.ora != null &&
+        <div>
+
+          <div className={table.ora == null ? styles.sectionDiv : styles.bookedTableSectionDiv}>
+            <h3 className={styles.thiPageH3}>Prenotazione</h3>
+          </div>
+
+          <hr className={styles.line} />
+
+          <div className={styles.prenotazione}>
+            <span>ATTENZIONE</span>
+            <span>{`Questo tavolo è prenotato per le ${getTimeAsString(table.ora)} a nome "${table.nome_prenotazione}"`}</span>
+            {
+              table.note != null &&
+              <span>{`Note: ${table.note}`}</span>
+            }
+          </div>
+
+        </div>
+      }
+
+      <div className={table.ora == null ? styles.sectionDiv : styles.bookedTableSectionDiv}>
         <h3 className={styles.thiPageH3}>Info</h3>
       </div>
 
@@ -843,7 +888,7 @@ export default function Order() {
 
       </div>
 
-      <div className={styles.sectionDiv}>
+      <div className={table.ora == null ? styles.sectionDiv : styles.bookedTableSectionDiv}>
         <h3 className={styles.thiPageH3}>Ordina</h3>
       </div>
 
@@ -1008,7 +1053,7 @@ export default function Order() {
       {
         orderedItemsByCategoryArray.length != 0 &&
         <div>
-          <div className={styles.sectionDiv}>
+          <div className={table.ora == null ? styles.sectionDiv : styles.bookedTableSectionDiv}>
             <h3 className={styles.thiPageH3}>Ordinati</h3>
           </div>
 

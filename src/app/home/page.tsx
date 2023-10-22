@@ -4,7 +4,7 @@ import { useState, useEffect, ChangeEvent, DragEvent, MouseEvent, useCallback } 
 import styles from './page.module.css'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Tables } from '@/components/Tables';
-import { SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS, TAKE_AWAY_ORDER_SECTION_NUMBER_TRIGGER, removeNumbersFromArray } from '@/lib/utils';
+import { SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS, TAKE_AWAY_ORDER_SECTION_NUMBER_TRIGGER, getObjectDeepCopy, removeNumbersFromArray } from '@/lib/utils';
 import { Sala } from '@/types/Sala';
 import { Table } from '@/types/Table';
 import { AppearingButton } from '@/components/AppearingButton';
@@ -80,7 +80,7 @@ export default function Home() {
   function placeAnOrderNotBookedTable() {
     if (clickedTable == null)
       return
-    router.push("/home/order" + '?' + createQueryString('tableNumber', clickedTable.tableNumber + ''))
+    router.push("/home/order" + '?' + createQueryString('table', JSON.stringify(clickedTable) + ''))
   }
 
   function placeAnOrderAlreadyBookedTable() {
@@ -88,9 +88,15 @@ export default function Home() {
       return
 
     if (confirm("Sono arrivati i clienti della prenotazione?")) {
-      router.push("/home/order" + '?' + createQueryString('tableNumber', clickedTable.tableNumber + ''))
+      removeBooking(false);
+      let newTable = getObjectDeepCopy(clickedTable) as Table;
+      newTable.ora = null;
+      newTable.nome_prenotazione = null;
+      newTable.numero_persone = null;
+      newTable.note = null;
+      router.push("/home/order" + '?' + createQueryString('table', JSON.stringify(newTable) + ''))
     } else if (confirm("Confermi di voler ordinare un tavolo prenotato?")) {
-      router.push("/home/order" + '?' + createQueryString('tableNumber', clickedTable.tableNumber + ''))
+      router.push("/home/order" + '?' + createQueryString('table', JSON.stringify(clickedTable) + ''))
     }
 
   }
@@ -117,7 +123,7 @@ export default function Home() {
     setShowBookedTablePopUp(false);
   }
 
-  function removeBooking() {
+  function removeBooking(reload: boolean = true) {
 
     if (clickedTable == null)
       return
@@ -135,8 +141,10 @@ export default function Home() {
       .then((res) => res.json()) // Parse the response data as JSON
       .then((data) => {
         console.log("response", data)
-        closePopup();
-        window.location.reload();
+        if (reload) {
+          closePopup();
+          window.location.reload();
+        }
       }); // Update the state with the fetched data
 
   }

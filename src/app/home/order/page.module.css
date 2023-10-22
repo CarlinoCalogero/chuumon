@@ -1,8 +1,13 @@
-.outerDiv {
+.outerDiv,
+.bookedTableOuterDiv {
   display: flex;
   flex-direction: column;
   border: 0.1rem solid black;
   border-radius: 0.5rem;
+}
+
+.bookedTableOuterDiv {
+  background: lightcoral;
 }
 
 .orderTitleDiv {
@@ -10,12 +15,18 @@
   justify-content: center;
 }
 
+.prenotazione,
 .tableInfo,
 .ordina,
 .orderedItemsList,
 .buttonsDiv {
   padding: 0 1rem 0 1rem;
   margin: 1rem 0 2rem 0;
+}
+
+.prenotazione {
+  display: flex;
+  flex-direction: column;
 }
 
 .ordina {
@@ -56,10 +67,15 @@
   margin-bottom: 1rem;
 }
 
-.sectionDiv {
+.sectionDiv,
+.bookedTableSectionDiv {
   background: lightgray;
   padding: 1rem 1rem 1rem 1rem;
   margin-bottom: -0.5rem;
+}
+
+.bookedTableSectionDiv {
+  background: lightpink;
 }
 
 .tableInfoNomeConsegnaEOrario,
