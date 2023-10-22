@@ -4,7 +4,7 @@ import { useState, useEffect, ChangeEvent, DragEvent, MouseEvent } from 'react'
 import styles from './page.module.css'
 import { useRouter } from 'next/navigation'
 import { Tables } from '@/components/Tables';
-import { SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS, removeNumbersFromArray } from '@/lib/utils';
+import { SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS, getObjectDeepCopy, removeNumbersFromArray } from '@/lib/utils';
 import { Sala } from '@/types/Sala';
 import { Table } from '@/types/Table';
 import { AppearingButton } from '@/components/AppearingButton';
@@ -27,14 +27,6 @@ export default function EditTables() {
   const [isResetTableRotationModeOn, setIsResetTableRotationModeOn] = useState(false);
 
   const [salaAfterTableDrop, setSalaAfterTableDrop] = useState<Sala | null>(null)
-
-  function getSalaObjectCopy(salaObject: Sala = sala) {
-    return JSON.parse(JSON.stringify(salaObject)) as Sala;
-  }
-
-  function getTableObjectCopy(tableObject: Table) {
-    return JSON.parse(JSON.stringify(tableObject)) as Table;
-  }
 
   function getTableIndex(table: Table) {
 
@@ -60,7 +52,7 @@ export default function EditTables() {
     }
 
     // get sala object copy
-    var dummySala = getSalaObjectCopy();
+    var dummySala = getObjectDeepCopy(sala) as Sala;
 
     // split one table from the clicked table
     dummySala.tables[tableIndex].numberOfMergedTables = table.numberOfMergedTables - 1;
@@ -92,6 +84,9 @@ export default function EditTables() {
   function onClickWhileInDeleteTableMode(table: Table) {
 
     var dummySala = removeTables([table.tableNumber]);
+
+    if (dummySala == null)
+      return
 
     if (!salaConformityCheck(dummySala)) {
       return;
@@ -128,7 +123,7 @@ export default function EditTables() {
     }
 
     // get salta object copy
-    var dummySala = getSalaObjectCopy();
+    var dummySala = getObjectDeepCopy(sala);
 
     // update table top and left values
     dummySala.tables[tableIndex].top = table.top;
@@ -153,10 +148,10 @@ export default function EditTables() {
       return;
     }
 
-    var dummySala = getSalaObjectCopy();
+    var dummySala = getObjectDeepCopy(sala);
 
     // merge tables
-    var newMergedTable = getTableObjectCopy(table);
+    var newMergedTable = getObjectDeepCopy(table);
     newMergedTable.numberOfMergedTables = table.numberOfMergedTables + draggedTable.numberOfMergedTables;
 
     removeTables([draggedTable.tableNumber, table.tableNumber], dummySala);
@@ -196,7 +191,7 @@ export default function EditTables() {
     if (dummySala != null && !salaConformityCheck(dummySala)) {
       return dummySala;
     } else if (dummySala == null) {
-      dummySala = getSalaObjectCopy();
+      dummySala = getObjectDeepCopy(sala);
     }
 
     tables.forEach(table => {
@@ -249,32 +244,34 @@ export default function EditTables() {
     if (dummySala != null && !salaConformityCheck(dummySala)) {
       return dummySala;
     } else if (dummySala == null) {
-      dummySala = getSalaObjectCopy();
+      dummySala = getObjectDeepCopy(sala);
     }
 
-    // remove table number
-    dummySala.tableNumbersArray = removeNumbersFromArray(dummySala.tableNumbersArray, tableNumbers);
+    if (dummySala != null) {
+      // remove table number
+      dummySala.tableNumbersArray = removeNumbersFromArray(dummySala.tableNumbersArray, tableNumbers);
 
-    // create a new tableArray
-    var newTableArray: Table[] = [];
+      // create a new tableArray
+      var newTableArray: Table[] = [];
 
-    // insert in the new tableArray only the tables with a different table number than the one that will be removed
-    for (var count = 0; count < dummySala.tables.length; count++) {
-      var currentTable = dummySala.tables[count];
-      if (tableNumbers.indexOf(currentTable.tableNumber) == -1)
-        newTableArray.push(currentTable);
+      // insert in the new tableArray only the tables with a different table number than the one that will be removed
+      for (var count = 0; count < dummySala.tables.length; count++) {
+        var currentTable = dummySala.tables[count];
+        if (tableNumbers.indexOf(currentTable.tableNumber) == -1)
+          newTableArray.push(currentTable);
 
+      }
+
+      //find new max
+      if (dummySala.tableNumbersArray.length == 0) {
+        dummySala.currentMaxTableNumber = 0;
+      } else {
+        dummySala.currentMaxTableNumber = Math.max(...dummySala.tableNumbersArray)
+      }
+
+      // update the new tableArray
+      dummySala.tables = newTableArray;
     }
-
-    //find new max
-    if (dummySala.tableNumbersArray.length == 0) {
-      dummySala.currentMaxTableNumber = 0;
-    } else {
-      dummySala.currentMaxTableNumber = Math.max(...dummySala.tableNumbersArray)
-    }
-
-    // update the new tableArray
-    dummySala.tables = newTableArray;
 
     return dummySala;
 
@@ -294,14 +291,19 @@ export default function EditTables() {
       note: null
     }
 
-    setSala(addTables([newTable]));
+    let newSala = addTables([newTable]);
+
+    if (newSala == null)
+      return
+
+    setSala(newSala);
   }
 
   function onSaveRotation(table: Table) {
 
     var tableIndex = getTableIndex(table);
 
-    var dummySala = getSalaObjectCopy();
+    var dummySala = getObjectDeepCopy(sala);
 
     dummySala.tables[tableIndex].rotate = table.rotate;
 
@@ -317,8 +319,31 @@ export default function EditTables() {
     onSaveRotation(table);
   }
 
+  function saveSala() {
+
+    if (!salaConformityCheck(sala))
+      return;
+
+
+    fetch("http://localhost:3000/home/editTables/api", {
+      method: "POST",
+      body: JSON.stringify(sala.tables),
+      headers: {
+        "Content-Type": "application/json", // Set the request headers to indicate JSON format
+      },
+    })
+      .then((res) => res.json()) // Parse the response data as JSON
+      .then((data) => {
+        console.log("response", data)
+        //router.push('/home');
+        window.location.reload();
+
+      }); // Update the state with the fetched data
+
+  }
+
   useEffect(() => {
-    console.log(sala)
+    console.log("sala", sala)
   }, [sala])
 
   useEffect(() => {
@@ -382,6 +407,8 @@ export default function EditTables() {
       >Reset table rotation {isResetTableRotationModeOn ? "on" : "off"}</button>
 
       <button onClick={() => router.push("/")}>Back</button>
+
+      <button onClick={saveSala}>Save</button>
 
     </AppearingButton>
 
