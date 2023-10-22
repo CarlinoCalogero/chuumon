@@ -16,6 +16,7 @@ import { CategoriesWithMenuItems } from '@/types/CategoriesWithMenuItems';
 import { OrderedItemByCategories } from '@/types/OrderedItemByCategories';
 import { CategoriesAndMenuItems } from '@/types/CategoriesAndMenuItems';
 import { Table } from '@/types/Table';
+import { OrderPagePostMethodType } from '@/types/OrderPagePostMethodType';
 
 type Inputs = {
   menuItem: EventTarget & HTMLInputElement | null,
@@ -110,6 +111,33 @@ export default function Order() {
   const [isOrderHasFries, setIsOrderHasFries] = useState(false);
   const [isOrderHasSliceableMenuItem, setIsOrderHasSliceableMenuItem] = useState(false);
 
+  function checkIfOrderHasFriedFood() {
+    let keys = Object.keys(orderedItemsByCategory);
+
+    if (keys.includes(FRITTURE.nomeCategoria))
+      return true;
+
+    return false;
+
+  }
+
+  function checkIfOrderHasSliceableMenuItem() {
+    let keys = Object.keys(orderedItemsByCategory);
+    console.log(keys)
+
+    for (let count = 0; count < PIZZE_CATEGORIES.length; count++) {
+      if (keys.includes(PIZZE_CATEGORIES[count]))
+        return true;
+    }
+
+    for (let count = 0; count < CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO.length; count++) {
+      if (keys.includes(CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO[count]))
+        return true;
+    }
+
+    return false
+  }
+
   useEffect(() => {
     console.log("runs one time only");
 
@@ -126,6 +154,34 @@ export default function Order() {
         setIngredientiArray(data.ingredienti);
         setUnitaDiMisuraArray(data.unitaDiMisura);
       }); // Update the state with the fetched data
+
+    let postMethodForPlacingAnOrder: OrderPagePostMethodType = {
+      whichPostBody: false, //true if we are placing an order, false if we are retrieving an order
+      tableOrder: null,
+      table: table
+    }
+
+    if (table.tableNumber != TAKE_AWAY_ORDER_SECTION_NUMBER_TRIGGER) {
+
+      fetch("http://localhost:3000/home/order/api", {
+        method: "POST",
+        body: JSON.stringify(postMethodForPlacingAnOrder),
+        headers: {
+          "Content-Type": "application/json", // Set the request headers to indicate JSON format
+        },
+      })
+        .then((res) => res.json()) // Parse the response data as JSON
+        .then((data) => {
+          console.log("response", data)
+          if (data.orderedItemsByCategories != null)
+            setOrderedItemsByCategory(data.orderedItemsByCategories);
+          if (data.tableOrderInfo != null)
+            setTableOrderInfo(data.tableOrderInfo)
+          //router.push('/home');
+
+        }); // Update the state with the fetched data
+
+    }
 
   }, [])
 
@@ -147,6 +203,8 @@ export default function Order() {
   }, [categoriesAndMenuItems])
 
   useEffect(() => {
+    setIsOrderHasFries(checkIfOrderHasFriedFood());
+    setIsOrderHasSliceableMenuItem(checkIfOrderHasSliceableMenuItem());
     setOrderedItemsByCategoryArray(getArrayFromOrderedItemsByCategoriesObject(orderedItemsByCategory))
   }, [orderedItemsByCategory])
 
@@ -576,12 +634,6 @@ export default function Order() {
     addOrderedItemToOrderedItemByCategoriesObject(orderedItemsByCategoriesCopy, orderedItemCopy);
     setOrderedItemsByCategory(orderedItemsByCategoriesCopy);
 
-    if (isOrderHasFries == false && orderedItemCopy.menuItemCategory.toUpperCase() == FRITTURE.nomeCategoria.toLocaleUpperCase())
-      setIsOrderHasFries(true);
-
-    if (isOrderHasSliceableMenuItem == false && (orderedItemCopy.isMenuItemAPizza || orderedItemCopy.isCanMenuItemBeSlicedUp))
-      setIsOrderHasSliceableMenuItem(true);
-
     // reset
     resetFieldsAndOrderedItem();
 
@@ -737,9 +789,15 @@ export default function Order() {
 
     console.log("before placing the order", tableOrder)
 
+    let postMethodForPlacingAnOrder: OrderPagePostMethodType = {
+      whichPostBody: true, //true if we are placing an order, false if we are retrieving an order
+      tableOrder: tableOrder,
+      table: null
+    }
+
     fetch("http://localhost:3000/home/order/api", {
       method: "POST",
-      body: JSON.stringify(tableOrder),
+      body: JSON.stringify(postMethodForPlacingAnOrder),
       headers: {
         "Content-Type": "application/json", // Set the request headers to indicate JSON format
       },
@@ -874,7 +932,8 @@ export default function Order() {
             <input
               type='number'
               placeholder='Numero adulti'
-              min={0}
+              min={1}
+              value={tableOrderInfo.numeroAdulti == null ? 1 : tableOrderInfo.numeroAdulti}
               onChange={e => handleNumberoAdultiChange(e)}
             />
 
@@ -882,6 +941,7 @@ export default function Order() {
               type='number'
               placeholder='Numero bambini'
               min={0}
+              value={tableOrderInfo.numeroBambini == null ? 0 : tableOrderInfo.numeroBambini}
               onChange={e => handleNumberoBambiniChange(e)}
             />
 

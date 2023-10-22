@@ -9,6 +9,11 @@ import { DatabaseRowId } from "@/types/DatabaseRowId";
 import { MenuItemsWithIngredients } from "@/types/MenuItemsWithIngredients";
 import { CategoriesWithMenuItems } from "@/types/CategoriesWithMenuItems";
 import { MenuItemsAndOneIngredient } from "@/types/MenuItemsAndOneIngredient";
+import { OrderPagePostMethodType } from "@/types/OrderPagePostMethodType";
+import { OrdinazioneDatabaseTableRowWithRowId } from "@/types/OrdinazioneDatabaseTableRowWithRowId";
+import { OrderedItemByCategories } from "@/types/OrderedItemByCategories";
+import { getOrderedItemsByCategoriesFromDatabase } from "@/lib/dbMethods";
+import { TableOrderInfo } from "@/types/TableOrderInfo";
 
 // Let's initialize it as null initially, and we will assign the actual database instance later.
 var db: Database | null = null;
@@ -59,25 +64,14 @@ export async function GET() {
 // Define the GET request handler function
 export async function POST(request: Request, response: Response) {
 
-    var tableOrder: TableOrder = {
-        dateAndTime: new Date(),
-        tableOrderInfo: {
-            tableNumber: -1,
-            isTakeAway: false,
-            nomeOrdinazione: null,
-            isFrittiPrimaDellaPizza: false,
-            isSiDividonoLaPizza: false,
-            slicedIn: null,
-            pickUpTime: null,
-            note: null,
-            numeroBambini: null,
-            numeroAdulti: null
-        },
-        orderedItemsByCategoriesArray: []
+    var orderPagePostMethodType: OrderPagePostMethodType = {
+        whichPostBody: false, //true if we are placing an order, false if we are retrieving an order
+        tableOrder: null,
+        table: null
     };
 
     await request.json().then((data) => {
-        tableOrder = data;
+        orderPagePostMethodType = data;
     })
 
     // Check if the database instance has been initialized
@@ -89,92 +83,131 @@ export async function POST(request: Request, response: Response) {
         });
     }
 
-    // await db.run("delete from ordinazione");
-    // await db.run("delete from menu_item_not_in_menu");
-
-    var maxNumeroProgressivoGiornaliero: undefined | { max: null | number } = await db.get('SELECT MAX(numero_ordinazione_progressivo_giornaliero) as max FROM ordinazione')
-    var nuovoNumeroProgressivoGiornaliero = 1;
-
-    if (maxNumeroProgressivoGiornaliero != undefined && maxNumeroProgressivoGiornaliero.max != null) {
-        nuovoNumeroProgressivoGiornaliero = maxNumeroProgressivoGiornaliero.max + 1;
+    let postResult = {
+        orderedItemsByCategories: null as OrderedItemByCategories | null,
+        tableOrderInfo: null as TableOrderInfo | null
     }
 
+    if (orderPagePostMethodType.whichPostBody && orderPagePostMethodType.tableOrder != null && orderPagePostMethodType.table == null) { //placing an order
 
-    await db.run("INSERT INTO ordinazione(numero_tavolo, data_e_ora, pick_up_time, nome_ordinazione, note, is_si_dividono_le_pizze, is_fritti_prima_della_pizza, numero_ordinazione_progressivo_giornaliero, pizze_divise_in, numero_bambini, numero_adulti)  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [tableOrder.tableOrderInfo.tableNumber, tableOrder.dateAndTime, tableOrder.tableOrderInfo.pickUpTime, tableOrder.tableOrderInfo.nomeOrdinazione, tableOrder.tableOrderInfo.note, tableOrder.tableOrderInfo.isSiDividonoLaPizza, tableOrder.tableOrderInfo.isFrittiPrimaDellaPizza, nuovoNumeroProgressivoGiornaliero, tableOrder.tableOrderInfo.slicedIn, tableOrder.tableOrderInfo.numeroBambini, tableOrder.tableOrderInfo.numeroAdulti]);
+        // await db.run("delete from ordinazione");
+        // await db.run("delete from menu_item_not_in_menu");
 
-    // get ordinazioneLastId
-    const ordinazioneLastId: DatabaseRowId = await db.get('SELECT last_insert_rowid() as rowid')
+        var maxNumeroProgressivoGiornaliero: undefined | { max: null | number } = await db.get('SELECT MAX(numero_ordinazione_progressivo_giornaliero) as max FROM ordinazione')
+        var nuovoNumeroProgressivoGiornaliero = 1;
 
-    // link menuItems to order
-    tableOrder.orderedItemsByCategoriesArray.forEach(categoryWithOrderedItems => {
+        if (maxNumeroProgressivoGiornaliero != undefined && maxNumeroProgressivoGiornaliero.max != null) {
+            nuovoNumeroProgressivoGiornaliero = maxNumeroProgressivoGiornaliero.max + 1;
+        }
 
-        categoryWithOrderedItems.orderedItems.forEach(async (orderedItem) => {
+        await db.run("INSERT INTO ordinazione(numero_tavolo, data_e_ora, pick_up_time, nome_ordinazione, note, is_si_dividono_le_pizze, is_fritti_prima_della_pizza, numero_ordinazione_progressivo_giornaliero, pizze_divise_in, numero_bambini, numero_adulti)  VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [orderPagePostMethodType.tableOrder.tableOrderInfo.tableNumber, orderPagePostMethodType.tableOrder.dateAndTime, orderPagePostMethodType.tableOrder.tableOrderInfo.pickUpTime, orderPagePostMethodType.tableOrder.tableOrderInfo.nomeOrdinazione, orderPagePostMethodType.tableOrder.tableOrderInfo.note, orderPagePostMethodType.tableOrder.tableOrderInfo.isSiDividonoLaPizza, orderPagePostMethodType.tableOrder.tableOrderInfo.isFrittiPrimaDellaPizza, nuovoNumeroProgressivoGiornaliero, orderPagePostMethodType.tableOrder.tableOrderInfo.slicedIn, orderPagePostMethodType.tableOrder.tableOrderInfo.numeroBambini, orderPagePostMethodType.tableOrder.tableOrderInfo.numeroAdulti]);
 
-            const insertSql = "INSERT INTO contiene(id_ordinazione,id_menu_item,id_menu_item_not_in_menu,divisa_in,quantita,nome_unita_di_misura,consegnato) VALUES(?,?,?,?,?,?,?)";
+        // get ordinazioneLastId
+        const ordinazioneLastId: DatabaseRowId = await db.get('SELECT last_insert_rowid() as rowid')
 
-            if (db != null) {
+        // link menuItems to order
+        orderPagePostMethodType.tableOrder.orderedItemsByCategoriesArray.forEach(categoryWithOrderedItems => {
 
-                // menuItems were created anew or modified
-                if (orderedItem.isWasMenuItemCreated || orderedItem.isWereIngredientsModified) {
+            categoryWithOrderedItems.orderedItems.forEach(async (orderedItem) => {
 
-                    db.getDatabaseInstance().run("INSERT INTO menu_item_not_in_menu(nome,prezzo,nome_categoria) VALUES(?,?,?)", [`${orderedItem.menuItem}${DATABASE_STRING_SEPARATOR}${tableOrder.tableOrderInfo.tableNumber}${DATABASE_STRING_SEPARATOR}${tableOrder.dateAndTime}`, orderedItem.price, orderedItem.menuItemCategory],
-                        function (err) {
-                            if (err) {
-                                return console.error(err.message);
-                            }
+                const insertSql = "INSERT INTO contiene(id_ordinazione,id_menu_item,id_menu_item_not_in_menu,divisa_in,quantita,nome_unita_di_misura,consegnato) VALUES(?,?,?,?,?,?,?)";
 
-                            // get menuItemNotInMenuLastId
-                            const menuItemNotInMenuLastId = this.lastID;
-                            console.log(`Rows inserted to \"menu_item_not_in_menu\" table, ID ${menuItemNotInMenuLastId}`);
+                if (db != null) {
 
-                            // add ingredients to menuItem fuori menu
-                            orderedItem.ingredients.forEach(async (ingrediente) => {
-                                if (db != null) {
-                                    const stmt = await db.prepare('SELECT rowid FROM ingrediente WHERE nome=?');
-                                    await stmt.bind({ 1: ingrediente })
-                                    const ingredientId: DatabaseRowId = await stmt.get()
-                                    await db.run("INSERT INTO compone_fuori_menu(id_ingrediente,id_menu_item_not_in_menu) VALUES(?, ?)", [ingredientId?.rowid, menuItemNotInMenuLastId]);
+                    // menuItems were created anew or modified
+                    if ((orderedItem.isWasMenuItemCreated || orderedItem.isWereIngredientsModified) && orderPagePostMethodType.tableOrder != null) {
+
+                        db.getDatabaseInstance().run("INSERT INTO menu_item_not_in_menu(nome,prezzo,nome_categoria) VALUES(?,?,?)", [`${orderedItem.menuItem}${DATABASE_STRING_SEPARATOR}${orderPagePostMethodType.tableOrder.tableOrderInfo.tableNumber}${DATABASE_STRING_SEPARATOR}${orderPagePostMethodType.tableOrder.dateAndTime}`, orderedItem.price, orderedItem.menuItemCategory],
+                            function (err) {
+                                if (err) {
+                                    return console.error(err.message);
                                 }
+
+                                // get menuItemNotInMenuLastId
+                                const menuItemNotInMenuLastId = this.lastID;
+                                console.log(`Rows inserted to \"menu_item_not_in_menu\" table, ID ${menuItemNotInMenuLastId}`);
+
+                                // add ingredients to menuItem fuori menu
+                                orderedItem.ingredients.forEach(async (ingrediente) => {
+                                    if (db != null) {
+                                        const stmt = await db.prepare('SELECT rowid FROM ingrediente WHERE nome=?');
+                                        await stmt.bind({ 1: ingrediente })
+                                        const ingredientId: DatabaseRowId = await stmt.get()
+                                        await db.run("INSERT INTO compone_fuori_menu(id_ingrediente,id_menu_item_not_in_menu) VALUES(?, ?)", [ingredientId?.rowid, menuItemNotInMenuLastId]);
+                                    }
+                                });
+
+                                // add intollerances
+                                orderedItem.intolleranzaA.forEach(async (ingrediente) => {
+                                    if (db != null) {
+                                        const stmt = await db.prepare('SELECT rowid FROM ingrediente WHERE nome=?');
+                                        await stmt.bind({ 1: ingrediente })
+                                        const ingredientId: DatabaseRowId = await stmt.get()
+                                        await db.run("INSERT INTO intolleranza(id_menu_item_not_in_menu,id_ingrediente) VALUES(?, ?)", [menuItemNotInMenuLastId, ingredientId?.rowid]);
+                                    }
+                                });
+
+                                // place order
+                                if (db != null) {
+                                    db.run(insertSql, [ordinazioneLastId?.rowid, null, menuItemNotInMenuLastId, orderedItem.slicedIn, orderedItem.numberOf, orderedItem.unitOfMeasure, false]);
+                                }
+
                             });
 
-                            // add intollerances
-                            orderedItem.intolleranzaA.forEach(async (ingrediente) => {
-                                if (db != null) {
-                                    const stmt = await db.prepare('SELECT rowid FROM ingrediente WHERE nome=?');
-                                    await stmt.bind({ 1: ingrediente })
-                                    const ingredientId: DatabaseRowId = await stmt.get()
-                                    await db.run("INSERT INTO intolleranza(id_menu_item_not_in_menu,id_ingrediente) VALUES(?, ?)", [menuItemNotInMenuLastId, ingredientId?.rowid]);
-                                }
-                            });
 
-                            // place order
-                            if (db != null) {
-                                db.run(insertSql, [ordinazioneLastId?.rowid, null, menuItemNotInMenuLastId, orderedItem.slicedIn, orderedItem.numberOf, orderedItem.unitOfMeasure, false]);
-                            }
+                    } else { // menuItems were not created anew or modified
 
-                        });
+                        const stmt = await db.prepare('SELECT rowid FROM menu_item WHERE nome=?');
+                        await stmt.bind({ 1: orderedItem.menuItem })
+                        const menuItemId: DatabaseRowId = await stmt.get()
 
+                        await db.run(insertSql, [ordinazioneLastId?.rowid, menuItemId?.rowid, null, orderedItem.slicedIn, orderedItem.numberOf, orderedItem.unitOfMeasure, false]);
 
-                } else { // menuItems were not created anew or modified
+                    }
 
-                    const stmt = await db.prepare('SELECT rowid FROM menu_item WHERE nome=?');
-                    await stmt.bind({ 1: orderedItem.menuItem })
-                    const menuItemId: DatabaseRowId = await stmt.get()
-
-                    await db.run(insertSql, [ordinazioneLastId?.rowid, menuItemId?.rowid, null, orderedItem.slicedIn, orderedItem.numberOf, orderedItem.unitOfMeasure, false]);
 
                 }
 
 
-            }
-
+            });
 
         });
 
-    });
+    } else if (!orderPagePostMethodType.whichPostBody && orderPagePostMethodType.tableOrder == null && orderPagePostMethodType.table != null) { // retrieving data
+
+        // stmt is an instance of `sqlite#Statement`
+        // which is a wrapper around `sqlite3#Statement`
+        const order = await db.prepare('SELECT rowid,* FROM ordinazione WHERE numero_tavolo = ?')
+        await order.bind({ 1: orderPagePostMethodType.table.tableNumber })
+        let result = await order.get() as OrdinazioneDatabaseTableRowWithRowId;
+
+        if (result != undefined) { //if false the table does not have an order yet
+
+            let isTakeAway = false;
+            if (result.pick_up_time != null)
+                isTakeAway = true;
+
+            postResult.tableOrderInfo = {
+                tableNumber: result.numero_tavolo,
+                isTakeAway: isTakeAway,
+                nomeOrdinazione: result.nome_ordinazione,
+                isFrittiPrimaDellaPizza: result.is_fritti_prima_della_pizza,
+                isSiDividonoLaPizza: result.is_si_dividono_le_pizze,
+                slicedIn: result.pizze_divise_in,
+                pickUpTime: result.pick_up_time,
+                note: result.note,
+                numeroBambini: result.numero_bambini,
+                numeroAdulti: result.numero_adulti
+            }
+
+            postResult.orderedItemsByCategories = await getOrderedItemsByCategoriesFromDatabase(db, result)
+
+        }
+
+    }
 
     // Return the items as a JSON response with status 200
-    return new Response(JSON.stringify("miao"), {
+    return new Response(JSON.stringify(postResult), {
         headers: { "Content-Type": "application/json" },
         status: 200,
     });
