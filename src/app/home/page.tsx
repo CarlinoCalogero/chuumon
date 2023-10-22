@@ -14,20 +14,32 @@ export default function Home() {
 
   const router = useRouter();
 
-  const [show, setShow] = useState(false);
+  const [showNotBookedTablePopUp, setShowNotBookedTablePopUp] = useState(false);
+  const [showBookedTablePopUp, setShowBookedTablePopUp] = useState(false);
 
   const [tablesArray, setTablesArray] = useState<Table[]>([]);
 
   const [clickedTable, setClickedTable] = useState<Table | null>(null);
 
-  const buttons = [
+  const notBookedTableButtons = [
     {
       buttonText: "Place an order",
-      onClickFunction: placeAnOrder
+      onClickFunction: placeAnOrderNotBookedTable
     },
     {
       buttonText: "Book table",
       onClickFunction: bookTable
+    }
+  ]
+
+  const bookedTableButtons = [
+    {
+      buttonText: "Remove booking",
+      onClickFunction: removeBooking
+    },
+    {
+      buttonText: "Place an order",
+      onClickFunction: placeAnOrderAlreadyBookedTable
     }
   ]
 
@@ -65,10 +77,22 @@ export default function Home() {
     [searchParams]
   )
 
-  function placeAnOrder() {
+  function placeAnOrderNotBookedTable() {
     if (clickedTable == null)
       return
     router.push("/home/order" + '?' + createQueryString('tableNumber', clickedTable.tableNumber + ''))
+  }
+
+  function placeAnOrderAlreadyBookedTable() {
+    if (clickedTable == null)
+      return
+
+    if (confirm("Sono arrivati i clienti della prenotazione?")) {
+      router.push("/home/order" + '?' + createQueryString('tableNumber', clickedTable.tableNumber + ''))
+    } else if (confirm("Confermi di voler ordinare un tavolo prenotato?")) {
+      router.push("/home/order" + '?' + createQueryString('tableNumber', clickedTable.tableNumber + ''))
+    }
+
   }
 
   function bookTable() {
@@ -79,12 +103,42 @@ export default function Home() {
 
   function openPopup(table: Table) {
     setClickedTable(table);
-    setShow(true)
+
+    if (table.ora == null) {
+      setShowNotBookedTablePopUp(true)
+    } else {
+      setShowBookedTablePopUp(true)
+    }
   }
 
   function closePopup() {
     setClickedTable(null);
-    setShow(false);
+    setShowNotBookedTablePopUp(false);
+    setShowBookedTablePopUp(false);
+  }
+
+  function removeBooking() {
+
+    if (clickedTable == null)
+      return
+
+    if (!confirm("Vuoi davvero rimuovere la prenotazione?"))
+      return;
+
+    fetch("http://localhost:3000/home/api", {
+      method: "POST",
+      body: JSON.stringify(clickedTable.tableNumber),
+      headers: {
+        "Content-Type": "application/json", // Set the request headers to indicate JSON format
+      },
+    })
+      .then((res) => res.json()) // Parse the response data as JSON
+      .then((data) => {
+        console.log("response", data)
+        closePopup();
+        window.location.reload();
+      }); // Update the state with the fetched data
+
   }
 
   return (
@@ -110,8 +164,13 @@ export default function Home() {
       }
 
       {
-        show &&
-        <Popup buttons={buttons} closePopupFunction={closePopup} />
+        showNotBookedTablePopUp &&
+        <Popup buttons={notBookedTableButtons} closePopupFunction={closePopup} />
+      }
+
+      {
+        showBookedTablePopUp &&
+        <Popup buttons={bookedTableButtons} closePopupFunction={closePopup} />
       }
 
     </div>

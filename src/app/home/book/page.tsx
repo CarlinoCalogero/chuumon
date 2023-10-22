@@ -99,7 +99,7 @@ export default function Order() {
 
   }
 
-  function placeAnOrder() {
+  function bookTable() {
 
     // check fields and get a Copy
     let prenotazioneCopy = checkPrenotazioneAndGetACopy();
@@ -178,7 +178,7 @@ export default function Order() {
 
       <div className={styles.buttonsDiv}>
 
-        <button onClick={placeAnOrder}>Book</button>
+        <button onClick={bookTable}>Book</button>
         <button onClick={() => router.push("/home")}>Back</button>
         
       </div>
