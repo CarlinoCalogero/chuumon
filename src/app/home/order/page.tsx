@@ -5,7 +5,7 @@ import { useState, useEffect, ChangeEvent, MouseEvent } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { UnitaDiMisuraDatabaseTableRow } from '@/types/UnitaDiMisuraDatabaseTableRow';
 import { OrderedItem } from '@/types/OrderedItem';
-import { CALZONI, CATEGORIE_CREA, CATEGORIE_CREA_ARRAY, CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO, FARINE_SPECIALI, OGNI_INGREDIENTE_AGGIUNTO_COSTA_EURO, PINSE_ROMANE, PIZZE_BIANCHE, PIZZE_CATEGORIES, PIZZE_ROSSE, UNITA_DI_MISURA, checkIfMenuItemCanBeSlicedUp, checkIfMenuItemIsAPizza, getCategoriesAndMenuItemsObjectFromCategoriesWithMenuItemsObject, getArrayFromOrderedItemsByCategoriesObject, getObjectDeepCopy, getMenuItemPriceFromMenuItemsWithIngredientsObject, getMenuItemIngredientsFromMenuItemsWithIngredientsObject, getMenuItemCategoryFromMenuItemsWithIngredientsObject, addOrderedItemToOrderedItemByCategoriesObject, getMenuItemsFromCategoryFromCategoriesWithMenuItemsObject, SLICED_IN_OPTIONS_ARRAY, putIngredientsTogether, CREATED_MENU_ITEM_SUFFIX, EDITED_MENU_ITEM_SUFFIX, TAKE_AWAY_ORDER_SECTION_NUMBER_TRIGGER, getTimeAsString, MAX_TAKE_AWAY_ORDER_TIME, convertHHMMStringTimeFormatToDateObject, FRITTURE } from '@/lib/utils';
+import { CALZONI, CATEGORIE_CREA, CATEGORIE_CREA_ARRAY, CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO, FARINE_SPECIALI, OGNI_INGREDIENTE_AGGIUNTO_COSTA_EURO, PINSE_ROMANE, PIZZE_BIANCHE, PIZZE_CATEGORIES, PIZZE_ROSSE, UNITA_DI_MISURA, checkIfMenuItemCanBeSlicedUp, checkIfMenuItemIsAPizza, getCategoriesAndMenuItemsObjectFromCategoriesWithMenuItemsObject, getArrayFromOrderedItemsByCategoriesObject, getObjectDeepCopy, getMenuItemPriceFromMenuItemsWithIngredientsObject, getMenuItemIngredientsFromMenuItemsWithIngredientsObject, getMenuItemCategoryFromMenuItemsWithIngredientsObject, addOrderedItemToOrderedItemByCategoriesObject, getMenuItemsFromCategoryFromCategoriesWithMenuItemsObject, SLICED_IN_OPTIONS_ARRAY, putIngredientsTogether, CREATED_MENU_ITEM_SUFFIX, EDITED_MENU_ITEM_SUFFIX, TAKE_AWAY_ORDER_SECTION_NUMBER_TRIGGER, getTimeAsString, MAX_TAKE_AWAY_ORDER_TIME, convertHHMMStringTimeFormatToDateObject, FRITTURE, removeStringsFromArray, removeOrderedItemFromOrderedItemByCategoriesObject } from '@/lib/utils';
 import { TableOrderInfo } from '@/types/TableOrderInfo';
 import { IngredienteDatabaseTableRow } from '@/types/IngredienteDatabaseTableRow';
 import { CategoriaConIngredientiCheLaDefiniscono } from '@/types/CategoriaConIngredientiCheLaDefiniscono';
@@ -811,6 +811,14 @@ export default function Order() {
 
   }
 
+  function removeOrderedItem(onClickEvent: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>, orderedItem: OrderedItem) {
+
+    let orderedItemsByCategoryCopy = getObjectDeepCopy(orderedItemsByCategory) as OrderedItemByCategories;
+    removeOrderedItemFromOrderedItemByCategoriesObject(orderedItemsByCategoryCopy, orderedItem);
+    setOrderedItemsByCategory(orderedItemsByCategoryCopy)
+
+  }
+
   return (
 
     <div className={table.ora == null ? styles.outerDiv : styles.bookedTableOuterDiv}>
@@ -1144,34 +1152,40 @@ export default function Order() {
                   {
                     orderedItemByCategory.orderedItems.map((orderedItem, j) => <div
                       key={"orderedItem_" + j + "_inCategory_" + i}
-                      className={styles.orderedItemDiv}
+                      className={styles.orderedItemOuterDiv}
                     >
 
-                      <b>{orderedItem.numberOf} {orderedItem.unitOfMeasure?.toUpperCase()} - {orderedItem.menuItem?.toUpperCase()}</b>
+                      <div className={styles.orderedItemInnerDiv}>
 
-                      {
-                        orderedItem.slicedIn != null &&
-                        <span>Tagliata in {orderedItem.slicedIn}</span>
-                      }
+                        <b>{orderedItem.numberOf} {orderedItem.unitOfMeasure?.toUpperCase()} - {orderedItem.menuItem?.toUpperCase()}</b>
 
-                      {
-                        orderedItem.ingredients.length != 0 &&
-                        <div className={styles.ingredientsDiv}>
-                          <span><strong>Ingredienti:</strong> {putIngredientsTogether(orderedItem.ingredients)}</span>
-                          {
-                            orderedItem.removedIngredients.length != 0 &&
-                            <span><strong>Ingredienti tolti:</strong> {putIngredientsTogether(orderedItem.removedIngredients)}</span>
-                          }
-                          {
-                            orderedItem.addedIngredients.length != 0 &&
-                            <span><strong>Ingredienti aggiunti:</strong> {putIngredientsTogether(orderedItem.addedIngredients)}</span>
-                          }
-                        </div>
-                      }
-                      {
-                        orderedItem.intolleranzaA.length != 0 &&
-                        <span><strong>Intollerante a:</strong> {putIngredientsTogether(orderedItem.intolleranzaA)}</span>
-                      }
+                        {
+                          orderedItem.slicedIn != null &&
+                          <span>Tagliata in {orderedItem.slicedIn}</span>
+                        }
+
+                        {
+                          orderedItem.ingredients.length != 0 &&
+                          <div className={styles.ingredientsDiv}>
+                            <span><strong>Ingredienti:</strong> {putIngredientsTogether(orderedItem.ingredients)}</span>
+                            {
+                              orderedItem.removedIngredients.length != 0 &&
+                              <span><strong>Ingredienti tolti:</strong> {putIngredientsTogether(orderedItem.removedIngredients)}</span>
+                            }
+                            {
+                              orderedItem.addedIngredients.length != 0 &&
+                              <span><strong>Ingredienti aggiunti:</strong> {putIngredientsTogether(orderedItem.addedIngredients)}</span>
+                            }
+                          </div>
+                        }
+                        {
+                          orderedItem.intolleranzaA.length != 0 &&
+                          <span><strong>Intollerante a:</strong> {putIngredientsTogether(orderedItem.intolleranzaA)}</span>
+                        }
+
+                      </div>
+
+                      <button onClick={e => removeOrderedItem(e, orderedItem)}>X</button>
                     </div>)
                   }
                 </div>

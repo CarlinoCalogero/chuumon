@@ -91,6 +91,19 @@ export function removeNumbersFromArray(array: number[], items: number[]) {
 
 }
 
+export function removeStringsFromArray(array: string[], items: string[]) {
+    if (array.length == 0)
+        return [];
+
+    let dummyArray = [...array];
+
+    items.forEach(item => {
+        dummyArray.splice(dummyArray.indexOf(item), 1);
+    });
+
+    return dummyArray;
+}
+
 export function checkIfMenuItemIsAPizza(menuItemCategory: string) {
 
     if (menuItemCategory == '')
@@ -166,6 +179,40 @@ export function addOrderedItemToOrderedItemByCategoriesObject(orderedItemsByCate
             insertedOrderedItemsNames: [orderedItem.menuItem],
             orderedItems: [orderedItem]
         };
+    }
+
+}
+
+export function removeOrderedItemFromOrderedItemByCategoriesObject(orderedItemsByCategories: OrderedItemByCategories, orderedItem: OrderedItem) {
+
+    if (orderedItem.menuItemCategory == null || orderedItem.menuItem == null)
+        return;
+
+    let orderedItemNotFound = true;
+    let count = 0;
+
+    while (orderedItemNotFound && count < orderedItemsByCategories[orderedItem.menuItemCategory].orderedItems.length) {
+
+        let currentMenuItem = orderedItemsByCategories[orderedItem.menuItemCategory].orderedItems[count].menuItem;
+
+        console.log(currentMenuItem)
+
+        if (currentMenuItem != null && currentMenuItem.toUpperCase() == orderedItem.menuItem.toUpperCase()) {
+            orderedItemNotFound = false;
+        } else {
+            count++;
+        }
+
+    }
+
+    if (!orderedItemNotFound) {
+
+        orderedItemsByCategories[orderedItem.menuItemCategory].orderedItems.splice(count, 1);
+        orderedItemsByCategories[orderedItem.menuItemCategory].insertedOrderedItemsNames = removeStringsFromArray(orderedItemsByCategories[orderedItem.menuItemCategory].insertedOrderedItemsNames, [orderedItem.menuItem]);
+
+        if (orderedItemsByCategories[orderedItem.menuItemCategory].orderedItems.length == 0 && orderedItemsByCategories[orderedItem.menuItemCategory].insertedOrderedItemsNames.length == 0)
+            delete orderedItemsByCategories[orderedItem.menuItemCategory]
+
     }
 
 }
