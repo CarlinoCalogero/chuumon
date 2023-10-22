@@ -40,6 +40,11 @@ export const CALZONI: CategoriaConIngredientiCheLaDefiniscono = {
     ingredientiCheDefinisconoLaCategoria: []
 }
 
+export const FRITTURE: CategoriaConIngredientiCheLaDefiniscono = {
+    nomeCategoria: "fritture",
+    ingredientiCheDefinisconoLaCategoria: []
+}
+
 export const PIZZE_CATEGORIES = ["classiche", FARINE_SPECIALI.nomeCategoria, PINSE_ROMANE.nomeCategoria, PIZZE_ROSSE.nomeCategoria, PIZZE_BIANCHE.nomeCategoria, "speciali"]
 export const CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO = [CALZONI.nomeCategoria]
 export const CATEGORIE_CREA = {

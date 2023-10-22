@@ -5,7 +5,7 @@ import { useState, useEffect, ChangeEvent, MouseEvent } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { UnitaDiMisuraDatabaseTableRow } from '@/types/UnitaDiMisuraDatabaseTableRow';
 import { OrderedItem } from '@/types/OrderedItem';
-import { CALZONI, CATEGORIE_CREA, CATEGORIE_CREA_ARRAY, CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO, FARINE_SPECIALI, OGNI_INGREDIENTE_AGGIUNTO_COSTA_EURO, PINSE_ROMANE, PIZZE_BIANCHE, PIZZE_CATEGORIES, PIZZE_ROSSE, UNITA_DI_MISURA, checkIfMenuItemCanBeSlicedUp, checkIfMenuItemIsAPizza, getCategoriesAndMenuItemsObjectFromCategoriesWithMenuItemsObject, getArrayFromOrderedItemsByCategoriesObject, getObjectDeepCopy, getMenuItemPriceFromMenuItemsWithIngredientsObject, getMenuItemIngredientsFromMenuItemsWithIngredientsObject, getMenuItemCategoryFromMenuItemsWithIngredientsObject, addOrderedItemToOrderedItemByCategoriesObject, getMenuItemsFromCategoryFromCategoriesWithMenuItemsObject, SLICED_IN_OPTIONS_ARRAY, putIngredientsTogether, CREATED_MENU_ITEM_SUFFIX, EDITED_MENU_ITEM_SUFFIX, TAKE_AWAY_ORDER_SECTION_NUMBER_TRIGGER, getTimeAsString, MAX_TAKE_AWAY_ORDER_TIME, convertHHMMStringTimeFormatToDateObject } from '@/lib/utils';
+import { CALZONI, CATEGORIE_CREA, CATEGORIE_CREA_ARRAY, CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO, FARINE_SPECIALI, OGNI_INGREDIENTE_AGGIUNTO_COSTA_EURO, PINSE_ROMANE, PIZZE_BIANCHE, PIZZE_CATEGORIES, PIZZE_ROSSE, UNITA_DI_MISURA, checkIfMenuItemCanBeSlicedUp, checkIfMenuItemIsAPizza, getCategoriesAndMenuItemsObjectFromCategoriesWithMenuItemsObject, getArrayFromOrderedItemsByCategoriesObject, getObjectDeepCopy, getMenuItemPriceFromMenuItemsWithIngredientsObject, getMenuItemIngredientsFromMenuItemsWithIngredientsObject, getMenuItemCategoryFromMenuItemsWithIngredientsObject, addOrderedItemToOrderedItemByCategoriesObject, getMenuItemsFromCategoryFromCategoriesWithMenuItemsObject, SLICED_IN_OPTIONS_ARRAY, putIngredientsTogether, CREATED_MENU_ITEM_SUFFIX, EDITED_MENU_ITEM_SUFFIX, TAKE_AWAY_ORDER_SECTION_NUMBER_TRIGGER, getTimeAsString, MAX_TAKE_AWAY_ORDER_TIME, convertHHMMStringTimeFormatToDateObject, FRITTURE } from '@/lib/utils';
 import { TableOrderInfo } from '@/types/TableOrderInfo';
 import { IngredienteDatabaseTableRow } from '@/types/IngredienteDatabaseTableRow';
 import { CategoriaConIngredientiCheLaDefiniscono } from '@/types/CategoriaConIngredientiCheLaDefiniscono';
@@ -106,6 +106,9 @@ export default function Order() {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedCreaCategory, setSelectedCreaCategory] = useState<string>('');
   const [modificheCounter, setModificheCounter] = useState(1);
+
+  const [isOrderHasFries, setIsOrderHasFries] = useState(false);
+  const [isOrderHasSliceableMenuItem, setIsOrderHasSliceableMenuItem] = useState(false);
 
   useEffect(() => {
     console.log("runs one time only");
@@ -573,6 +576,12 @@ export default function Order() {
     addOrderedItemToOrderedItemByCategoriesObject(orderedItemsByCategoriesCopy, orderedItemCopy);
     setOrderedItemsByCategory(orderedItemsByCategoriesCopy);
 
+    if (isOrderHasFries == false && orderedItemCopy.menuItemCategory.toUpperCase() == FRITTURE.nomeCategoria.toLocaleUpperCase())
+      setIsOrderHasFries(true);
+
+    if (isOrderHasSliceableMenuItem == false && (orderedItemCopy.isMenuItemAPizza || orderedItemCopy.isCanMenuItemBeSlicedUp))
+      setIsOrderHasSliceableMenuItem(true);
+
     // reset
     resetFieldsAndOrderedItem();
 
@@ -815,7 +824,7 @@ export default function Order() {
 
         <div className={styles.checkBoxes}>
           {
-            !tableOrderInfo.isTakeAway &&
+            !tableOrderInfo.isTakeAway && isOrderHasFries &&
             <div>
               <input
                 type="checkbox"
@@ -828,7 +837,7 @@ export default function Order() {
 
           <div className={styles.slicedInOuterDiv}>
             {
-              !tableOrderInfo.isTakeAway &&
+              !tableOrderInfo.isTakeAway && isOrderHasSliceableMenuItem &&
               <div>
                 <input
                   type="checkbox"

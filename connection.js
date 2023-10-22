@@ -82,37 +82,6 @@ const db = new sqlite3.Database(
             )`
         );
 
-        // Insert new data into the products table
-        const table1 = [
-            1,
-            1,
-            159,
-            91,
-            0
-        ];
-
-        const table2 = [
-            2,
-            1,
-            85,
-            363,
-            0
-        ];
-
-        const table3 = [
-            3,
-            2,
-            291,
-            457,
-            -33.3916
-        ]
-
-        insertSql = `INSERT INTO tavolo(tableNumber, numberOfMergedTables, top, left, rotate) values(?,?,?,?,?)`;
-
-        db.run(insertSql, table1);
-        db.run(insertSql, table2);
-        db.run(insertSql, table3);
-
         //****** CATEGORIA ******//
         db.run(`drop table if exists categoria`);
         // Create tables table if it doesn't exist
@@ -227,7 +196,6 @@ const db = new sqlite3.Database(
                 numero_adulti INTEGER UNSIGNED NOT NULL,
                 CONSTRAINT unique_ordinazione UNIQUE (numero_tavolo , data_e_ora),
                 CONSTRAINT unique_numero_ordinazione_progressivo_giornaliero UNIQUE (numero_ordinazione_progressivo_giornaliero),
-                CONSTRAINT ordinazione_tavolo FOREIGN KEY (numero_tavolo) REFERENCES tavolo (id) ON DELETE CASCADE ON UPDATE CASCADE,
                 CHECK (pizze_divise_in IS NULL ${checkSlicedPizza})
             )`
         );
