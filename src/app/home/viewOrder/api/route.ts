@@ -9,9 +9,9 @@ import { TableOrderInfo } from "@/types/TableOrderInfo";
 import { OrderedItemByCategories } from "@/types/OrderedItemByCategories";
 import { Order } from "@/types/Order";
 import { ArgumentsUsedForUpdatingConsegnatoInAnOrder } from "@/types/ArgumentsUsedForUpdatingConsegnatoInAnOrder";
-import { DatabaseRowId } from "@/types/DatabaseRowId";
+import { DatabaseId } from "@/types/DatabaseId";
 import { getUserFromToken } from "@/lib/authentication";
-import { OrdinazioneDatabaseTableRowWithRowId } from "@/types/OrdinazioneDatabaseTableRowWithRowId";
+import { OrdinazioneDatabaseTableRow } from "@/types/OrdinazioneDatabaseTableRow";
 import { getOrderedItemsByCategoriesFromDatabase } from "@/lib/dbMethods";
 
 type OrdinazioneRowIdAndTableNumber = {
@@ -39,7 +39,7 @@ export async function GET() {
 
     if (user != '') {
 
-        const ordersFromDatabase = await db.all('SELECT rowid,* FROM ordinazione') as OrdinazioneDatabaseTableRowWithRowId[];
+        const ordersFromDatabase = await db.all('SELECT rowid,* FROM ordinazione') as OrdinazioneDatabaseTableRow[];
 
         // console.log("orders", orders)
 
@@ -115,7 +115,7 @@ export async function POST(request: Request, response: Response) {
 
             const stmt2 = await db.prepare('SELECT rowid FROM menu_item_not_in_menu WHERE nome=?');
             await stmt2.bind({ 1: argumentsUsedForUpdatingConsegnatoInAnOrder.orderedItem.menuItem })
-            const menuItemNotInMenuID: DatabaseRowId = await stmt2.get()
+            const menuItemNotInMenuID: DatabaseId = await stmt2.get()
 
             const result = await db.run("UPDATE contiene SET consegnato=? WHERE id_ordinazione=? AND id_menu_item_not_in_menu=?", [argumentsUsedForUpdatingConsegnatoInAnOrder.consegnato, ordinazioneRowIdAndTableNumber, menuItemNotInMenuID])
 
@@ -123,7 +123,7 @@ export async function POST(request: Request, response: Response) {
 
             const stmt3 = await db.prepare('SELECT rowid FROM menu_item WHERE nome=?');
             await stmt3.bind({ 1: argumentsUsedForUpdatingConsegnatoInAnOrder.orderedItem.menuItem })
-            const menuItemID: DatabaseRowId = await stmt3.get()
+            const menuItemID: DatabaseId = await stmt3.get()
 
             const result = await db.run("UPDATE contiene SET consegnato=? WHERE id_ordinazione=? AND id_menu_item=?", [argumentsUsedForUpdatingConsegnatoInAnOrder.consegnato, ordinazioneRowIdAndTableNumber?.rowid, menuItemID?.rowid])
 

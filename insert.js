@@ -16,6 +16,8 @@ const db = new sqlite3.Database(
     }
 );
 
+// when inserting rows in this way do not activate foreign key control
+
 (async () => {
 
     //add menu here
@@ -80,6 +82,9 @@ function insertMenuEntryIntoDataBase(categoryEntryName, categoryEntryPrice, cate
 
         const id = this.lastID; // get the id of the last inserted row
 
+        // add rowid to table for foreign key logic
+        db.run("UPDATE menu_item SET id = ? WHERE rowid = ?", [id, id]);
+
         if (categoryEntryDescription != null) {
 
             var ingredientsArray = categoryEntryDescription.split(",");
@@ -105,13 +110,13 @@ function addIngredientToDataBase(ingredient, menuEntryID) {
 
             // ingredient already exists
 
-            db.get('SELECT rowid FROM ingrediente WHERE nome = ?', ingredient, (err, row) => {
+            db.get('SELECT id FROM ingrediente WHERE nome = ?', ingredient, (err, row) => {
 
                 if (err) {
                     return console.error(err.message);
                 }
 
-                addComponeToDataBase(row.rowid, menuEntryID)
+                addComponeToDataBase(row.id, menuEntryID)
             });
 
         } else {
@@ -119,6 +124,9 @@ function addIngredientToDataBase(ingredient, menuEntryID) {
             // ingredient does not already exists
 
             const id = this.lastID; // get the id of the last inserted row
+
+            // add rowid to table for foreign key logic
+            db.run("UPDATE ingrediente SET id = ? WHERE rowid = ?", [id, id]);
 
             addComponeToDataBase(id, menuEntryID)
 

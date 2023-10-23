@@ -2,12 +2,12 @@ import { ContieneDatabaseTableRow } from "@/types/ContieneDatabaseTableRow";
 import { MenuItemDatabaseTableRow } from "@/types/MenuItemDatabaseTableRow";
 import { OrderedItem } from "@/types/OrderedItem";
 import { OrderedItemByCategories } from "@/types/OrderedItemByCategories";
-import { OrdinazioneDatabaseTableRowWithRowId } from "@/types/OrdinazioneDatabaseTableRowWithRowId";
+import { OrdinazioneDatabaseTableRow } from "@/types/OrdinazioneDatabaseTableRow";
 import { Database } from "sqlite";
 import { addOrderedItemToOrderedItemByCategoriesObject, checkIfMenuItemCanBeSlicedUp, checkIfMenuItemIsAPizza } from "./utils";
 import { MenuItemNotInMenuDatabaseTableRow } from "@/types/MenuItemNotInMenuDatabaseTableRow";
 
-export async function getOrderedItemsByCategoriesFromDatabase(db: Database | null, order: OrdinazioneDatabaseTableRowWithRowId) {
+export async function getOrderedItemsByCategoriesFromDatabase(db: Database | null, order: OrdinazioneDatabaseTableRow) {
 
     var orderedItemsByCategories: OrderedItemByCategories = {};
 
@@ -17,7 +17,7 @@ export async function getOrderedItemsByCategoriesFromDatabase(db: Database | nul
         // stmt is an instance of `sqlite#Statement`
         // which is a wrapper around `sqlite3#Statement`
         const stmt = await db.prepare('SELECT * FROM contiene WHERE id_ordinazione=?');
-        await stmt.bind({ 1: order.rowid })
+        await stmt.bind({ 1: order.id })
         const orderedItems: ContieneDatabaseTableRow[] = await stmt.all()
 
         // console.log("orderedItems", orderedItems)
@@ -140,6 +140,7 @@ export async function getOrderedItemsByCategoriesFromDatabase(db: Database | nul
                         newOrderedItem.price = menuItemNotInMenu.prezzo;
                         newOrderedItem.isMenuItemAPizza = checkIfMenuItemIsAPizza(menuItemNotInMenu.nome_categoria);
                         newOrderedItem.isCanMenuItemBeSlicedUp = checkIfMenuItemCanBeSlicedUp(menuItemNotInMenu.nome_categoria);
+                        newOrderedItem.isWasMenuItemCreated = true;
 
                         addOrderedItemToOrderedItemByCategoriesObject(orderedItemsByCategories, newOrderedItem);
 

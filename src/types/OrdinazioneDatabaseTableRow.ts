@@ -1,5 +1,5 @@
-export type OrdinazioneDatabaseTableRowWithRowId = {
-    rowid: number,
+export type OrdinazioneDatabaseTableRow = {
+    id: number,
     numero_tavolo: number,
     data_e_ora: Date,
     pick_up_time: Date | null,

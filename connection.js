@@ -24,28 +24,35 @@ const db = new sqlite3.Database(
     //  Serialize method ensures that database queries are executed sequentially
     db.serialize(() => {
 
+        // This turns on support for foreign keys, which is necessary for ON DELETE CASCADE to work properly.
+        db.get("PRAGMA foreign_keys = ON");
+
         //****** UTENTI ******//
         db.run(`drop table if exists utenti`);
         // Create utenti table if it doesn't exist
         db.run(
             `CREATE TABLE utenti (
+                id INTEGER UNSIGNED,
                 username VARCHAR(50) NOT NULL,
-                password VARCHAR(50) NOT NULL
+                password VARCHAR(50) NOT NULL,
+                CONSTRAINT ID_utenti PRIMARY KEY (id)
             )`
         );
 
         // Insert new data into the users table
         const user1 = [
+            1,
             "admin",
             adminPassword,
         ];
 
         const user2 = [
+            2,
             "user",
             userPassword,
         ];
 
-        let insertSql = `INSERT INTO utenti(username, password) VALUES(?, ?)`;
+        let insertSql = `INSERT INTO utenti(id, username, password) VALUES(?, ?, ?)`;
 
         db.run(insertSql, user1);
         db.run(insertSql, user2);
@@ -60,7 +67,7 @@ const db = new sqlite3.Database(
                 data_e_ora DATETIME NOT NULL,
                 CONSTRAINT unique_token UNIQUE (token),
                 CONSTRAINT unique_token_date UNIQUE (token, data_e_ora),
-                CONSTRAINT userID_token FOREIGN KEY (userID) REFERENCES utenti (rowid) ON DELETE RESTRICT ON UPDATE CASCADE
+                CONSTRAINT userID_token FOREIGN KEY (userID) REFERENCES utenti (id) ON DELETE RESTRICT ON UPDATE CASCADE
             )`
         );
 
@@ -69,6 +76,7 @@ const db = new sqlite3.Database(
         // Create tables table if it doesn't exist
         db.run(
             `CREATE TABLE tavolo (
+                id INTEGER UNSIGNED,
                 tableNumber INTEGER UNSIGNED NOT NULL,
                 numberOfMergedTables INTEGER UNSIGNED NOT NULL,
                 top FLOAT NOT NULL,
@@ -78,6 +86,7 @@ const db = new sqlite3.Database(
                 nome_prenotazione varchar(250),
                 numero_persone INTEGER UNSIGNED,
                 note varchar(250),
+                CONSTRAINT ID_tavolo PRIMARY KEY (id),
                 CONSTRAINT unique_tavolo UNIQUE (tableNumber)
             )`
         );
@@ -97,7 +106,9 @@ const db = new sqlite3.Database(
         // Create tables table if it doesn't exist
         db.run(
             `CREATE TABLE ingrediente (
+                id INTEGER UNSIGNED,
                 nome VARCHAR(50) NOT NULL,
+                CONSTRAINT ID_ingrediente PRIMARY KEY (id),
                 CONSTRAINT unique_ingrediente UNIQUE (nome)
             )`
         );
@@ -117,15 +128,52 @@ const db = new sqlite3.Database(
         db.run(insertSql, ["intera"]);
         db.run(insertSql, ["pezzi"]);
 
+        //****** ORDINAZIONE ******//
+        db.run(`drop table if exists ordinazione`);
+        // Create tables table if it doesn't exist
+
+        var checkSlicedPizza = ""
+
+        for (let count = 0; count < SLICED_IN_OPTIONS_ARRAY.length; count++) {
+
+            checkSlicedPizza = `${checkSlicedPizza} OR pizze_divise_in = ${SLICED_IN_OPTIONS_ARRAY[count]}`
+
+        }
+
+        db.run(
+            `CREATE TABLE ordinazione (
+                id INTEGER UNSIGNED,
+                numero_tavolo INTEGER UNSIGNED,
+                data_e_ora DATETIME NOT NULL,
+                pick_up_time DATETIME,
+                nome_ordinazione varchar(250),
+                note varchar(250),
+                is_si_dividono_le_pizze BOOLEAN NOT NULL,
+                is_fritti_prima_della_pizza BOOLEAN NOT NULL,
+                numero_ordinazione_progressivo_giornaliero INTEGER UNSIGNED NOT NULL,
+                pizze_divise_in INTEGER UNSIGNED,
+                numero_bambini INTEGER UNSIGNED,
+                numero_adulti INTEGER UNSIGNED NOT NULL,
+                CONSTRAINT ID_ordinazione PRIMARY KEY (id),
+                CONSTRAINT unique_ordinazione UNIQUE (numero_tavolo , data_e_ora),
+                CONSTRAINT unique_numero_ordinazione_progressivo_giornaliero UNIQUE (numero_ordinazione_progressivo_giornaliero),
+                CHECK (pizze_divise_in IS NULL ${checkSlicedPizza})
+            )`
+        );
+
         //****** MENU_ITEM_NOT_IN_MENU ******//
         db.run(`drop table if exists menu_item_not_in_menu`);
         // Create tables table if it doesn't exist
         db.run(
             `CREATE TABLE menu_item_not_in_menu (
+                id INTEGER UNSIGNED,
+                id_ordinazione INTEGER UNSIGNED NOT NULL,
                 nome varchar(50) NOT NULL,
                 prezzo FLOAT NOT NULL,
                 nome_categoria VARCHAR(50) NOT NULL,
+                CONSTRAINT ID_menu_item_not_in_menu PRIMARY KEY (id),
                 CONSTRAINT unique_menu_item_not_in_menu UNIQUE (nome),
+                CONSTRAINT menu_item_not_in_menu_ordinazione FOREIGN KEY (id_ordinazione) REFERENCES ordinazione (id) ON DELETE CASCADE ON UPDATE CASCADE,
                 CONSTRAINT menu_item_not_in_menu_categoria FOREIGN KEY (nome_categoria) REFERENCES categoria (nome) ON DELETE RESTRICT ON UPDATE CASCADE
             )`
         );
@@ -135,9 +183,11 @@ const db = new sqlite3.Database(
         // Create tables table if it doesn't exist
         db.run(
             `CREATE TABLE menu_item (
+                id INTEGER UNSIGNED,
                 nome varchar(50) NOT NULL,
                 prezzo FLOAT NOT NULL,
                 nome_categoria VARCHAR(50) NOT NULL,
+                CONSTRAINT ID_menu_item PRIMARY KEY (id),
                 CONSTRAINT unique_menu_item UNIQUE (nome),
                 CONSTRAINT menu_item_categoria FOREIGN KEY (nome_categoria) REFERENCES categoria (nome) ON DELETE RESTRICT ON UPDATE CASCADE
             )`
@@ -169,42 +219,12 @@ const db = new sqlite3.Database(
             )`
         );
 
-        //****** ORDINAZIONE ******//
-        db.run(`drop table if exists ordinazione`);
-        // Create tables table if it doesn't exist
-
-        var checkSlicedPizza = ""
-
-        for (let count = 0; count < SLICED_IN_OPTIONS_ARRAY.length; count++) {
-
-            checkSlicedPizza = `${checkSlicedPizza} OR pizze_divise_in = ${SLICED_IN_OPTIONS_ARRAY[count]}`
-
-        }
-
-        db.run(
-            `CREATE TABLE ordinazione (
-                numero_tavolo INTEGER UNSIGNED,
-                data_e_ora DATETIME NOT NULL,
-                pick_up_time DATETIME,
-                nome_ordinazione varchar(250),
-                note varchar(250),
-                is_si_dividono_le_pizze BOOLEAN NOT NULL,
-                is_fritti_prima_della_pizza BOOLEAN NOT NULL,
-                numero_ordinazione_progressivo_giornaliero INTEGER UNSIGNED NOT NULL,
-                pizze_divise_in INTEGER UNSIGNED,
-                numero_bambini INTEGER UNSIGNED,
-                numero_adulti INTEGER UNSIGNED NOT NULL,
-                CONSTRAINT unique_ordinazione UNIQUE (numero_tavolo , data_e_ora),
-                CONSTRAINT unique_numero_ordinazione_progressivo_giornaliero UNIQUE (numero_ordinazione_progressivo_giornaliero),
-                CHECK (pizze_divise_in IS NULL ${checkSlicedPizza})
-            )`
-        );
-
         //****** CONTIENE ******//
         db.run(`drop table if exists contiene`);
         // Create tables table if it doesn't exist
         db.run(
             `CREATE TABLE contiene (
+                id INTEGER UNSIGNED,
                 id_ordinazione INTEGER UNSIGNED NOT NULL,
                 id_menu_item INTEGER UNSIGNED,
                 id_menu_item_not_in_menu INTEGER UNSIGNED,
@@ -212,6 +232,7 @@ const db = new sqlite3.Database(
                 quantita INTEGER NOT NULL,
                 nome_unita_di_misura VARCHAR(50) NOT NULL,
                 consegnato BOOLEAN NOT NULL,
+                CONSTRAINT ID_contiene PRIMARY KEY (id),
                 CONSTRAINT unique_contiene UNIQUE (id_ordinazione , id_menu_item),
                 CONSTRAINT unique_contiene_not_in_menu UNIQUE (id_ordinazione , id_menu_item_not_in_menu),
                 CONSTRAINT contiene_ordinazione FOREIGN KEY (id_ordinazione)
