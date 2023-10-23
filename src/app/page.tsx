@@ -1,9 +1,8 @@
 'use client'
 
-import { useState, useEffect, ChangeEvent } from 'react'
-import styles from './page.module.css'
 import { User } from '@/types/User';
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation';
+import { ChangeEvent, useEffect, useState } from 'react';
 
 export default function Login() {
 

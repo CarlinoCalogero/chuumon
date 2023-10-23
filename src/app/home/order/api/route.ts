@@ -1,10 +1,8 @@
 import sqlite3 from "sqlite3";
 import { open, Database } from "sqlite";
 import { DATABASE_INFO, DATABASE_STRING_SEPARATOR, addIngredientToMenuItemWithIngredients, addMenuItemInCategory } from "@/lib/utils";
-import { MenuItemInfo } from "@/types/MenuItemInfo";
 import { UnitaDiMisuraDatabaseTableRow } from "@/types/UnitaDiMisuraDatabaseTableRow";
 import { IngredienteDatabaseTableRow } from "@/types/IngredienteDatabaseTableRow";
-import { TableOrder } from "@/types/TableOrder";
 import { DatabaseId } from "@/types/DatabaseId";
 import { MenuItemsWithIngredients } from "@/types/MenuItemsWithIngredients";
 import { CategoriesWithMenuItems } from "@/types/CategoriesWithMenuItems";

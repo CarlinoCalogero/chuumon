@@ -4,12 +4,7 @@ import { DATABASE_INFO, convertJavaScriptDateTimeToSQLLiteDateTime } from "@/lib
 import { checkPassword } from "@/lib/encrypt";
 import { User } from "@/types/User";
 import { USER_TOKEN_COOKIE_NAME, createToken, deleteAllTokensOlderThanSpecifiedDays, getUserFromToken } from "@/lib/authentication";
-
-type UserWithRowId = {
-    rowid: number,
-    username: string,
-    password: string,
-}
+import { UtentiDatabaseTableRow } from "@/types/UtentiDatabaseTableRow";
 
 // Let's initialize it as null initially, and we will assign the actual database instance later.
 var db: Database | null = null;
@@ -63,48 +58,49 @@ export async function POST(request: Request, response: Response) {
     // Perform a database query to retrieve all items from the "items" table
     // stmt is an instance of `sqlite#Statement`
     // which is a wrapper around `sqlite3#Statement`
-    const stmt = await db.prepare('SELECT rowid, * FROM utenti WHERE username=?');
+    const stmt = await db.prepare('SELECT * FROM utenti WHERE username=?');
     await stmt.bind({ 1: user.username })
-    const databaseUser: UserWithRowId | undefined = await stmt.get()
+    const databaseUser: UtentiDatabaseTableRow | undefined = await stmt.get()
 
     var isLogin = false;
-
-    if (databaseUser != undefined) {
-        isLogin = await checkPassword(user.password, databaseUser.password);
-    }
-
     let token: string = "";
 
-    if (isLogin) {
-        // implementation of token-based authentication
+    if (databaseUser != undefined) {
+        
+        isLogin = await checkPassword(user.password, databaseUser.password);
 
-        const databaseTokens: { token: string }[] = await db.all('SELECT token FROM tokens');
-        token = createToken();
+        if (isLogin) {
+            // implementation of token-based authentication
 
-        if (databaseTokens.length != 0) {
+            const databaseTokens: { token: string }[] = await db.all('SELECT token FROM tokens');
+            token = createToken();
 
-            let isTokenNotUnique = true;
+            if (databaseTokens.length != 0) {
 
-            do {
+                let isTokenNotUnique = true;
 
-                let isTokenUnique = true;
-                let count = 0;
-                while (isTokenUnique && count < databaseTokens.length) {
-                    if (databaseTokens[count].token == token) {
-                        isTokenUnique = false;
-                        token = createToken();
+                do {
+
+                    let isTokenUnique = true;
+                    let count = 0;
+                    while (isTokenUnique && count < databaseTokens.length) {
+                        if (databaseTokens[count].token == token) {
+                            isTokenUnique = false;
+                            token = createToken();
+                        }
+                        count++
                     }
-                    count++
-                }
 
-                if (isTokenUnique)
-                    isTokenNotUnique = false
+                    if (isTokenUnique)
+                        isTokenNotUnique = false
 
-            } while (isTokenNotUnique)
+                } while (isTokenNotUnique)
 
+            }
+
+            await db.run("INSERT INTO tokens(userID, token, data_e_ora)  VALUES(?, ?, ?)", [databaseUser.id, token, convertJavaScriptDateTimeToSQLLiteDateTime()]);
         }
 
-        await db.run("INSERT INTO tokens(userID, token, data_e_ora)  VALUES(?, ?, ?)", [databaseUser?.rowid, token, convertJavaScriptDateTimeToSQLLiteDateTime()]);
     }
 
     // Return the items as a JSON response with status 200

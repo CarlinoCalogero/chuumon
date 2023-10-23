@@ -1,8 +1,6 @@
 import sqlite3 from "sqlite3";
 import { open, Database } from "sqlite";
 import { DATABASE_INFO, removeNumbersFromArray } from "@/lib/utils";
-import { checkPassword } from "@/lib/encrypt";
-import { User } from "@/types/User";
 import { Table } from "@/types/Table";
 import { Sala } from "@/types/Sala";
 
@@ -78,9 +76,9 @@ export async function POST(request: Request, response: Response) {
 
         // stmt is an instance of `sqlite#Statement`
         // which is a wrapper around `sqlite3#Statement`
-        const stmt = await db.prepare('SELECT rowid FROM tavolo WHERE tableNumber = ?')
+        const stmt = await db.prepare('SELECT tableNumber FROM tavolo WHERE tableNumber = ?')
         await stmt.bind({ 1: currentTable.tableNumber })
-        let result: { rowid: string } | undefined = await stmt.get()
+        let result: { tableNumber: string } | undefined = await stmt.get()
 
         console.log(result)
 
@@ -90,13 +88,16 @@ export async function POST(request: Request, response: Response) {
         } else {
             console.log("tables exists")
             tableNumberOnlyNumbersArray = removeNumbersFromArray(tableNumberOnlyNumbersArray, [currentTable.tableNumber])
-            await db.run("UPDATE tavolo SET numberOfMergedTables = ?, top = ?, left = ?, rotate = ? WHERE rowid = ?", [currentTable.numberOfMergedTables, currentTable.top, currentTable.left, currentTable.rotate, result.rowid]);
+            await db.run("UPDATE tavolo SET numberOfMergedTables = ?, top = ?, left = ?, rotate = ? WHERE tableNumber = ?", [currentTable.numberOfMergedTables, currentTable.top, currentTable.left, currentTable.rotate, result.tableNumber]);
         }
     }
 
     console.log(tableNumberOnlyNumbersArray)
 
     for (let count = 0; count < tableNumberOnlyNumbersArray.length; count++) {
+
+        // This turns on support for foreign keys, which is necessary for ON DELETE CASCADE to work properly.
+        await db.get("PRAGMA foreign_keys = ON");
 
         const stmt2 = await db.prepare('DELETE FROM tavolo WHERE tableNumber=?')
         await stmt2.bind({ 1: tableNumberOnlyNumbersArray[count] })

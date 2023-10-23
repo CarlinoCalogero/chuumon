@@ -76,7 +76,6 @@ const db = new sqlite3.Database(
         // Create tables table if it doesn't exist
         db.run(
             `CREATE TABLE tavolo (
-                id INTEGER UNSIGNED,
                 tableNumber INTEGER UNSIGNED NOT NULL,
                 numberOfMergedTables INTEGER UNSIGNED NOT NULL,
                 top FLOAT NOT NULL,
@@ -86,7 +85,7 @@ const db = new sqlite3.Database(
                 nome_prenotazione varchar(250),
                 numero_persone INTEGER UNSIGNED,
                 note varchar(250),
-                CONSTRAINT ID_tavolo PRIMARY KEY (id),
+                CONSTRAINT ID_tavolo PRIMARY KEY (tableNumber),
                 CONSTRAINT unique_tavolo UNIQUE (tableNumber)
             )`
         );
@@ -157,6 +156,7 @@ const db = new sqlite3.Database(
                 CONSTRAINT ID_ordinazione PRIMARY KEY (id),
                 CONSTRAINT unique_ordinazione UNIQUE (numero_tavolo , data_e_ora),
                 CONSTRAINT unique_numero_ordinazione_progressivo_giornaliero UNIQUE (numero_ordinazione_progressivo_giornaliero),
+                CONSTRAINT ordinazione_numero_tavolo FOREIGN KEY (numero_tavolo) REFERENCES tavolo (tableNumber) ON DELETE RESTRICT ON UPDATE CASCADE,
                 CHECK (pizze_divise_in IS NULL ${checkSlicedPizza})
             )`
         );

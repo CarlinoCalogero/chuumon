@@ -1,14 +1,11 @@
 'use client'
 
-import { useState, useEffect, ChangeEvent, DragEvent, MouseEvent, useCallback } from 'react'
-import styles from './page.module.css'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { Tables } from '@/components/Tables';
-import { SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS, TAKE_AWAY_ORDER_SECTION_NUMBER_TRIGGER, getObjectDeepCopy, removeNumbersFromArray } from '@/lib/utils';
-import { Sala } from '@/types/Sala';
-import { Table } from '@/types/Table';
-import { AppearingButton } from '@/components/AppearingButton';
 import { Popup } from '@/components/Popup';
+import { Tables } from '@/components/Tables';
+import { TAKE_AWAY_ORDER_SECTION_NUMBER_TRIGGER, getObjectDeepCopy } from '@/lib/utils';
+import { Table } from '@/types/Table';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
 
 export default function Home() {
 

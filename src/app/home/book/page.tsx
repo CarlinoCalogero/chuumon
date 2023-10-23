@@ -3,18 +3,7 @@
 import styles from './page.module.css'
 import { useState, useEffect, ChangeEvent, MouseEvent } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { UnitaDiMisuraDatabaseTableRow } from '@/types/UnitaDiMisuraDatabaseTableRow';
-import { OrderedItem } from '@/types/OrderedItem';
-import { CALZONI, CATEGORIE_CREA, CATEGORIE_CREA_ARRAY, CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO, FARINE_SPECIALI, OGNI_INGREDIENTE_AGGIUNTO_COSTA_EURO, PINSE_ROMANE, PIZZE_BIANCHE, PIZZE_CATEGORIES, PIZZE_ROSSE, UNITA_DI_MISURA, checkIfMenuItemCanBeSlicedUp, checkIfMenuItemIsAPizza, getCategoriesAndMenuItemsObjectFromCategoriesWithMenuItemsObject, getArrayFromOrderedItemsByCategoriesObject, getObjectDeepCopy, getMenuItemPriceFromMenuItemsWithIngredientsObject, getMenuItemIngredientsFromMenuItemsWithIngredientsObject, getMenuItemCategoryFromMenuItemsWithIngredientsObject, addOrderedItemToOrderedItemByCategoriesObject, getMenuItemsFromCategoryFromCategoriesWithMenuItemsObject, SLICED_IN_OPTIONS_ARRAY, putIngredientsTogether, CREATED_MENU_ITEM_SUFFIX, EDITED_MENU_ITEM_SUFFIX, TAKE_AWAY_ORDER_SECTION_NUMBER_TRIGGER, getTimeAsString, MAX_TAKE_AWAY_ORDER_TIME, convertHHMMStringTimeFormatToDateObject } from '@/lib/utils';
-import { TableOrderInfo } from '@/types/TableOrderInfo';
-import { IngredienteDatabaseTableRow } from '@/types/IngredienteDatabaseTableRow';
-import { CategoriaConIngredientiCheLaDefiniscono } from '@/types/CategoriaConIngredientiCheLaDefiniscono';
-import { OrderedItemsByCategoriesArray } from '@/types/OrderedItemsByCategoriesArray';
-import { TableOrder } from '@/types/TableOrder';
-import { MenuItemsWithIngredients } from '@/types/MenuItemsWithIngredients';
-import { CategoriesWithMenuItems } from '@/types/CategoriesWithMenuItems';
-import { OrderedItemByCategories } from '@/types/OrderedItemByCategories';
-import { CategoriesAndMenuItems } from '@/types/CategoriesAndMenuItems';
+import { getObjectDeepCopy, getTimeAsString, MAX_TAKE_AWAY_ORDER_TIME, convertHHMMStringTimeFormatToDateObject } from '@/lib/utils';
 import { TableBooking } from '@/types/TableBooking';
 
 export default function Order() {
@@ -180,7 +169,7 @@ export default function Order() {
 
         <button onClick={bookTable}>Book</button>
         <button onClick={() => router.push("/home")}>Back</button>
-        
+
       </div>
 
     </div>
