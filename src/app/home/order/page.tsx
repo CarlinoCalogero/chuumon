@@ -808,6 +808,61 @@ export default function Order() {
 
   }
 
+  function modifyOrderedItem(onClickEvent: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>, inputOrderedItem: OrderedItem) {
+
+    let menuItemName: string | null = null;
+
+    if (inputOrderedItem.isWasMenuItemCreated && inputOrderedItem.menuItem != null) {
+
+      setIsWasCreaButtonPressed(!isWasCreaButtonPressed);
+
+      let createdMenuItemCategory = inputOrderedItem.menuItem.substring(0, inputOrderedItem.menuItem.indexOf(` ${CREATED_MENU_ITEM_SUFFIX}`))
+
+      if (createdMenuItemCategory.toUpperCase() == CATEGORIE_CREA.pizza.toUpperCase()) {
+        setSelectedCreaCategory(CATEGORIE_CREA.pizza)
+      } else if (createdMenuItemCategory.toUpperCase() == CATEGORIE_CREA.calzone.toUpperCase()) {
+        setSelectedCreaCategory(CATEGORIE_CREA.calzone)
+      }
+
+      // clear selectedCategory
+      setSelectedCategory('');
+
+      // show hidden input fields
+      setIsInsertingMenuItemWithSearch(null);
+    }
+
+    if (inputOrderedItem.isWereIngredientsModified && inputOrderedItem.menuItem != null && inputOrderedItem.menuItemCategory != null) {
+
+      menuItemName = inputOrderedItem.menuItem.substring(0, inputOrderedItem.menuItem.indexOf(` ${EDITED_MENU_ITEM_SUFFIX}`))
+      setSelectedCategory(inputOrderedItem.menuItemCategory)
+
+      // hide input fields
+      setIsInsertingMenuItemWithSearch(false);
+
+    }
+
+    setOrderedItem({
+      menuItem: menuItemName,
+      menuItemCategory: inputOrderedItem.menuItemCategory,
+      price: inputOrderedItem.price,
+      originalIngredients: inputOrderedItem.originalIngredients,
+      ingredients: inputOrderedItem.ingredients,
+      removedIngredients: inputOrderedItem.removedIngredients,
+      addedIngredients: inputOrderedItem.addedIngredients,
+      intolleranzaA: inputOrderedItem.intolleranzaA,
+      isWasMenuItemCreated: inputOrderedItem.isWasMenuItemCreated,
+      isWereIngredientsModified: inputOrderedItem.isWereIngredientsModified,
+      isMenuItemAPizza: inputOrderedItem.isMenuItemAPizza,
+      isCanMenuItemBeSlicedUp: inputOrderedItem.isCanMenuItemBeSlicedUp,
+      slicedIn: inputOrderedItem.slicedIn,
+      numberOf: inputOrderedItem.numberOf,
+      unitOfMeasure: inputOrderedItem.unitOfMeasure,
+      consegnato: inputOrderedItem.consegnato
+    })
+    removeOrderedItem(onClickEvent, inputOrderedItem);
+
+  }
+
   function removeOrderedItem(onClickEvent: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>, orderedItem: OrderedItem) {
 
     let orderedItemsByCategoryCopy = getObjectDeepCopy(orderedItemsByCategory) as OrderedItemByCategories;
@@ -938,7 +993,7 @@ export default function Order() {
               type='number'
               placeholder='Numero adulti'
               min={1}
-              value={tableOrderInfo.numeroAdulti == null ? 1 : tableOrderInfo.numeroAdulti}
+              value={tableOrderInfo.numeroAdulti == null ? '' : tableOrderInfo.numeroAdulti}
               onChange={e => handleNumberoAdultiChange(e)}
             />
 
@@ -946,7 +1001,7 @@ export default function Order() {
               type='number'
               placeholder='Numero bambini'
               min={0}
-              value={tableOrderInfo.numeroBambini == null ? 0 : tableOrderInfo.numeroBambini}
+              value={tableOrderInfo.numeroBambini == null ? '' : tableOrderInfo.numeroBambini}
               onChange={e => handleNumberoBambiniChange(e)}
             />
 
@@ -1083,6 +1138,7 @@ export default function Order() {
                 type='number'
                 placeholder='Number of'
                 min={1}
+                value={orderedItem.numberOf != null ? orderedItem.numberOf : ''}
                 onChange={e => handleNumberOfChange(e)}
               />
 
@@ -1182,6 +1238,7 @@ export default function Order() {
 
                       </div>
 
+                      <button onClick={e => modifyOrderedItem(e, orderedItem)}>Edit</button>
                       <button onClick={e => removeOrderedItem(e, orderedItem)}>X</button>
                     </div>)
                   }
