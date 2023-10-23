@@ -387,3 +387,34 @@ export function convertJavaScriptDateTimeToSQLLiteDateTime(inputDate: Date = new
     let tempDate = returnDate.toISOString().replace("T", " ");
     return tempDate.substring(0, tempDate.indexOf("."));
 }
+
+export function getCleanMenuItemName(menuItemName: string | null, separator: string = "_") {
+
+    if (menuItemName == null)
+        return '';
+
+    let menuItemNameCopy = "" + menuItemName;
+
+    return menuItemNameCopy.split(separator)[0];
+
+}
+
+export function checkModifiedMenuItemCollisionsAndReturnDisambiguationNumber(orderedItemsByCategory: OrderedItemByCategories, orderedItemCategory: string, inputOrderedItemName: string) {
+
+    let disambiguationNumber = 1;
+
+    if (Object.keys(orderedItemsByCategory).length == 0 || orderedItemsByCategory[orderedItemCategory] == undefined)
+        return disambiguationNumber;
+
+    console.log("pagliaccino2", orderedItemsByCategory[orderedItemCategory])
+
+    orderedItemsByCategory[orderedItemCategory].insertedOrderedItemsNames.forEach(orderedItemName => {
+
+        if (getCleanMenuItemName(orderedItemName, "(").toUpperCase().replace(/ /g, "") == getCleanMenuItemName(inputOrderedItemName, "(").toUpperCase().replace(/ /g, ""))
+            disambiguationNumber++;
+
+    });
+
+    return disambiguationNumber;
+
+}

@@ -5,7 +5,7 @@ import { useState, useEffect, ChangeEvent, MouseEvent } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { UnitaDiMisuraDatabaseTableRow } from '@/types/UnitaDiMisuraDatabaseTableRow';
 import { OrderedItem } from '@/types/OrderedItem';
-import { CALZONI, CATEGORIE_CREA, CATEGORIE_CREA_ARRAY, CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO, FARINE_SPECIALI, OGNI_INGREDIENTE_AGGIUNTO_COSTA_EURO, PINSE_ROMANE, PIZZE_BIANCHE, PIZZE_CATEGORIES, PIZZE_ROSSE, UNITA_DI_MISURA, checkIfMenuItemCanBeSlicedUp, checkIfMenuItemIsAPizza, getCategoriesAndMenuItemsObjectFromCategoriesWithMenuItemsObject, getArrayFromOrderedItemsByCategoriesObject, getObjectDeepCopy, getMenuItemPriceFromMenuItemsWithIngredientsObject, getMenuItemIngredientsFromMenuItemsWithIngredientsObject, getMenuItemCategoryFromMenuItemsWithIngredientsObject, addOrderedItemToOrderedItemByCategoriesObject, getMenuItemsFromCategoryFromCategoriesWithMenuItemsObject, SLICED_IN_OPTIONS_ARRAY, putIngredientsTogether, CREATED_MENU_ITEM_SUFFIX, EDITED_MENU_ITEM_SUFFIX, TAKE_AWAY_ORDER_SECTION_NUMBER_TRIGGER, getTimeAsString, MAX_TAKE_AWAY_ORDER_TIME, convertHHMMStringTimeFormatToDateObject, FRITTURE, removeStringsFromArray, removeOrderedItemFromOrderedItemByCategoriesObject } from '@/lib/utils';
+import { CALZONI, CATEGORIE_CREA, CATEGORIE_CREA_ARRAY, CATEGORIE_OLTRE_ALLA_PIZZA_CHE_POSSONO_ESSERE_TAGLIATI_QUANDO_VENGONO_PORTATI_AL_TAVOLO, FARINE_SPECIALI, OGNI_INGREDIENTE_AGGIUNTO_COSTA_EURO, PINSE_ROMANE, PIZZE_BIANCHE, PIZZE_CATEGORIES, PIZZE_ROSSE, UNITA_DI_MISURA, checkIfMenuItemCanBeSlicedUp, checkIfMenuItemIsAPizza, getCategoriesAndMenuItemsObjectFromCategoriesWithMenuItemsObject, getArrayFromOrderedItemsByCategoriesObject, getObjectDeepCopy, getMenuItemPriceFromMenuItemsWithIngredientsObject, getMenuItemIngredientsFromMenuItemsWithIngredientsObject, getMenuItemCategoryFromMenuItemsWithIngredientsObject, addOrderedItemToOrderedItemByCategoriesObject, getMenuItemsFromCategoryFromCategoriesWithMenuItemsObject, SLICED_IN_OPTIONS_ARRAY, putIngredientsTogether, CREATED_MENU_ITEM_SUFFIX, EDITED_MENU_ITEM_SUFFIX, TAKE_AWAY_ORDER_SECTION_NUMBER_TRIGGER, getTimeAsString, MAX_TAKE_AWAY_ORDER_TIME, convertHHMMStringTimeFormatToDateObject, FRITTURE, removeStringsFromArray, removeOrderedItemFromOrderedItemByCategoriesObject, getCleanMenuItemName, checkModifiedMenuItemCollisionsAndReturnDisambiguationNumber } from '@/lib/utils';
 import { TableOrderInfo } from '@/types/TableOrderInfo';
 import { IngredienteDatabaseTableRow } from '@/types/IngredienteDatabaseTableRow';
 import { CategoriaConIngredientiCheLaDefiniscono } from '@/types/CategoriaConIngredientiCheLaDefiniscono';
@@ -106,7 +106,6 @@ export default function Order() {
   const [addedIngredient, setAddedIngredient] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedCreaCategory, setSelectedCreaCategory] = useState<string>('');
-  const [modificheCounter, setModificheCounter] = useState(1);
 
   const [isOrderHasFries, setIsOrderHasFries] = useState(false);
   const [isOrderHasSliceableMenuItem, setIsOrderHasSliceableMenuItem] = useState(false);
@@ -564,7 +563,8 @@ export default function Order() {
 
     // isWasMenuItemCreated
     if (isWasCreaButtonPressed) {
-      orderedItemCopy.menuItem = `${selectedCreaCategory.toUpperCase()} ${CREATED_MENU_ITEM_SUFFIX} (${modificheCounter})`
+      let newMenuItemName = `${selectedCreaCategory.toUpperCase()} ${CREATED_MENU_ITEM_SUFFIX}`
+      orderedItemCopy.menuItem = `${newMenuItemName} (${checkModifiedMenuItemCollisionsAndReturnDisambiguationNumber(orderedItemsByCategory, orderedItemCopy.menuItemCategory, newMenuItemName)})`
       orderedItemCopy.isWasMenuItemCreated = true;
     } else {
       orderedItemCopy.isWasMenuItemCreated = false;
@@ -573,7 +573,8 @@ export default function Order() {
     // isWereIngredientsModified
     if (orderedItemCopy.isWereIngredientsModified) {
       if (!orderedItemCopy.isWasMenuItemCreated) {
-        orderedItemCopy.menuItem = `${orderedItemCopy.menuItem} ${EDITED_MENU_ITEM_SUFFIX} (${modificheCounter})`
+        let newMenuItemName = `${orderedItemCopy.menuItem} ${EDITED_MENU_ITEM_SUFFIX}`
+        orderedItemCopy.menuItem = `${newMenuItemName} (${checkModifiedMenuItemCollisionsAndReturnDisambiguationNumber(orderedItemsByCategory, orderedItemCopy.menuItemCategory, newMenuItemName)})`
       }
 
     }
@@ -642,10 +643,6 @@ export default function Order() {
 
     // reset selectedCreaCategory
     setSelectedCreaCategory("")
-
-    // incrementModificheCounter
-    if (isWasCreaButtonPressed || orderedItemCopy.isWereIngredientsModified)
-      setModificheCounter(modificheCounter + 1)
 
   }
 
@@ -1157,7 +1154,7 @@ export default function Order() {
 
                       <div className={styles.orderedItemInnerDiv}>
 
-                        <b>{orderedItem.numberOf} {orderedItem.unitOfMeasure?.toUpperCase()} - {orderedItem.menuItem?.toUpperCase()}</b>
+                        <b>{orderedItem.numberOf} {orderedItem.unitOfMeasure?.toUpperCase()} - {getCleanMenuItemName(orderedItem.menuItem).toUpperCase()}</b>
 
                         {
                           orderedItem.slicedIn != null &&
