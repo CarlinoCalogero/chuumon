@@ -71,12 +71,23 @@ const db = new sqlite3.Database(
             )`
         );
 
+        //****** SALA ******//
+        db.run(`drop table if exists sala`);
+        // Create tables table if it doesn't exist
+        db.run(
+            `CREATE TABLE sala (
+                salaNumber INTEGER UNSIGNED NOT NULL,
+                CONSTRAINT ID_sala PRIMARY KEY (salaNumber)
+            )`
+        );
+
         //****** TAVOLO ******//
         db.run(`drop table if exists tavolo`);
         // Create tables table if it doesn't exist
         db.run(
             `CREATE TABLE tavolo (
                 tableNumber INTEGER UNSIGNED NOT NULL,
+                numero_sala INTEGER UNSIGNED NOT NULL,
                 numberOfMergedTables INTEGER UNSIGNED NOT NULL,
                 top FLOAT NOT NULL,
                 left FLOAT NOT NULL,
@@ -86,7 +97,8 @@ const db = new sqlite3.Database(
                 numero_persone INTEGER UNSIGNED,
                 note varchar(250),
                 CONSTRAINT ID_tavolo PRIMARY KEY (tableNumber),
-                CONSTRAINT unique_tavolo UNIQUE (tableNumber)
+                CONSTRAINT unique_tavolo UNIQUE (tableNumber),
+                CONSTRAINT tavolo_sala FOREIGN KEY (numero_sala) REFERENCES sala (salaNumber) ON DELETE CASCADE ON UPDATE CASCADE
             )`
         );
 

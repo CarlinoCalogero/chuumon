@@ -1,5 +1,6 @@
 export type Table = {
   tableNumber: number,
+  numero_sala: number,
   numberOfMergedTables: number,
   top: number,
   left: number,

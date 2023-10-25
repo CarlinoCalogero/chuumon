@@ -1,8 +1,9 @@
 import sqlite3 from "sqlite3";
 import { open, Database } from "sqlite";
-import { DATABASE_INFO, removeNumbersFromArray } from "@/lib/utils";
+import { DATABASE_INFO, populateSalaObject, removeNumbersFromArray } from "@/lib/utils";
 import { Table } from "@/types/Table";
 import { Sala } from "@/types/Sala";
+import { SalaWithTables } from "@/types/SalaWithTables";
 
 // Let's initialize it as null initially, and we will assign the actual database instance later.
 var db: Database | null = null;
@@ -19,20 +20,12 @@ export async function GET() {
         });
     }
 
+    const tables: Table[] = await db.all('SELECT tableNumber, numberOfMergedTables, top, left, rotate, ora, nome_prenotazione, numero_persone, note FROM tavolo');
+
     // Perform a database query to retrieve all items from the "items" table
     // stmt is an instance of `sqlite#Statement`
     // which is a wrapper around `sqlite3#Statement`
-    var sala: Sala = {
-        currentMaxTableNumber: 0,
-        tableNumbersArray: [],
-        tables: await db.all('SELECT * FROM tavolo')
-    };
-
-    sala.tables.forEach(table => {
-        sala.tableNumbersArray.push(table.tableNumber);
-        if (sala.currentMaxTableNumber < table.tableNumber)
-            sala.currentMaxTableNumber = table.tableNumber
-    });
+    let sala = populateSalaObject(tables);
 
     // Return the items as a JSON response with status 200
     return new Response(JSON.stringify(sala), {

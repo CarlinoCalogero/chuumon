@@ -4,6 +4,8 @@ import { Popup } from '@/components/Popup';
 import { Tables } from '@/components/Tables';
 import { TAKE_AWAY_ORDER_SECTION_NUMBER_TRIGGER, getObjectDeepCopy } from '@/lib/utils';
 import { OrderedTablesWithMenuItemsAndDeliveredMenuItems } from '@/types/OrderedTablesWithMenuItemsAndDeliveredMenuItems';
+import { Sala } from '@/types/Sala';
+import { SalaWithTables } from '@/types/SalaWithTables';
 import { Table } from '@/types/Table';
 import { TableMenuItemsNumber } from '@/types/TableMenuItemsNumber';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -16,7 +18,12 @@ export default function Home() {
   const [showNotBookedTablePopUp, setShowNotBookedTablePopUp] = useState(false);
   const [showBookedTablePopUp, setShowBookedTablePopUp] = useState(false);
 
-  const [tablesArray, setTablesArray] = useState<Table[]>([]);
+  const [salaNumber, setSalaNumber] = useState(1);
+  const [sala, setSala] = useState<Sala>({
+    currentMaxTableNumber: -1,
+    tableNumbersArray: [],
+    saleWithTables: {}
+  });
   const [orderedTablesWithMenuItemsAndDeliveredMenuItems, setOrderedTablesWithMenuItemsAndDeliveredMenuItems] = useState<OrderedTablesWithMenuItemsAndDeliveredMenuItems>({})
 
   const [clickedTable, setClickedTable] = useState<Table | null>(null);
@@ -44,8 +51,9 @@ export default function Home() {
   ]
 
   useEffect(() => {
-    console.log(tablesArray)
-  }, [tablesArray])
+    console.log(sala);
+    setSalaNumber(1);
+  }, [sala])
 
   useEffect(() => {
     console.log(orderedTablesWithMenuItemsAndDeliveredMenuItems)
@@ -62,7 +70,7 @@ export default function Home() {
     })
       .then((res) => res.json()) // Parse the response data as JSON
       .then((data) => {
-        setTablesArray(data.tables);
+        setSala(data.salasWithTables);
         setOrderedTablesWithMenuItemsAndDeliveredMenuItems(data.orderedTablesWithMenuItemsAndDeliveredMenuItems);
       }); // Update the state with the fetched data
 
@@ -154,14 +162,22 @@ export default function Home() {
 
   }
 
+  function handleChangeSalaNumber(salaNumber: number) {
+    setSalaNumber(salaNumber);
+  }
+
   return (
 
     <div>
 
       <button onClick={() => router.push("/home/order" + '?' + createQueryString('tableNumber', TAKE_AWAY_ORDER_SECTION_NUMBER_TRIGGER + ''))}>Take away order</button>
+      {
+        Object.keys(sala.saleWithTables).map((i, salaNumber) => <button key={"salaNumber_" + i} onClick={() => handleChangeSalaNumber(salaNumber)}>Sala {salaNumber}</button>)
+      }
 
       {
-        tablesArray.map((table, i) => <Tables
+        sala.saleWithTables[salaNumber] != undefined &&
+        sala.saleWithTables[salaNumber].map((table, i) => <Tables
           key={"table" + i}
           table={table}
           tableOrderMenuItemInfo={orderedTablesWithMenuItemsAndDeliveredMenuItems[table.tableNumber]}

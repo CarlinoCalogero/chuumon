@@ -9,6 +9,9 @@ import { OrderedItemByCategories } from "@/types/OrderedItemByCategories";
 import { OrderedItemsByCategoriesArray } from "@/types/OrderedItemsByCategoriesArray";
 import { CategoriesAndMenuItems } from "@/types/CategoriesAndMenuItems";
 import { HoursAndMinutesInSeconds } from "@/types/HoursAndMinutesInSeconds";
+import { Table } from "@/types/Table";
+import { SalaWithTables } from "@/types/SalaWithTables";
+import { Sala } from "@/types/Sala";
 
 export const DATABASE_INFO = "database.db";
 
@@ -416,5 +419,33 @@ export function checkModifiedMenuItemCollisionsAndReturnDisambiguationNumber(ord
     });
 
     return disambiguationNumber;
+
+}
+
+export function populateSalaObject(tables: Table[]) {
+
+    let sala: Sala = {
+        currentMaxTableNumber: -1,
+        tableNumbersArray: [],
+        saleWithTables: {}
+    }
+
+    for (let count = 0; count < tables.length; count++) {
+
+        let table = tables[count];
+        sala.tableNumbersArray.push(table.tableNumber);
+
+        if (sala.currentMaxTableNumber < table.tableNumber)
+            sala.currentMaxTableNumber = table.tableNumber
+
+        let salaNumber = table.numero_sala;
+        if (salaNumber in sala.saleWithTables) {
+            sala.saleWithTables[salaNumber].push(table);
+        } else {
+            sala.saleWithTables[salaNumber] = [table];
+        }
+    }
+
+    return sala;
 
 }

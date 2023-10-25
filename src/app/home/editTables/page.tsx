@@ -17,7 +17,7 @@ export default function EditTables() {
     {
       currentMaxTableNumber: 0,
       tableNumbersArray: [],
-      tables: []
+      saleWithTables: {}
     });
 
   var draggedTable: Table | null = null;
@@ -28,10 +28,12 @@ export default function EditTables() {
 
   const [salaAfterTableDrop, setSalaAfterTableDrop] = useState<Sala | null>(null)
 
+  const [selectedSalaNumber, setSelectedSalaNumber] = useState(1);
+
   function getTableIndex(table: Table) {
 
-    for (var count = 0; count < sala.tables.length; count++) {
-      if (table.tableNumber == sala.tables[count].tableNumber)
+    for (var count = 0; count < sala.saleWithTables[table.numero_sala].length; count++) {
+      if (table.tableNumber == sala.saleWithTables[table.numero_sala][count].tableNumber)
         return count;
     }
 
@@ -55,11 +57,12 @@ export default function EditTables() {
     var dummySala = getObjectDeepCopy(sala) as Sala;
 
     // split one table from the clicked table
-    dummySala.tables[tableIndex].numberOfMergedTables = table.numberOfMergedTables - 1;
+    dummySala.saleWithTables[table.numero_sala][tableIndex].numberOfMergedTables = table.numberOfMergedTables - 1;
 
     // create a to-be-added table
     var newTable: Table = {
       tableNumber: -1,
+      numero_sala: -1,
       numberOfMergedTables: 1,
       top: table.top,
       left: table.left + ((table.numberOfMergedTables - 1) * SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS) + 50,
@@ -83,7 +86,7 @@ export default function EditTables() {
 
   function onClickWhileInDeleteTableMode(table: Table) {
 
-    var dummySala = removeTables([table.tableNumber]);
+    var dummySala = removeTables([table.tableNumber], table.numero_sala);
 
     if (dummySala == null)
       return
@@ -175,8 +178,14 @@ export default function EditTables() {
 
   function salaConformityCheck(salaObject: Sala) {
 
+    let salaObjectKeys = Object.keys(salaObject.saleWithTables);
+    let numberOfTables = 0;
+    for (let count = 0; count < salaObjectKeys.length; count++) {
+      numberOfTables = numberOfTables + salaObject.saleWithTables[count].length;
+    }
+
     // if lengths don't match there was an error
-    if (salaObject.tableNumbersArray.length != salaObject.tables.length) {
+    if (salaObject.tableNumbersArray.length != numberOfTables) {
       console.log("Errore! Nonconforming sala object")
       return false;
     }
@@ -226,7 +235,13 @@ export default function EditTables() {
       dummySala!.tableNumbersArray.push(newTableNumber);
 
       // add the new table to the array
-      dummySala!.tables.push(table);
+      if (table.numero_sala in dummySala!.saleWithTables) {
+        console.log("buai")
+        dummySala!.saleWithTables[table.numero_sala].push(table);
+      } else {
+        console.log("ai")
+        dummySala!.saleWithTables[table.numero_sala] = [table];
+      }
 
       // update the current max table number
       if (dummySala!.currentMaxTableNumber < newTableNumber)
@@ -238,7 +253,7 @@ export default function EditTables() {
 
   }
 
-  function removeTables(tableNumbers: number[], dummySala: Sala | null = null) {
+  function removeTables(tableNumbers: number[], salaNumber: number, dummySala: Sala | null = null) {
 
     // make a copy of the sala object if needed
     if (dummySala != null && !salaConformityCheck(dummySala)) {
@@ -255,8 +270,8 @@ export default function EditTables() {
       var newTableArray: Table[] = [];
 
       // insert in the new tableArray only the tables with a different table number than the one that will be removed
-      for (var count = 0; count < dummySala.tables.length; count++) {
-        var currentTable = dummySala.tables[count];
+      for (var count = 0; count < dummySala.saleWithTables[salaNumber].length; count++) {
+        var currentTable = dummySala.saleWithTables[salaNumber][count];
         if (tableNumbers.indexOf(currentTable.tableNumber) == -1)
           newTableArray.push(currentTable);
 
@@ -270,7 +285,7 @@ export default function EditTables() {
       }
 
       // update the new tableArray
-      dummySala.tables = newTableArray;
+      dummySala.saleWithTables[salaNumber] = newTableArray;
     }
 
     return dummySala;
@@ -281,6 +296,7 @@ export default function EditTables() {
 
     var newTable: Table = {
       tableNumber: -1,
+      numero_sala: selectedSalaNumber,
       numberOfMergedTables: 1,
       top: onClickEvent.clientY - (SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS / 2),
       left: onClickEvent.clientX - (SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS / 2),
@@ -327,7 +343,7 @@ export default function EditTables() {
 
     fetch("http://localhost:3000/home/editTables/api", {
       method: "POST",
-      body: JSON.stringify(sala.tables),
+      body: JSON.stringify(sala.saleWithTables),
       headers: {
         "Content-Type": "application/json", // Set the request headers to indicate JSON format
       },
@@ -366,6 +382,14 @@ export default function EditTables() {
 
   }, [])
 
+  function handleChangeSalaNumber(salaNumber: number) {
+    setSelectedSalaNumber(salaNumber);
+  }
+
+  function addSala() {
+    //miao
+  }
+
   return (
 
     <AppearingButton
@@ -376,9 +400,11 @@ export default function EditTables() {
     >
 
       {
-        sala.tables.map((table, i) => <Tables
+        sala.saleWithTables[selectedSalaNumber] != undefined &&
+        sala.saleWithTables[selectedSalaNumber].map((table, i) => <Tables
           key={"table" + i}
           table={table}
+          tableOrderMenuItemInfo={undefined}
           isCanBeClicked={true}
           isCanBeDragged={true}
           isCanBeRotated={isRotateTableModeOn}
@@ -405,6 +431,12 @@ export default function EditTables() {
         className={isResetTableRotationModeOn ? styles.deleteTableModeOn : styles.deleteTableModeOff}
         onClick={() => setIsResetTableRotationModeOn(!isResetTableRotationModeOn)}
       >Reset table rotation {isResetTableRotationModeOn ? "on" : "off"}</button>
+
+      {
+        Object.keys(sala.saleWithTables).map((i, salaNumber) => <button key={"salaNumber_" + i} onClick={() => handleChangeSalaNumber(salaNumber)}>Sala {salaNumber}</button>)
+      }
+
+      <button onClick={() => addSala}>Add Sala</button>
 
       <button onClick={() => router.push("/")}>Back</button>
 
