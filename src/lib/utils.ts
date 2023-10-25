@@ -449,3 +449,18 @@ export function populateSalaObject(tables: Table[]) {
     return sala;
 
 }
+
+export function findMissingNumber(arrayOfNumbers: number[]) {
+
+    let count = 1;
+
+    for (count; count <= arrayOfNumbers.length + 1; count++) {
+        if (arrayOfNumbers.indexOf(count) == -1)
+            // a table with this number does not exist
+            return count;
+
+    }
+
+    return count;
+
+}

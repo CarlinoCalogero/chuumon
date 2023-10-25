@@ -4,7 +4,7 @@ import { useState, useEffect, ChangeEvent, DragEvent, MouseEvent } from 'react'
 import styles from './page.module.css'
 import { useRouter } from 'next/navigation'
 import { Tables } from '@/components/Tables';
-import { SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS, getObjectDeepCopy, removeNumbersFromArray } from '@/lib/utils';
+import { SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS, findMissingNumber, getObjectDeepCopy, removeNumbersFromArray } from '@/lib/utils';
 import { Sala } from '@/types/Sala';
 import { Table } from '@/types/Table';
 import { AppearingButton } from '@/components/AppearingButton';
@@ -209,28 +209,8 @@ export default function EditTables() {
 
     tables.forEach(table => {
 
-      // table numeration starts at 1
-      var newTableNumber = 1;
-      // check if there are already tables
-      if (dummySala!.tableNumbersArray.length != 0) {
-        // there is at least one table
-        var tableAdded = false;
-        // check which table number is missing
-        while (!tableAdded && newTableNumber <= dummySala!.tableNumbersArray.length + 1) {
-          if (dummySala!.tableNumbersArray.indexOf(newTableNumber) == -1) {
-            // a table with this number does not exist
-            tableAdded = true;
-          } else {
-            // a table with this number already exists
-            newTableNumber++;
-          }
-        }
-        // if there were all the numbers there is an error
-        if (!tableAdded) {
-          console.log("Errore");
-          return dummySala;
-        }
-      }
+      // find missing number
+      let newTableNumber = findMissingNumber(dummySala!.tableNumbersArray);
 
       // set the new table number
       table.tableNumber = newTableNumber;
@@ -395,15 +375,41 @@ export default function EditTables() {
     let salaNumbersArray = salaObjectKeys.map(Number);
     if (salaNumbersArray.length == 0)
       return
-    let newSalaNumber = Math.max(...salaNumbersArray) + 1;
+    let newSalaNumber = findMissingNumber(salaNumbersArray);
     let salaObjectDeepCopy = getObjectDeepCopy(sala) as Sala;
-    if(newSalaNumber in salaObjectDeepCopy.saleWithTables){
+    if (newSalaNumber in salaObjectDeepCopy.saleWithTables) {
       return
-    }else{
+    } else {
       salaObjectDeepCopy.saleWithTables[newSalaNumber] = [];
       setSelectedSalaNumber(newSalaNumber);
       setSala(salaObjectDeepCopy);
     }
+  }
+
+  function removeCurrentSala() {
+
+    let toBeRemovedTableNumbers: number[] = [];
+
+    sala.saleWithTables[selectedSalaNumber].forEach(table => {
+      toBeRemovedTableNumbers.push(table.tableNumber);
+    });
+
+    // removes table
+    let newSala = removeTables(toBeRemovedTableNumbers, selectedSalaNumber);
+    // removes attribute
+    delete newSala.saleWithTables[selectedSalaNumber]
+
+    // set SelectedSalaNumber to new sala
+    let newsSalaObjectKeys = Object.keys(newSala.saleWithTables);
+    let newSalaNumbersArray = newsSalaObjectKeys.map(Number);
+    if(newsSalaObjectKeys.length == 0){
+      setSelectedSalaNumber(0)
+    }else{
+      setSelectedSalaNumber(newSalaNumbersArray[0])
+    }
+
+    // set newSala
+    setSala(newSala)
   }
 
   return (
@@ -459,6 +465,8 @@ export default function EditTables() {
       </select>
 
       <button onClick={addSala}>Add Sala</button>
+
+      <button onClick={removeCurrentSala}>Remove current sala</button>
 
       <button onClick={() => router.push("/")}>Back</button>
 
