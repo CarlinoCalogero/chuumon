@@ -9,7 +9,7 @@ import { SalaWithTables } from '@/types/SalaWithTables';
 import { Table } from '@/types/Table';
 import { TableMenuItemsNumber } from '@/types/TableMenuItemsNumber';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useState } from 'react';
 
 export default function Home() {
 
@@ -18,7 +18,7 @@ export default function Home() {
   const [showNotBookedTablePopUp, setShowNotBookedTablePopUp] = useState(false);
   const [showBookedTablePopUp, setShowBookedTablePopUp] = useState(false);
 
-  const [salaNumber, setSalaNumber] = useState(1);
+  const [selectedSalaNumber, setSelectedSalaNumber] = useState(0);
   const [sala, setSala] = useState<Sala>({
     currentMaxTableNumber: -1,
     tableNumbersArray: [],
@@ -52,7 +52,7 @@ export default function Home() {
 
   useEffect(() => {
     console.log(sala);
-    setSalaNumber(1);
+    setSelectedSalaNumber(0);
   }, [sala])
 
   useEffect(() => {
@@ -70,7 +70,7 @@ export default function Home() {
     })
       .then((res) => res.json()) // Parse the response data as JSON
       .then((data) => {
-        setSala(data.salasWithTables);
+        setSala(data.sala);
         setOrderedTablesWithMenuItemsAndDeliveredMenuItems(data.orderedTablesWithMenuItemsAndDeliveredMenuItems);
       }); // Update the state with the fetched data
 
@@ -162,8 +162,8 @@ export default function Home() {
 
   }
 
-  function handleChangeSalaNumber(salaNumber: number) {
-    setSalaNumber(salaNumber);
+  function handleChangeSalaNumber(onChangeEvent: ChangeEvent<HTMLSelectElement>) {
+    setSelectedSalaNumber(Number(onChangeEvent.target.value));
   }
 
   return (
@@ -171,13 +171,20 @@ export default function Home() {
     <div>
 
       <button onClick={() => router.push("/home/order" + '?' + createQueryString('tableNumber', TAKE_AWAY_ORDER_SECTION_NUMBER_TRIGGER + ''))}>Take away order</button>
-      {
-        Object.keys(sala.saleWithTables).map((i, salaNumber) => <button key={"salaNumber_" + i} onClick={() => handleChangeSalaNumber(salaNumber)}>Sala {salaNumber}</button>)
-      }
+
+      <select
+        value={selectedSalaNumber}
+        onChange={e => handleChangeSalaNumber(e)}
+      >
+        <option value='' disabled></option>,
+        {
+          Object.keys(sala.saleWithTables).map((salaNumber, i) => <option key={"salaNumber_" + i} value={salaNumber}>Sala {salaNumber}</option>)
+        }
+      </select>
 
       {
-        sala.saleWithTables[salaNumber] != undefined &&
-        sala.saleWithTables[salaNumber].map((table, i) => <Tables
+        sala.saleWithTables[selectedSalaNumber] != undefined &&
+        sala.saleWithTables[selectedSalaNumber].map((table, i) => <Tables
           key={"table" + i}
           table={table}
           tableOrderMenuItemInfo={orderedTablesWithMenuItemsAndDeliveredMenuItems[table.tableNumber]}
