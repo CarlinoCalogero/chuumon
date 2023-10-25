@@ -28,7 +28,7 @@ export default function EditTables() {
 
   const [salaAfterTableDrop, setSalaAfterTableDrop] = useState<Sala | null>(null)
 
-  const [selectedSalaNumber, setSelectedSalaNumber] = useState(1);
+  const [selectedSalaNumber, setSelectedSalaNumber] = useState(0);
 
   function getTableIndex(table: Table) {
 
@@ -126,11 +126,11 @@ export default function EditTables() {
     }
 
     // get salta object copy
-    var dummySala = getObjectDeepCopy(sala);
+    var dummySala = getObjectDeepCopy(sala) as Sala;
 
     // update table top and left values
-    dummySala.tables[tableIndex].top = table.top;
-    dummySala.tables[tableIndex].left = table.left;
+    dummySala.saleWithTables[table.numero_sala][tableIndex].top = table.top;
+    dummySala.saleWithTables[table.numero_sala][tableIndex].left = table.left;
 
     if (!salaConformityCheck(dummySala)) {
       return;
@@ -151,13 +151,13 @@ export default function EditTables() {
       return;
     }
 
-    var dummySala = getObjectDeepCopy(sala);
+    var dummySala = getObjectDeepCopy(sala) as Sala;
 
     // merge tables
     var newMergedTable = getObjectDeepCopy(table);
     newMergedTable.numberOfMergedTables = table.numberOfMergedTables + draggedTable.numberOfMergedTables;
 
-    removeTables([draggedTable.tableNumber, table.tableNumber], dummySala);
+    removeTables([draggedTable.tableNumber, table.tableNumber], table.numero_sala, dummySala);
 
     addTables([newMergedTable], dummySala)
 
@@ -180,9 +180,13 @@ export default function EditTables() {
 
     let salaObjectKeys = Object.keys(salaObject.saleWithTables);
     let numberOfTables = 0;
+
     for (let count = 0; count < salaObjectKeys.length; count++) {
+      console.log("uff", salaObject.saleWithTables[0])
       numberOfTables = numberOfTables + salaObject.saleWithTables[count].length;
     }
+
+    console.log("salaObjectKeys2", salaObjectKeys, salaObject.tableNumbersArray, salaObject.tableNumbersArray.length, numberOfTables)
 
     // if lengths don't match there was an error
     if (salaObject.tableNumbersArray.length != numberOfTables) {
@@ -200,7 +204,7 @@ export default function EditTables() {
     if (dummySala != null && !salaConformityCheck(dummySala)) {
       return dummySala;
     } else if (dummySala == null) {
-      dummySala = getObjectDeepCopy(sala);
+      dummySala = getObjectDeepCopy(sala) as Sala;
     }
 
     tables.forEach(table => {
@@ -259,7 +263,7 @@ export default function EditTables() {
     if (dummySala != null && !salaConformityCheck(dummySala)) {
       return dummySala;
     } else if (dummySala == null) {
-      dummySala = getObjectDeepCopy(sala);
+      dummySala = getObjectDeepCopy(sala) as Sala;
     }
 
     if (dummySala != null) {
@@ -319,9 +323,9 @@ export default function EditTables() {
 
     var tableIndex = getTableIndex(table);
 
-    var dummySala = getObjectDeepCopy(sala);
+    var dummySala = getObjectDeepCopy(sala) as Sala;
 
-    dummySala.tables[tableIndex].rotate = table.rotate;
+    dummySala.saleWithTables[table.numero_sala][tableIndex].rotate = table.rotate;
 
     if (!salaConformityCheck(dummySala)) {
       return;
@@ -382,12 +386,24 @@ export default function EditTables() {
 
   }, [])
 
-  function handleChangeSalaNumber(salaNumber: number) {
-    setSelectedSalaNumber(salaNumber);
+  function handleChangeSalaNumber(onChangeEvent: ChangeEvent<HTMLSelectElement>) {
+    setSelectedSalaNumber(Number(onChangeEvent.target.value));
   }
 
   function addSala() {
-    //miao
+    let salaObjectKeys = Object.keys(sala.saleWithTables);
+    let salaNumbersArray = salaObjectKeys.map(Number);
+    if (salaNumbersArray.length == 0)
+      return
+    let newSalaNumber = Math.max(...salaNumbersArray) + 1;
+    let salaObjectDeepCopy = getObjectDeepCopy(sala) as Sala;
+    if(newSalaNumber in salaObjectDeepCopy.saleWithTables){
+      return
+    }else{
+      salaObjectDeepCopy.saleWithTables[newSalaNumber] = [];
+      setSelectedSalaNumber(newSalaNumber);
+      setSala(salaObjectDeepCopy);
+    }
   }
 
   return (
@@ -432,11 +448,17 @@ export default function EditTables() {
         onClick={() => setIsResetTableRotationModeOn(!isResetTableRotationModeOn)}
       >Reset table rotation {isResetTableRotationModeOn ? "on" : "off"}</button>
 
-      {
-        Object.keys(sala.saleWithTables).map((i, salaNumber) => <button key={"salaNumber_" + i} onClick={() => handleChangeSalaNumber(salaNumber)}>Sala {salaNumber}</button>)
-      }
+      <select
+        value={selectedSalaNumber}
+        onChange={e => handleChangeSalaNumber(e)}
+      >
+        <option value='' disabled></option>,
+        {
+          Object.keys(sala.saleWithTables).map((salaNumber, i) => <option key={"salaNumber_" + i} value={salaNumber}>Sala {salaNumber}</option>)
+        }
+      </select>
 
-      <button onClick={() => addSala}>Add Sala</button>
+      <button onClick={addSala}>Add Sala</button>
 
       <button onClick={() => router.push("/")}>Back</button>
 
