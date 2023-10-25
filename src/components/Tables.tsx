@@ -1,11 +1,13 @@
-import { SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS, getObjectDeepCopy, getTimeAsString } from '@/lib/utils';
+import { SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS, getObjectDeepCopy, getPercentage, getTimeAsString } from '@/lib/utils';
 import styles from './Tables.module.css'
 import { DragEvent, MouseEvent, useEffect, useState } from 'react'
 import { Table } from '@/types/Table';
 import { RotateInfo } from '@/types/RotateInfo';
+import { TableMenuItemsNumber } from '@/types/TableMenuItemsNumber';
 
 interface TableProps {
     table: Table,
+    tableOrderMenuItemInfo: TableMenuItemsNumber | undefined,
     isCanBeClicked: boolean,
     isCanBeDragged: boolean,
     isCanBeRotated: boolean,
@@ -17,7 +19,9 @@ interface TableProps {
     functionOnSaveRotation: null | any
 }
 
-export function Tables({ table, isCanBeClicked, isCanBeDragged, isCanBeRotated, isResetTableRotation, functionOnDrag, functionOnDragEnd, functionOnDrop, functionOnClick, functionOnSaveRotation }: TableProps) {
+export function Tables({ table, tableOrderMenuItemInfo, isCanBeClicked, isCanBeDragged, isCanBeRotated, isResetTableRotation, functionOnDrag, functionOnDragEnd, functionOnDrop, functionOnClick, functionOnSaveRotation }: TableProps) {
+
+    console.log("tablenumber", table.tableNumber, tableOrderMenuItemInfo)
 
     function getCurrentTable(event: DragEvent<HTMLDivElement> | MouseEvent<HTMLDivElement> | MouseEvent<HTMLDivElement, globalThis.MouseEvent>) {
 
@@ -187,7 +191,7 @@ export function Tables({ table, isCanBeClicked, isCanBeDragged, isCanBeRotated, 
                     width: SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS * table.numberOfMergedTables + 'px',
                     top: table.top + "px",
                     left: table.left + "px",
-                    rotate: table.rotate + "deg"
+                    rotate: table.rotate + "deg",
                 }
             }
             draggable={isCanBeDragged ? "true" : "false"}
@@ -203,9 +207,11 @@ export function Tables({ table, isCanBeClicked, isCanBeDragged, isCanBeRotated, 
             onMouseUp={e => isCanBeRotated && handleOnMouseUp(e)}
         >
             <div
+                className={styles.tableInnerDiv}
                 style={
                     {
-                        rotate: -table.rotate + "deg"
+                        rotate: -table.rotate + "deg",
+                        background: `${tableOrderMenuItemInfo != undefined ? tableOrderMenuItemInfo.tablesAndTotalNumberOfDeliveredMenuItems == 0 ? 'skyblue' : `linear-gradient(to top, palegreen ${getPercentage(tableOrderMenuItemInfo.tablesAndTotalNumberOfMenuItems, tableOrderMenuItemInfo.tablesAndTotalNumberOfDeliveredMenuItems)}%, lightgray ${getPercentage(tableOrderMenuItemInfo.tablesAndTotalNumberOfMenuItems, tableOrderMenuItemInfo.tablesAndTotalNumberOfMenuItems - tableOrderMenuItemInfo.tablesAndTotalNumberOfDeliveredMenuItems)}%)` : ''}`
                     }
                 }
             >

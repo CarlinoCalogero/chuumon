@@ -1,3 +1,13 @@
+.tableInnerDiv {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 400rem;
+    height: 100vh;
+    margin: -4000rem;
+}
+
 .singleTable,
 .mergedTable,
 .bookedTable,
@@ -16,6 +26,7 @@
     cursor: move;
     z-index: 9;
     border: 0.3rem solid rgba(255, 255, 255, 0);
+    overflow: hidden;
 }
 
 .bookedTable,

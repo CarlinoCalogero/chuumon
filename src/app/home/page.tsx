@@ -3,7 +3,9 @@
 import { Popup } from '@/components/Popup';
 import { Tables } from '@/components/Tables';
 import { TAKE_AWAY_ORDER_SECTION_NUMBER_TRIGGER, getObjectDeepCopy } from '@/lib/utils';
+import { OrderedTablesWithMenuItemsAndDeliveredMenuItems } from '@/types/OrderedTablesWithMenuItemsAndDeliveredMenuItems';
 import { Table } from '@/types/Table';
+import { TableMenuItemsNumber } from '@/types/TableMenuItemsNumber';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -15,6 +17,7 @@ export default function Home() {
   const [showBookedTablePopUp, setShowBookedTablePopUp] = useState(false);
 
   const [tablesArray, setTablesArray] = useState<Table[]>([]);
+  const [orderedTablesWithMenuItemsAndDeliveredMenuItems, setOrderedTablesWithMenuItemsAndDeliveredMenuItems] = useState<OrderedTablesWithMenuItemsAndDeliveredMenuItems>({})
 
   const [clickedTable, setClickedTable] = useState<Table | null>(null);
 
@@ -45,6 +48,10 @@ export default function Home() {
   }, [tablesArray])
 
   useEffect(() => {
+    console.log(orderedTablesWithMenuItemsAndDeliveredMenuItems)
+  }, [orderedTablesWithMenuItemsAndDeliveredMenuItems])
+
+  useEffect(() => {
     console.log("runs one time only");
 
     fetch("http://localhost:3000/home/api", {
@@ -54,8 +61,9 @@ export default function Home() {
       },
     })
       .then((res) => res.json()) // Parse the response data as JSON
-      .then((data: Table[]) => {
-        setTablesArray(data);
+      .then((data) => {
+        setTablesArray(data.tables);
+        setOrderedTablesWithMenuItemsAndDeliveredMenuItems(data.orderedTablesWithMenuItemsAndDeliveredMenuItems);
       }); // Update the state with the fetched data
 
   }, [])
@@ -156,6 +164,7 @@ export default function Home() {
         tablesArray.map((table, i) => <Tables
           key={"table" + i}
           table={table}
+          tableOrderMenuItemInfo={orderedTablesWithMenuItemsAndDeliveredMenuItems[table.tableNumber]}
           isCanBeClicked={true}
           isCanBeDragged={false}
           isCanBeRotated={false}
