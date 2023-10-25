@@ -4,7 +4,7 @@ import { useState, useEffect, ChangeEvent, DragEvent, MouseEvent } from 'react'
 import styles from './page.module.css'
 import { useRouter } from 'next/navigation'
 import { Tables } from '@/components/Tables';
-import { SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS, findMissingNumber, getObjectDeepCopy, removeNumbersFromArray } from '@/lib/utils';
+import { SQUARE_TABLE_EDGE_DIMENSION_IN_PIXELS, convertStringArrayToNumbersArray, findMissingNumber, getObjectDeepCopy, removeNumbersFromArray } from '@/lib/utils';
 import { Sala } from '@/types/Sala';
 import { Table } from '@/types/Table';
 import { AppearingButton } from '@/components/AppearingButton';
@@ -371,8 +371,7 @@ export default function EditTables() {
   }
 
   function addSala() {
-    let salaObjectKeys = Object.keys(sala.saleWithTables);
-    let salaNumbersArray = salaObjectKeys.map(Number);
+    let salaNumbersArray = convertStringArrayToNumbersArray(Object.keys(sala.saleWithTables));
     if (salaNumbersArray.length == 0)
       return
     let newSalaNumber = findMissingNumber(salaNumbersArray);
@@ -400,11 +399,10 @@ export default function EditTables() {
     delete newSala.saleWithTables[selectedSalaNumber]
 
     // set SelectedSalaNumber to new sala
-    let newsSalaObjectKeys = Object.keys(newSala.saleWithTables);
-    let newSalaNumbersArray = newsSalaObjectKeys.map(Number);
-    if(newsSalaObjectKeys.length == 0){
+    let newSalaNumbersArray = convertStringArrayToNumbersArray(Object.keys(newSala.saleWithTables));
+    if (newSalaNumbersArray.length == 0) {
       setSelectedSalaNumber(0)
-    }else{
+    } else {
       setSelectedSalaNumber(newSalaNumbersArray[0])
     }
 

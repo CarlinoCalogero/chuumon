@@ -464,3 +464,9 @@ export function findMissingNumber(arrayOfNumbers: number[]) {
     return count;
 
 }
+
+export function convertStringArrayToNumbersArray(stringArray: string[]) {
+
+    return Object.keys(stringArray).map(Number);
+
+}

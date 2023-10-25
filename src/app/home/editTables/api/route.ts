@@ -1,6 +1,6 @@
 import sqlite3 from "sqlite3";
 import { open, Database } from "sqlite";
-import { DATABASE_INFO, populateSalaObject, removeNumbersFromArray } from "@/lib/utils";
+import { DATABASE_INFO, convertStringArrayToNumbersArray, populateSalaObject, removeNumbersFromArray } from "@/lib/utils";
 import { Table } from "@/types/Table";
 import { Sala } from "@/types/Sala";
 import { SalaWithTables } from "@/types/SalaWithTables";
@@ -20,7 +20,7 @@ export async function GET() {
         });
     }
 
-    const tables: Table[] = await db.all('SELECT tableNumber, numberOfMergedTables, top, left, rotate, ora, nome_prenotazione, numero_persone, note FROM tavolo');
+    const tables: Table[] = await db.all('SELECT tableNumber, numero_sala, numberOfMergedTables, top, left, rotate, ora, nome_prenotazione, numero_persone, note FROM tavolo');
 
     // Perform a database query to retrieve all items from the "items" table
     // stmt is an instance of `sqlite#Statement`
@@ -37,13 +37,13 @@ export async function GET() {
 // Define the GET request handler function
 export async function POST(request: Request, response: Response) {
 
-    var tablesArray: Table[] = [];
+    var saleWithTables: SalaWithTables = {};
 
     await request.json().then((data) => {
-        tablesArray = data;
+        saleWithTables = data;
     })
 
-    console.log(tablesArray)
+    console.log(saleWithTables)
 
     // Check if the database instance has been initialized
     if (!db) {
@@ -52,6 +52,31 @@ export async function POST(request: Request, response: Response) {
             filename: `./${DATABASE_INFO}`, // Specify the database file path
             driver: sqlite3.Database, // Specify the database driver (sqlite3 in this case)
         });
+    }
+
+    let saleWithTablesKeysNumberArray = convertStringArrayToNumbersArray(Object.keys(saleWithTables));
+    let tablesArray: Table[] = [];
+
+    for (let counter = 0; counter < saleWithTablesKeysNumberArray.length; counter++) {
+
+        let currentSalaNumber = saleWithTablesKeysNumberArray[counter];
+
+        //add tables to array
+        tablesArray = [...tablesArray, ...saleWithTables[counter]]
+
+        const checkIfSalaExists = await db.prepare('SELECT * FROM sala WHERE salaNumber = ?')
+        await checkIfSalaExists.bind({ 1: currentSalaNumber })
+        let resultCheckIfSalaExists: { salaNumber: number } | undefined = await checkIfSalaExists.get()
+
+        if (resultCheckIfSalaExists == undefined) { // sala does not exist
+
+            //insert sala
+            await db.run("INSERT INTO sala (salaNumber) VALUES(?)", [currentSalaNumber]);
+
+            console.log("miaone", currentSalaNumber);
+
+        }
+
     }
 
     const tableNumberArray: { tableNumber: number }[] = await db.all('SELECT tableNumber FROM tavolo')
@@ -77,11 +102,11 @@ export async function POST(request: Request, response: Response) {
 
         if (result == undefined) {
             console.log("table does not exist")
-            await db.run("INSERT INTO tavolo (tableNumber, numberOfMergedTables, top, left, rotate, ora, nome_prenotazione, numero_persone, note) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)", [currentTable.tableNumber, currentTable.numberOfMergedTables, currentTable.top, currentTable.left, currentTable.rotate, currentTable.ora, currentTable.nome_prenotazione, currentTable.numero_persone, currentTable.note]);
+            await db.run("INSERT INTO tavolo (tableNumber, numero_sala, numberOfMergedTables, top, left, rotate, ora, nome_prenotazione, numero_persone, note) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [currentTable.tableNumber, currentTable.numero_sala, currentTable.numberOfMergedTables, currentTable.top, currentTable.left, currentTable.rotate, currentTable.ora, currentTable.nome_prenotazione, currentTable.numero_persone, currentTable.note]);
         } else {
             console.log("tables exists")
             tableNumberOnlyNumbersArray = removeNumbersFromArray(tableNumberOnlyNumbersArray, [currentTable.tableNumber])
-            await db.run("UPDATE tavolo SET numberOfMergedTables = ?, top = ?, left = ?, rotate = ? WHERE tableNumber = ?", [currentTable.numberOfMergedTables, currentTable.top, currentTable.left, currentTable.rotate, result.tableNumber]);
+            await db.run("UPDATE tavolo SET numero_sala = ?, numberOfMergedTables = ?, top = ?, left = ?, rotate = ? WHERE tableNumber = ?", [currentTable.numero_sala, currentTable.numberOfMergedTables, currentTable.top, currentTable.left, currentTable.rotate, result.tableNumber]);
         }
     }
 

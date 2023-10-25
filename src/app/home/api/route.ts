@@ -20,7 +20,7 @@ export async function GET() {
         });
     }
 
-    const tables: Table[] = await db.all('SELECT tableNumber, numberOfMergedTables, top, left, rotate, ora, nome_prenotazione, numero_persone, note FROM tavolo');
+    const tables: Table[] = await db.all('SELECT tableNumber, numero_sala, numberOfMergedTables, top, `left`, rotate, ora, nome_prenotazione, numero_persone, note FROM tavolo');
 
     // Perform a database query to retrieve all items from the "items" table
     // stmt is an instance of `sqlite#Statement`
